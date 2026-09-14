@@ -1,8 +1,10 @@
 import os
 from datetime import datetime
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, Field
+from typing import Optional
+from pydantic import BaseModel, Field, field_validator
+import re
 import google.generativeai as genai
 from lunar_python import Solar, Lunar  # 만세력 라이브러리
 from fastapi.middleware.cors import CORSMiddleware
@@ -66,6 +68,14 @@ try:
 except Exception as db_init_err:
     print(f"[WARNING] Database initialization skipped or failed: {db_init_err}")
 
+ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "")
+
+# 관리자 인증 의존성
+def verify_admin(x_api_key: Optional[str] = Header(None)):
+    """ADMIN_API_KEY 환경변수가 설정된 경우에만 API 키 인증 요구"""
+    if ADMIN_API_KEY and x_api_key != ADMIN_API_KEY:
+        raise HTTPException(status_code=401, detail="관리자 인증이 필요합니다.")
+
 # DB 세션 의존성 주입 (Dependency)
 def get_db():
     db = SessionLocal()
@@ -80,11 +90,13 @@ def get_db():
 app = FastAPI(title="Saju AI Backend API", version="1.0.0")
 
 # 🌟 [배포 대비] CORS(교차 출처 리소스 공유) 미들웨어 설정
+# ALLOWED_ORIGINS 환경변수로 허용 도메인 제어 (쉼표 구분, 미설정 시 로컬만 허용)
+CORS_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:8000,http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 프론트/백엔드 도메인 분리 대응 (모든 출처 허용)
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -95,6 +107,49 @@ class UserInput(BaseModel):
     birth_time: str = Field(..., description="출생시간 (HH:MM)")
     birth_type: str = Field("양력", description="양력 또는 음력")
     is_leap_month: bool = Field(False, description="음력 윤달 여부")
+
+    @field_validator("gender")
+    @classmethod
+    def check_gender(cls, v: str) -> str:
+        if v not in ("M", "F"):
+            raise ValueError("성별은 M 또는 F만 가능합니다.")
+        return v
+
+    @field_validator("birth_type")
+    @classmethod
+    def check_birth_type(cls, v: str) -> str:
+        if v not in ("양력", "음력"):
+            raise ValueError("달력 구분은 '양력' 또는 '음력'만 가능합니다.")
+        return v
+
+    @field_validator("birth_date")
+    @classmethod
+    def check_birth_date(cls, v: str) -> str:
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
+            raise ValueError("생년월일은 YYYY-MM-DD 형식이어야 합니다.")
+        try:
+            datetime.strptime(v, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError("유효하지 않은 날짜입니다. (년/월/일 수치를 확인하세요)")
+        return v
+
+    @field_validator("birth_time")
+    @classmethod
+    def check_birth_time(cls, v: str) -> str:
+        if not re.fullmatch(r"\d{2}:\d{2}", v):
+            raise ValueError("출생시간은 HH:MM 형식이어야 합니다.")
+        hh, mm = map(int, v.split(":"))
+        if not (0 <= hh <= 23 and 0 <= mm <= 59):
+            raise ValueError("유효하지 않은 출생시간입니다.")
+        return v
+
+    @field_validator("name")
+    @classmethod
+    def check_name(cls, v: str) -> str:
+        v = (v or "").strip()
+        if len(v) > 30:
+            raise ValueError("이름은 30자 이내로 입력해주세요.")
+        return v
 
 # 🔴 [중요 2] 원본 프롬프트 완벽 보존
 SYSTEM_MASTER_PROMPT = """
@@ -160,7 +215,7 @@ def calculate_saju_engine(user_input: UserInput) -> dict:
     hh, mm = map(int, user_input.birth_time.split(':'))
     
     if user_input.birth_type == "음력":
-        lunar = Lunar.fromYmdHms(y, m, d, hh, mm, 0)
+        lunar = Lunar.fromYmdHms(y, m, d, hh, mm, 0, user_input.is_leap_month)
     else:
         solar = Solar.fromYmdHms(y, m, d, hh, mm, 0)
         lunar = solar.getLunar()
@@ -437,7 +492,7 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
 @app.get("/v1/saju-history")
 @app.get("/api/saju-history")
 @app.get("/saju-history")
-async def get_saju_history(db: Session = Depends(get_db)):
+async def get_saju_history(db: Session = Depends(get_db), _admin: None = Depends(verify_admin)):
     """
     DB에 영구 저장된 사주 분석 기록 중 최근 10건을 최신순으로 조회합니다.
     """

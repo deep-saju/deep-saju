@@ -12,6 +12,8 @@
     
     <!-- Marked.js 최신 라이브러리 -->
     <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+    <!-- DOMPurify (XSS 보안 필터) -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 
     <style>
         /* =========================================
@@ -2405,15 +2407,15 @@
                     </label>
                     <div class="date-inputs">
                         <div class="date-input-wrap">
-                            <input type="number" id="year" class="input-field" placeholder="1995" value="1995" min="1920" max="2030">
+                            <input type="number" id="year" class="input-field" placeholder="1995" min="1900" inputmode="numeric">
                             <span class="unit">년</span>
                         </div>
                         <div class="date-input-wrap">
-                            <input type="number" id="month" class="input-field" placeholder="08" value="08" min="1" max="12">
+                            <input type="number" id="month" class="input-field" placeholder="08" min="1" max="12">
                             <span class="unit">월</span>
                         </div>
                         <div class="date-input-wrap">
-                            <input type="number" id="day" class="input-field" placeholder="20" value="20" min="1" max="31">
+                            <input type="number" id="day" class="input-field" placeholder="20" min="1" max="31">
                             <span class="unit">일</span>
                         </div>
                     </div>
@@ -2455,7 +2457,7 @@
                             <option value="04:30">인시 (寅時) · 03:30 ~ 05:30</option>
                             <option value="06:30">묘시 (卯時) · 05:30 ~ 07:30</option>
                             <option value="08:30">진시 (辰時) · 07:30 ~ 09:30</option>
-                            <option value="10:30" selected>사시 (巳時) · 09:30 ~ 11:30</option>
+                            <option value="10:30">사시 (巳時) · 09:30 ~ 11:30</option>
                             <option value="12:30">오시 (午時) · 11:30 ~ 13:30</option>
                             <option value="14:30">미시 (未時) · 13:30 ~ 15:30</option>
                             <option value="16:30">신시 (申時) · 15:30 ~ 17:30</option>
@@ -2466,13 +2468,25 @@
                     </div>
                 </div>
 
+                <!-- 3-1. 음력 윤달 체크박스 (음력 선택 시에만 표시) -->
+                <div class="input-group" id="leap-month-group" style="display: none;">
+                    <label>
+                        <span>윤달 여부</span>
+                        <span class="badge">음력 윤달에 태어나셨나요?</span>
+                    </label>
+                    <label class="checkbox-group" style="margin: 0;">
+                        <input type="checkbox" id="is_leap_month">
+                        <span>해당 월이 윤달입니다.</span>
+                    </label>
+                </div>
+
                 <!-- 4. 이름 (호칭) -->
                 <div class="input-group">
                     <label>
                         <span>사용자 성함</span>
                         <span class="badge">선택</span>
                     </label>
-                    <input type="text" id="name" class="input-field" placeholder="미입력 시 '사용자'로 작성됩니다" value="홍길동" maxlength="20">
+                    <input type="text" id="name" class="input-field" placeholder="미입력 시 '사용자'로 작성됩니다" maxlength="20">
                 </div>
 
                 <!-- 5. 약관 동의 -->
@@ -2826,6 +2840,13 @@
         parsedHtml = parsedHtml.replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>');
         parsedHtml = parsedHtml.replace(/<table>/g, '<div class="table-wrap"><table>');
         parsedHtml = parsedHtml.replace(/<\/table>/g, '</table></div>');
+        // XSS 방지: AI 생성 콘텐츠 내 스크립트/이벤트 핸들러 제거
+        if (typeof DOMPurify !== 'undefined') {
+            parsedHtml = DOMPurify.sanitize(parsedHtml, {
+                ALLOWED_TAGS: ['p','br','strong','em','ul','ol','li','h1','h2','h3','h4','table','thead','tbody','tr','th','td','div','span','blockquote','code','pre','hr','b','i','a'],
+                ALLOWED_ATTR: ['href','class','target','rel','style']
+            });
+        }
         return parsedHtml;
     }
 
@@ -2862,10 +2883,10 @@
         renderElementsDonut(elementsCount);
 
         // 5. 第二章: 타고난 성향 (2x2 그리드)
-        renderNatureCards(dayMaster, interpretation);
+        renderNatureCards(elementsCount, dayMaster);
 
         // 6. 돈은 어디로 새고, 인연은 왜 반복될까 (4열 실전 카드)
-        renderRealityCards(dayMaster, interpretation);
+        renderRealityCards(elementsCount, dayMaster);
 
         // 7. 심층 운명서 전문 & 페이월 래퍼
         renderDeepReportContent(interpretation);
@@ -3087,27 +3108,47 @@
     }
 
     /**
-     * 第二章 타고난 성향 (2x2 그리드 바인딩)
+     * 第二章 타고난 성향 (2x2 그리드 바인딩) - 오행 분포 기반 동적 생성
      */
-    function renderNatureCards(dayMaster, interpretation) {
+    function renderNatureCards(elementsCount, dayMaster) {
         const grid = document.getElementById('nature-grid-2x2');
         if (!grid) return;
+
+        // 오행 분포 기반 강세 기운/약세 기운 도출
+        const counts = {
+            '목': (elementsCount && elementsCount['목']) || 0,
+            '화': (elementsCount && elementsCount['화']) || 0,
+            '토': (elementsCount && elementsCount['토']) || 0,
+            '금': (elementsCount && elementsCount['금']) || 0,
+            '수': (elementsCount && elementsCount['수']) || 0
+        };
+        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+        const topElem = sorted[0] ? sorted[0][0] : '토';
+        const bottomElem = sorted[sorted.length - 1] ? sorted[sorted.length - 1][0] : '수';
+
+        const elementNatures = {
+            '목': '뻗어나가고 성장하는 것을 추구하며, 틀에 박힌 환경보다 새로운 도전과 싹을 틔울 수 있는 자유로운 조건에서 진가를 발휘합니다.',
+            '화': '내면의 열정과 표현욕이 강하여 단순한 재미보다 사람들에게 기억되는 강렬한 임팩트를 중요하게 여깁니다.',
+            '토': '신뢰와 안정을 최우선으로 하며, 한 번 맺은 인연과 다짐을 끝까지 지켜내는 묵직한 책임감이 몸에 배어 있습니다.',
+            '금': '기준과 원칙이 뚜렷하며 옳고 그름의 판단이 빠릅니다. 정직함에 대한 요구가 강해 타인을 가볍게 평가하는 경우가 많습니다.',
+            '수': '통찰력과 감수성이 뛰어나 사람과 사물의 이면을 꿰뚫는 눈을 가지고 있습니다. 복잡한 감정을 언어보다 직관으로 먼저 이해합니다.'
+        };
 
         const cards = [
             {
                 num: "01",
-                title: "영혼의 결",
-                desc: "대중적인 유행이나 가벼운 농담보다는 대화의 깊이가 통하는 사람을 만났을 때 비로소 마음의 경계를 풀고 진짜 이야기를 꺼내 놓습니다. '아, 이 사람과는 결이 정말 다르구나'라는 생각이 스치는 순간, 조용히 마음의 문을 닫아버리곤 합니다."
+                title: "강한 기운 · " + topElem,
+                desc: `당신의 사주에서 가장 강한 기운은 ${topElem}입니다. ${elementNatures[topElem] || ''} 사방으로 뻗어나가는 에너지가 강한 만큼, 지나친 고집은 부드럽게 풀어낼수록 운이 열립니다.`
             },
             {
                 num: "02",
-                title: "고독한 방",
-                desc: "누구에게도 방해받지 않는 혼자만의 공간과 시간이 주어질 때 비로소 에너지가 채워지고 머릿속 아이디어가 선명해집니다. '잠시 혼자만의 시간이 필요해'라며 조용히 방에 들어가 세상과의 접속을 끊고 내면에 집중합니다."
+                title: "약한 기운 · " + bottomElem,
+                desc: `상대적으로 부족한 ${bottomElem} 기운을 의식적으로 채워나가면 균형이 좋아집니다. ${bottomElem} 기운의 영역(관련 분야나 습관)을 생활에 조금씩 더해보세요.`
             },
             {
                 num: "03",
-                title: "타협 거부",
-                desc: "효율이나 현실적인 이익만을 앞세우며 영혼 없는 결정을 강요받을 때 겉으로는 고개를 끄덕여도 속으로는 깊은 회의감을 느낍니다. '내가 이걸 왜 해야 하지?'라는 생각이 차오르면 아무리 조건이 좋아도 마음이 이미 떠나 있습니다."
+                title: "고독한 방",
+                desc: "누구에게도 방해받지 않는 혼자만의 공간과 시간이 주어질 때 비로소 에너지가 채워지고 머릿속 아이디어가 선명해집니다. '잠시 혼자만의 시간이 필요해'라며 조용히 방에 들어가 세상과의 접속을 끊고 내면에 집중합니다."
             },
             {
                 num: "04",
@@ -3128,36 +3169,59 @@
     }
 
     /**
-     * 돈은 어디로 새고, 인연은 왜 반복될까 (4열 카드 바인딩)
+     * 돈은 어디로 새고, 인연은 왜 반복될까 (4열 카드 바인딩) - 일간 기반 커스텀
      */
-    function renderRealityCards(dayMaster, interpretation) {
+    function renderRealityCards(elementsCount, dayMaster) {
         const grid = document.getElementById('reality-grid-4');
         if (!grid) return;
+
+        // 일간별 재물/인연/직업 특성 매핑
+        const dayMasterReality = {
+            "甲": { wealth: "목(木) 기운의 재성은 직접 경작해 거두는 것과 같아, 시작 단계의 어려움을 이겨낸 자산이 오래갑니다. 성급한 단기 투자보다 꾸준한 축적형이 맞습니다.", relation: "곧은 나무처럼 두리뭉실한 인연보다 서로를 뚜렷하게 인정해 주는 단단한 관계가 오래갑니다.", career: "자신만의 영토를 넓혀가는 개척형 직업에서 두각을 나타냅니다. 창업 프로젝트나 신사업 발굴에 유리합니다.", balance: "바쁜 일상 속에서도 자연과 접하는 시간을 반드시 확보하세요. 무리한 추진력으로 몸보다 마음이 먼저 지칠 수 있습니다." },
+            "乙": { wealth: "화초처럼 유연한 재테크가 맞습니다. 소액 분산 투자와 옆길로 새는 자금 정리에 강점이 있어, 자동저축을 잘 활용하면 모이는 속도가 빠릅니다.", relation: "순하고 다정한 겉모습 뒤에 속을 알 수 없는 매력으로 사람들의 호기심을 끕니다. 오래된 인연이 큰 힘이 됩니다.", career: "섬세한 손놀림과 협상력이 요구되는 분야(상담, 미술, 디자인, 무역)에서 안정적으로 성장합니다.", balance: "남을 도와주느라 자신의 체력을 소진하기 쉬우니, 주기적으로 에너지를 비우고 채우는 루틴을 만드세요." },
+            "丙": { wealth: "활활 타오르는 태양처럼 돈의 흐름이 빠릅니다. 적극적인 수입 채널을 열되, 충동적인 큰 지출은 최소 3일의 유예기간을 두세요.", relation: "밝고 열정적인 성격으로 사람들의 기억에 오래 남습니다. 연인과의 관계에서 상대의 속마음을 읽어주는 배려가 필요합니다.", career: "보여주는 능력과 프레젠테이션, 리더십이 필요한 분야에서 강합니다. 교육, 방송, 마케팅, 워크숍 진행 등에 적합합니다.", balance: "불꽃처럼 에너지를 쏟아내고 나면 급격히 떨어지곤 합니다. 절제된 템포와 규칙적인 수면을 지켜주세요." },
+            "丁": { wealth: "등불 같은 정성이 돈을 따르게 합니다. 배움과 자격증 투자가 장기적으로 가장 큰 수익률을 냅니다.", relation: "주위를 따뜻하게 감싸는 정성으로 은근한 인망을 모읍니다. 타인의 시선을 과하게 신경 쓰는 습관은 내려놓으세요.", career: "검증된 기술과 전문성으로 꾸준히 성장하는 전문가형. 연구, 의료, 상담, 창작 분야에서 인정받습니다.", balance: "혼자 속으로 삭이는 일이 많아 감정 소모가 큽니다. 가까운 사람에게 솔직하게 털어놓는 연습을 하세요." },
+            "戊": { wealth: "넓은 대지처럼 자산을 끌어안는 힘이 큽니다. 부동산이나 장기 예금처럼 묵직한 자산에 강하며, 인덱스 투자가 잘 맞습니다.", relation: "든든한 산 같은 존재로 주변의 신뢰를 얻습니다. 감정 표현이 적어 상대에게 답답함을 주기 전에 말로 풀어보세요.", career: "굳건한 책임감과 관리 능력이 필요한 조직 관리, 건설, 공직, 재무 분야에서 두각을 나타냅니다.", balance: "남의 짐까지 대신 지는 습관이 체력 고갈로 이어집니다. 거절하는 법을 배우는 게 장수 비결입니다." },
+            "己": { wealth: "전답처럼 꾸준하게 흙을 갈아 모으는 성향입니다. 무리한 레버리지보다 안정적 복리 구조를 선호하는 편이 좋습니다.", relation: "조용하고 내실 있는 모습으로 상대에게 깊은 신뢰를 줍니다. 과하게 낮추는 태도는 빼고 당당함을 더하세요.", career: "정확성과 세심함이 빛나는 재무, 분석, 행정, 교육 분야에서 탁월한 성과를 냅니다.", balance: "완벽주의로 인해 결정을 늦추기 쉽습니다. 완벽보다 완결을 목표로 삼으면 마음이 훨씬 가벼워집니다." },
+            "庚": { wealth: "강철 같은 추진력으로 기회를 단번에 낚아챕니다. 고수익·고위험보다 꾸준한 현금창출 능력을 기르는 방향이 안전합니다.", relation: "의리가 있고 정직해서 한번 인연이 되면 끝까지 책임집니다. 말이 급해 상대가 상처받기 쉬우니 톤을 낮추세요.", career: "결단과 추진이 필요한 분야(영업, 유통, 스포츠, 군경, 무역)에서 강한 실력을 발휘합니다.", balance: "승부 근성이 스트레스로 이어지니 하루 일정량 이상의 승부는 피하고, 충분한 휴식을 의무로 생각하세요." },
+            "辛": { wealth: "보석을 깎듯 정밀하게 자산을 관리합니다. 질 좋은 단일 자산에 집중 투자하는 스타일이 잘 맞습니다.", relation: "높은 기준 때문에 인연을 시작하기 까다롭지만, 맺어지면 아름답고 깊은 관계를 유지합니다. 완벽을 요구하는 마음은 내려놓으세요.", career: "완성도와 디테일이 중요한 분야(디자인, 주얼리, 사법, 감정평가, 프로그래밍)에서 최고의 완성도를 보여줍니다.", balance: "예민한 감각으로 주변 소음에 상처받기 쉽습니다. 불필요한 자극을 줄이고 감각을 위한 공간을 확보하세요." },
+            "壬": { wealth: "큰 강물처럼 돈의 흐름을 주도합니다. 흐름을 타는 투자보다 주도권을 쥐는 창업이나 벤처에 강합니다.", relation: "매력적이고 넓은 인간관계를 유지하지만 진정한 속마음은 진입장벽이 높습니다. 소수의 진심 어린 인연에 집중하세요.", career: "전략과 흐름 장악이 필요한 분야(기획, 투자, 미디어, 해양, 대외협력)에서 재능이 발휘됩니다.", balance: "한 수레 더 짐을 싣고 가는 과욕이 화를 부릅니다. 충분하다고 느낄 때 한 박자 멈추는 습관을 들이세요." },
+            "癸": { wealth: "봄비 같은 섬세한 재테크 감각으로 숨은 가치를 잘 발견합니다. 정보와 사람의 흐름을 읽는 능력이 뛰어납니다.", relation: "공감과 직관으로 상대의 마음을 읽어 정서적으로 깊이 연결됩니다. 너무 많은 감정을 짐작하다 오해가 생길 수 있습니다.", career: "통찰력이 필요한 분야(상담, 컨설팅, 연구개발, 작가, 심리 분야)에서 은은하게 존재감을 보여줍니다.", balance: "감수성이 예민하니 감정 기복이 체력에 직결됩니다. 규칙적 생활과 명상으로 내면의 균형을 유지하세요." }
+        };
+
+        const defaultReality = {
+            wealth: "재물의 흐름이 뚜렷해 성실한 축적과 분산 투자를 병행할 때 자산이 안정적으로 커지며, 무리한 레버리지는 자제하는 편이 좋습니다.",
+            relation: "인연의 시작은 서로 다르되 깊이 있는 관계를 오래 유지하는 힘이 있어, 얕은 관계를 넓히기보다 진심을 나누는 소중한 인연을 가꾸는 것이 맞습니다.",
+            career: "자율성과 전문성이 인정받는 분야에서 두각을 나타내며, 반복 업무보다 창의적이고 사람과 함께하는 일에서 최상의 결과를 냅니다.",
+            balance: "감정과 체력의 리듬이 중요하므로, 규칙적인 휴식과 혼자만의 재충전 시간이 삶의 균형을 지키는 핵심입니다."
+        };
+
+        const profile = dayMasterReality[dayMaster] || defaultReality;
 
         const cards = [
             {
                 icon: "🔗",
                 cat: "재물운",
                 title: "재물운",
-                desc: "돈을 버는 행위 그 자체보다 '내가 떳떳할 수 있는 가치 있는 일인가'를 먼저 따지며 쉽게 지갑을 열지 않습니다. 남들이 솔솔 풍기는 투자 정보에 영혼 없이 흔들리기보다 내가 확신하는 분야에만 조용히 자원을 투입하는 방식을 고수합니다."
+                desc: profile.wealth
             },
             {
                 icon: "❤️",
                 cat: "인연운",
                 title: "인연운",
-                desc: "수많은 사람들과 얕은 관계를 넓게 맺는 것보다 영혼의 깊이가 통하는 극소수의 인연과 진솔한 온기를 나누는 것을 훨씬 편안해합니다. 가식이나 계산적인 태도가 조금이라도 느껴지는 순간, 아무 말 없이 서서히 멀어지는 선택을 합니다."
+                desc: profile.relation
             },
             {
                 icon: "💼",
                 cat: "직업운",
                 title: "직업운",
-                desc: "누구의 간섭도 받지 않고 나의 철학과 감성을 오롯이 녹여낼 수 있는 독립적이고 깊이 있는 영역에서 진짜 능력이 폭발합니다. 매뉴얼대로 찍어내는 조직 생활보다는 나만의 세계를 빚어내는 창작, 기획, 심리 치유 등의 길에서 빛을 발합니다."
+                desc: profile.career
             },
             {
                 icon: "🍃",
                 cat: "생활과 균형",
                 title: "생활과 균형",
-                desc: "신체적인 피로보다 마음의 결이 상했을 때 에너지가 빠르게 바닥나며 깊은 무기력증에 빠지곤 합니다. 복잡한 생각을 내려놓고 자연 속을 걷거나 혼자만의 고요한 사색을 즐기는 시간이 최고의 휴식이자 충전법입니다."
+                desc: profile.balance
             }
         ];
 
@@ -3213,7 +3277,7 @@
                 .replace(/^[•\-\*\s]+/, '')
                 .trim();
 
-            // 3. 본문 마크다운 파싱 (Marked.js 또는 내부 헬퍼)
+            // 3. 본문 마크다운 파싱 (Marked.js 또는 내부 헬퍼) + DOMPurify XSS 필터
             let parsed = '';
             try {
                 parsed = (typeof marked !== 'undefined' && typeof marked.parse === 'function')
@@ -3221,6 +3285,12 @@
                     : parseMarkdownToHtml(contentMarkdown);
             } catch (e) {
                 parsed = parseMarkdownToHtml(contentMarkdown);
+            }
+            if (typeof DOMPurify !== 'undefined') {
+                parsed = DOMPurify.sanitize(parsed, {
+                    ALLOWED_TAGS: ['p','br','strong','em','ul','ol','li','h1','h2','h3','h4','table','thead','tbody','tr','th','td','div','span','blockquote','code','pre','hr','b','i','a'],
+                    ALLOWED_ATTR: ['href','class','target','rel','style']
+                });
             }
 
             // 4. 가독성 극대화 트랜스폼:
@@ -3357,6 +3427,16 @@
 
     let lastResultText = "";
 
+    // 음력 선택 시 윤달 체크박스 표시 토글
+    document.querySelectorAll('input[name="calendar"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            const leapGroup = document.getElementById('leap-month-group');
+            if (leapGroup) {
+                leapGroup.style.display = (radio.value === '음력' && radio.checked) ? 'block' : 'none';
+            }
+        });
+    });
+
     async function startReading() {
         const agree = document.getElementById('agree');
         if (!agree.checked) {
@@ -3374,6 +3454,25 @@
             return;
         }
 
+        // 수치 검증 (범위 & 유효성)
+        const yNum = parseInt(yVal, 10);
+        const mNum = parseInt(mVal, 10);
+        const dNum = parseInt(dVal, 10);
+        const currentYear = new Date().getFullYear();
+        if (isNaN(yNum) || yNum < 1900 || yNum > currentYear) {
+            alert(`출생 연도는 1900년 ~ ${currentYear}년 사이로 입력해 주세요.`);
+            return;
+        }
+        if (isNaN(mNum) || mNum < 1 || mNum > 12) {
+            alert("월은 1 ~ 12 사이로 입력해 주세요.");
+            return;
+        }
+        const daysInMonth = new Date(yNum, mNum, 0).getDate();
+        if (isNaN(dNum) || dNum < 1 || dNum > daysInMonth) {
+            alert(`${mNum}월의 날짜는 1 ~ ${daysInMonth}일 사이로 입력해 주세요.`);
+            return;
+        }
+
         const y = yVal.padStart(4, '0');
         const m = mVal.padStart(2, '0');
         const d = dVal.padStart(2, '0');
@@ -3385,6 +3484,8 @@
         const finalName = (!rawName || rawName.length === 0) ? "사용자" : rawName;
         
         const birthTime = document.getElementById('birth_time').value;
+        const leapEl = document.getElementById('is_leap_month');
+        const isLeapMonth = !!leapEl && leapEl.checked;
 
         const formScreen = document.getElementById('form-screen');
         const loadingScreen = document.getElementById('loading-screen');
@@ -3464,7 +3565,7 @@
             birth_date: `${y}-${m}-${d}`,
             birth_time: birthTime,
             birth_type: calendar,
-            is_leap_month: false
+            is_leap_month: isLeapMonth
         };
 
         try {
