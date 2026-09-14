@@ -1,0 +1,3585 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>심층 운명서 | 프리미엄 AI 명리학 사주</title>
+    <!-- 폰트: 제목(Noto Serif KR), 본문(Pretendard) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+    
+    <!-- Marked.js 최신 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+
+    <style>
+        /* =========================================
+           1. 디자인 시스템 & 글로벌 변수
+        ========================================= */
+        :root {
+            --bg-obsidian: #0c0d12;
+            --bg-card-dark: #14161f;
+            --paper-base: #faf6ed;
+            --paper-card: #ffffff;
+            --paper-border: #e8dec8;
+            --primary-red: #8b1014;
+            --primary-red-hover: #a5161b;
+            --primary-red-glow: rgba(139, 16, 20, 0.28);
+            --gold: #c59b27;
+            --gold-bright: #dfb738;
+            --gold-light: #fdf6dc;
+            --gold-glow: rgba(197, 155, 39, 0.35);
+            --text-dark: #22201e;
+            --text-sub: #5e5953;
+            --text-light: #f3f3f5;
+            --text-muted: #9c9993;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --transition-smooth: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+            --shadow-float: 0 20px 40px -10px rgba(0, 0, 0, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            min-height: 100%;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: var(--bg-obsidian);
+            color: var(--text-dark);
+            line-height: 1.7;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* =========================================
+           2. 레이아웃 구조 (신비로운 전면 배경 & 중앙 플로팅 카드뷰)
+        ========================================= */
+        .layout-wrapper {
+            display: block !important;
+            width: 100%;
+            min-height: 100vh;
+            position: relative;
+            /* 🌟 전체 화면에 웅장한 사주 테마 배경 및 딥 다크 오버레이 적용 */
+            background: linear-gradient(180deg, rgba(12, 13, 18, 0.82) 0%, rgba(10, 10, 14, 0.90) 100%), 
+                        url('/bg-image.png') center/cover fixed no-repeat !important;
+            background-color: var(--bg-obsidian);
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+
+        /* 상단 인트로 헤더 영역 (전체 배경 위에 자연스럽게 녹아드는 타이틀) */
+        .left-visual {
+            width: 100% !important;
+            min-height: auto !important;
+            position: relative;
+            background: transparent !important; /* 분리된 배경 제거하고 전체 배경과 일체화 */
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            padding: 56px 24px 20px 24px !important;
+            color: var(--text-light);
+            text-align: center !important;
+            box-sizing: border-box !important;
+            border-bottom: none !important;
+        }
+
+        .visual-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(197, 155, 39, 0.35);
+            padding: 6px 18px;
+            border-radius: 50px;
+            font-size: 13px;
+            color: var(--gold-bright);
+            letter-spacing: 2px;
+            font-weight: 600;
+            margin: 0 auto 16px auto !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .visual-center {
+            position: relative;
+            z-index: 2;
+            max-width: 680px !important;
+            margin: 0 auto !important;
+        }
+
+        .visual-center h1 {
+            font-family: 'Noto Serif KR', serif;
+            font-size: clamp(26px, 3.2vw, 38px) !important;
+            font-weight: 700;
+            line-height: 1.4 !important;
+            color: #ffffff;
+            margin-bottom: 14px !important;
+            letter-spacing: -0.5px;
+            text-shadow: 0 4px 24px rgba(0, 0, 0, 0.9);
+        }
+
+        .visual-center h1 span {
+            color: var(--gold-bright);
+            position: relative;
+            display: inline-block;
+        }
+
+        .visual-center p {
+            font-size: 15.5px !important;
+            color: rgba(240, 240, 245, 0.85);
+            line-height: 1.75 !important;
+            font-weight: 400;
+            max-width: 520px !important;
+            margin: 0 auto !important;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .visual-footer {
+            display: flex !important;
+            align-items: center;
+            justify-content: center !important;
+            flex-wrap: wrap !important;
+            gap: 12px 20px !important;
+            font-size: 12.5px !important;
+            color: rgba(255, 255, 255, 0.65) !important;
+            position: relative;
+            z-index: 2;
+            margin-top: 20px !important;
+        }
+
+        .visual-footer span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 폼 영역 (어두운 전면 배경 위에 투명하게 올라감) */
+        .right-area {
+            width: 100% !important;
+            background: transparent !important;
+            background-image: none !important;
+            display: block !important;
+            padding: 16px 20px 80px 20px !important;
+            overflow-y: visible !important;
+            position: relative;
+            box-sizing: border-box !important;
+        }
+
+        /* 중앙 카드 컨테이너 */
+        .form-container {
+            width: 100% !important;
+            max-width: 600px !important;
+            margin: 0 auto !important;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* =========================================
+           3. 입력 화면 (헤더 & 폼 컴포넌트)
+        ========================================= */
+        .paper-card {
+            background: var(--paper-card);
+            border-radius: var(--radius-lg);
+            padding: 38px 34px;
+            box-shadow: var(--shadow-card), 0 0 0 1px rgba(197, 155, 39, 0.18);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .paper-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold), var(--primary-red), var(--gold));
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .form-subtitle {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--gold);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-header h2 {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 25px;
+            font-weight: 700;
+            color: #1a1615;
+            line-height: 1.35;
+            letter-spacing: -0.5px;
+        }
+
+        .form-header p.sub-desc {
+            font-size: 13.5px;
+            color: var(--text-sub);
+            margin-top: 6px;
+        }
+
+        /* 폼 입력 그룹 */
+        .input-group {
+            margin-bottom: 22px;
+            width: 100%;
+        }
+
+        .input-group label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13.5px;
+            color: #3b3632;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .input-group label .badge {
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: #f0eae1;
+            color: #796e62;
+        }
+
+        .input-group label .badge.req {
+            background: rgba(139, 16, 20, 0.08);
+            color: var(--primary-red);
+            font-weight: 600;
+        }
+
+        /* 모바일 친화적 인풋 스타일 (터치 높이 최소 50px 확보) */
+        .date-inputs {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .date-input-wrap {
+            flex: 1;
+            position: relative;
+            min-width: 0;
+        }
+
+        .input-field, select.input-field {
+            width: 100%;
+            height: 52px;
+            padding: 0 16px;
+            border: 1.5px solid var(--paper-border);
+            background: #ffffff;
+            border-radius: var(--radius-sm);
+            font-family: 'Pretendard', sans-serif;
+            font-size: 15.5px;
+            color: var(--text-dark);
+            outline: none;
+            transition: var(--transition-smooth);
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .date-inputs input {
+            text-align: center;
+            padding: 0 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .date-input-wrap .unit {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            color: #999;
+            pointer-events: none;
+        }
+
+        .input-field:focus, select.input-field:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3.5px var(--gold-glow);
+            background-color: #ffffff;
+        }
+
+        /* 커스텀 셀렉트 화살표 */
+        .select-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .select-wrapper::after {
+            content: "";
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            border-right: 2px solid #777;
+            border-bottom: 2px solid #777;
+            transform: translateY(-65%) rotate(45deg);
+            pointer-events: none;
+            transition: var(--transition-smooth);
+        }
+
+        .select-wrapper:focus-within::after {
+            border-color: var(--gold);
+            transform: translateY(-35%) rotate(-135deg);
+        }
+
+        /* 탭 라디오 버튼 그룹 */
+        .toggle-group {
+            display: flex;
+            gap: 8px;
+            background: #f1ebd9;
+            padding: 4px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--paper-border);
+        }
+
+        .toggle-radio {
+            display: none;
+        }
+
+        .toggle-label {
+            flex: 1;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14.5px;
+            font-weight: 500;
+            color: #615a51;
+            transition: var(--transition-smooth);
+            user-select: none;
+        }
+
+        .toggle-radio:checked + .toggle-label {
+            background-color: #ffffff;
+            color: var(--primary-red);
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(197, 155, 39, 0.35);
+        }
+
+        /* 약관 동의 체크박스 */
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 12.5px;
+            color: #6b645b;
+            margin: 24px 0 26px 0;
+            line-height: 1.45;
+            cursor: pointer;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-top: 2px;
+            width: 17px;
+            height: 17px;
+            accent-color: var(--primary-red);
+            cursor: pointer;
+        }
+
+        /* 프리미엄 호출 버튼 */
+        .submit-btn {
+            width: 100%;
+            height: 56px;
+            background: linear-gradient(135deg, #a7181e 0%, var(--primary-red) 55%, #690a0d 100%);
+            color: #ffffff;
+            border: 1px solid rgba(223, 183, 56, 0.45);
+            border-radius: var(--radius-sm);
+            font-family: 'Noto Serif KR', serif;
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px var(--primary-red-glow), 0 2px 4px rgba(0, 0, 0, 0.15);
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.6s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 26px rgba(139, 16, 20, 0.45);
+            background: linear-gradient(135deg, #bb1c22 0%, #941116 55%, #750a0d 100%);
+        }
+
+        .submit-btn:hover::before {
+            left: 150%;
+        }
+
+        .submit-btn:active {
+            transform: translateY(1px);
+        }
+
+        /* =========================================
+           4. 로딩 화면 (3D 고서 책장 넘김 & 신비로운 등불 서재 테마)
+        ========================================= */
+        #loading-screen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            width: 100% !important;
+            height: 100vh !important;
+            height: 100% !important;
+            background: radial-gradient(ellipse at 50% 30%, #161b2a 0%, #0c0e17 60%, #05060a 100%) !important;
+            background-color: var(--bg-obsidian);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            color: #ffffff;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+            text-align: center;
+            box-sizing: border-box;
+            animation: fadeIn 0.4s ease;
+            overflow-y: auto;
+        }
+
+        /* 신비로운 배경 등불(Candle) & 촛불 흔들림 연출 */
+        .loading-scene-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .candle-flame-wrap {
+            position: relative;
+            width: 32px;
+            height: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .candle-flame {
+            width: 14px;
+            height: 28px;
+            background: radial-gradient(ellipse at bottom, #fff6cc 0%, #ff9800 60%, #d84315 90%);
+            border-radius: 50% 50% 20% 20%;
+            filter: drop-shadow(0 0 12px #ffb300) drop-shadow(0 0 24px #ff6f00);
+            animation: candleFlicker 1.6s ease-in-out infinite alternate;
+            transform-origin: bottom center;
+            margin-bottom: 3px;
+        }
+
+        @keyframes candleFlicker {
+            0%   { transform: scale(1) rotate(-1deg); opacity: 0.95; }
+            30%  { transform: scale(1.06, 0.94) rotate(2deg); opacity: 1; }
+            60%  { transform: scale(0.96, 1.05) rotate(-2deg); opacity: 0.9; }
+            100% { transform: scale(1.04, 0.98) rotate(1deg); opacity: 1; }
+        }
+
+        .candle-wick {
+            width: 2px;
+            height: 8px;
+            background: #2b1f1d;
+        }
+
+        .candle-body {
+            width: 24px;
+            height: 52px;
+            background: linear-gradient(90deg, #7c1216 0%, #b71c22 45%, #59090d 100%);
+            border-radius: 3px 3px 6px 6px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        /* 🌟 [핵심] 3D 고서 책장 넘김 (Ancient Book Page-Flip) 애니메이션 */
+        .ancient-book-stage {
+            perspective: 1000px;
+            width: 240px;
+            height: 155px;
+            position: relative;
+            transform-style: preserve-3d;
+            margin: 0 auto;
+        }
+
+        .book-base {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotateX(12deg);
+            transform-style: preserve-3d;
+        }
+
+        /* 책 좌우 커버 & 고서 바탕 */
+        .book-cover {
+            width: 114px;
+            height: 146px;
+            background: linear-gradient(135deg, #1b1713 0%, #0e0c0a 100%);
+            border: 1.5px solid rgba(212, 175, 55, 0.6);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 6px;
+            box-sizing: border-box;
+        }
+
+        .book-cover.left {
+            border-radius: 6px 2px 2px 6px;
+        }
+
+        .book-cover.right {
+            border-radius: 2px 6px 6px 2px;
+        }
+
+        .book-inner-parchment {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f6f0dd 0%, #ebe0c0 100%);
+            border-radius: 2px 4px 4px 2px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            padding: 10px 8px;
+            box-sizing: border-box;
+            box-shadow: inset 0 0 10px rgba(197, 155, 39, 0.25);
+            border: 1px solid rgba(197, 155, 39, 0.3);
+        }
+
+        .parchment-symbol {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 18px;
+            font-weight: 900;
+            color: #8b1014;
+            opacity: 0.85;
+        }
+
+        .parchment-lines {
+            width: 80%;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .pline {
+            height: 2px;
+            background: rgba(140, 110, 60, 0.28);
+            border-radius: 2px;
+        }
+
+        .pline.short {
+            width: 60%;
+        }
+
+        .book-spine-gold {
+            width: 12px;
+            height: 146px;
+            background: linear-gradient(90deg, #7c5c16 0%, #dfb738 50%, #7c5c16 100%);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
+            z-index: 10;
+        }
+
+        /* 부드럽게 오른쪽에서 왼쪽으로 넘어가는 3D 내지 */
+        .turning-leaf {
+            position: absolute;
+            top: 5px;
+            left: calc(50% + 1px); /* 책의 척추(스파인) 중앙에서 시작 */
+            width: 106px;
+            height: 144px;
+            transform-origin: left center;
+            transform-style: preserve-3d;
+            animation: bookPageFlip 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .turning-leaf.leaf-1 { animation-delay: 0s; }
+        .turning-leaf.leaf-2 { animation-delay: 1.5s; }
+
+        @keyframes bookPageFlip {
+            0% {
+                transform: rotateY(0deg);
+                opacity: 0;
+            }
+            6% {
+                transform: rotateY(0deg);
+                opacity: 1;
+            }
+            48% {
+                transform: rotateY(-90deg) scale(1.02);
+                opacity: 1;
+            }
+            88% {
+                transform: rotateY(-180deg);
+                opacity: 1;
+            }
+            100% {
+                transform: rotateY(-180deg);
+                opacity: 0;
+            }
+        }
+
+        .leaf-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: linear-gradient(135deg, #fbf7ec 0%, #ebe2c7 100%);
+            border: 1px solid rgba(197, 155, 39, 0.45);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            padding: 12px 10px;
+            box-sizing: border-box;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+        }
+
+        .leaf-face.leaf-front {
+            border-radius: 2px 5px 5px 2px;
+        }
+
+        .leaf-face.leaf-back {
+            border-radius: 5px 2px 2px 5px;
+            transform: rotateY(180deg);
+        }
+
+        .leaf-symbol {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 20px;
+            font-weight: 900;
+            color: #8b1014;
+            text-align: center;
+        }
+
+        .leaf-lines {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 80%;
+        }
+
+        .leaf-line {
+            height: 2px;
+            background: rgba(140, 110, 60, 0.35);
+            border-radius: 2px;
+        }
+
+        .leaf-line.short {
+            width: 55%;
+        }
+
+        /* 로딩 타이틀 & 시네마틱 서브카피 (Reference 2 감성) */
+        .loading-narrative {
+            margin-top: 18px;
+            margin-bottom: 20px;
+        }
+
+        .loading-story-title {
+            font-family: 'Noto Serif KR', serif;
+            font-size: clamp(21px, 2.5vw, 27px);
+            font-weight: 800;
+            color: #fff4d2;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 14px rgba(212, 175, 55, 0.5);
+            background: linear-gradient(135deg, #ffffff 0%, #f7e099 50%, #dfb738 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .loading-story-subtitle {
+            font-size: 14.5px;
+            color: rgba(230, 226, 216, 0.82);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* 🌟 [로딩 중 실시간 엔진 로그] */
+        .loading-logs-wrapper {
+            max-width: 580px !important;
+            width: 92% !important;
+            height: 190px !important;
+            background: rgba(11, 13, 20, 0.94) !important;
+            border: 1.5px solid rgba(212, 175, 55, 0.45) !important;
+            border-radius: 12px !important;
+            padding: 12px 16px !important;
+            margin: 0 auto 18px auto !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 0 16px rgba(212, 175, 55, 0.05) !important;
+            position: relative !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            flex-direction: column !important;
+            text-align: left !important;
+        }
+
+        .loading-logs-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .log-indicator {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: #2ecc71;
+            box-shadow: 0 0 8px #2ecc71;
+            animation: indicatorPulse 1.2s infinite;
+        }
+
+        @keyframes indicatorPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .log-header-text {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: var(--gold-bright);
+            font-family: monospace;
+        }
+
+        .loading-logs {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+            font-size: 12.5px;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.8);
+            scroll-behavior: smooth;
+        }
+
+        .log-line {
+            opacity: 0;
+            animation: logFadeIn 0.3s forwards;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .log-line.active {
+            color: #ffe699 !important;
+            font-weight: 600;
+        }
+
+        .log-line.active::after {
+            content: ' ▋';
+            color: var(--gold-bright);
+            animation: cursorBlink 0.7s infinite;
+        }
+
+        @keyframes cursorBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        @keyframes logFadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .progress-container {
+            width: 92%;
+            max-width: 580px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 99px;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #dfb738, #fff4d2);
+            box-shadow: 0 0 10px rgba(223, 183, 56, 0.7);
+            border-radius: 99px;
+            transition: width 0.4s ease;
+        }
+
+        /* =========================================
+           5. 🌟 결과 화면 (Deep Navy & Royal Gold 하이엔드 테마)
+        ========================================= */
+        .layout-wrapper.result-mode {
+            display: block !important;
+            background: linear-gradient(180deg, rgba(8, 10, 16, 0.94) 0%, rgba(6, 7, 12, 0.97) 100%), 
+                        url('/bg-image.png') center/cover fixed no-repeat !important;
+            padding-bottom: 120px;
+        }
+
+        .layout-wrapper.result-mode .left-visual {
+            display: none !important;
+        }
+
+        .layout-wrapper.result-mode .right-area {
+            width: 100% !important;
+            max-width: 900px !important;
+            margin: 0 auto !important;
+            padding: 40px 20px 100px 20px !important;
+            background: transparent !important;
+            display: block !important;
+            overflow-y: visible !important;
+        }
+
+        .layout-wrapper.result-mode .form-container {
+            display: none !important;
+        }
+
+        #result-screen {
+            display: none;
+            width: 100% !important;
+            max-width: 880px !important;
+            margin: 0 auto !important;
+            animation: resultFadeIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            box-sizing: border-box !important;
+            color: #f1f1f5;
+        }
+
+        @keyframes resultFadeIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 1) 상단 히어로 헤더 (무료 사주 결과 & 명언) */
+        .result-hero-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 28px;
+            padding-bottom: 22px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.28);
+        }
+
+        .result-hero-main {
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .result-hero-title {
+            font-family: 'Noto Serif KR', serif;
+            font-size: clamp(28px, 3.4vw, 38px);
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.8px;
+            line-height: 1.25;
+            margin-bottom: 8px;
+            text-shadow: 0 3px 18px rgba(0, 0, 0, 0.8);
+        }
+
+        .result-hero-sub {
+            font-size: 15px;
+            color: rgba(220, 222, 232, 0.85);
+            line-height: 1.65;
+            margin: 0;
+            word-break: keep-all;
+        }
+
+        .result-hero-quote {
+            text-align: right;
+            max-width: 320px;
+            padding: 10px 16px;
+            background: rgba(212, 175, 55, 0.08);
+            border-right: 3px solid var(--gold-bright);
+            border-radius: 4px;
+        }
+
+        .quote-text {
+            display: block;
+            font-family: 'Noto Serif KR', serif;
+            font-size: 13.5px;
+            color: #fdf6dc;
+            font-style: italic;
+            line-height: 1.5;
+            margin-bottom: 4px;
+        }
+
+        .quote-author {
+            display: block;
+            font-size: 12px;
+            color: var(--gold-bright);
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        /* 2) 유저 프로필 4열 칩 바 (👤 홍길동, 📅 1995.08.20, 🕒 사시, ⚥ 남성) */
+        .user-meta-chips-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .meta-chip {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(18, 22, 33, 0.88);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(212, 175, 55, 0.32);
+            border-radius: 50px;
+            padding: 10px 18px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            transition: var(--transition-smooth);
+        }
+
+        .meta-chip:hover {
+            border-color: var(--gold-bright);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.18);
+        }
+
+        .chip-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(212, 175, 55, 0.14);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+
+        .chip-content {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chip-label {
+            font-size: 11px;
+            color: rgba(180, 185, 200, 0.7);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .chip-val {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #ffffff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 공통 챕터 섹션 래퍼 */
+        .section-chapter {
+            margin-bottom: 36px;
+        }
+
+        .chapter-title-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .chapter-badge {
+            background: linear-gradient(135deg, #8b1014 0%, #5c070a 100%);
+            color: #fdf6dc;
+            border: 1px solid rgba(212, 175, 55, 0.45);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-family: 'Noto Serif KR', serif;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+        }
+
+        .chapter-main-title {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0;
+            letter-spacing: -0.4px;
+        }
+
+        .chapter-sub-desc {
+            font-size: 13px;
+            color: rgba(200, 205, 220, 0.7);
+            margin: 0;
+        }
+
+        /* 3) 第一章 · 당신의 사주 한마디 (와이드 수묵화/동양화 풍 카드) */
+        .verdict-card {
+            background: linear-gradient(135deg, rgba(245, 240, 228, 0.97) 0%, rgba(235, 227, 210, 0.95) 100%);
+            border: 2px solid rgba(212, 175, 55, 0.75);
+            border-radius: 18px;
+            padding: 34px 30px;
+            color: #1a1715;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(197, 155, 39, 0.12);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .verdict-card::before {
+            content: "";
+            position: absolute;
+            top: 0; right: 0;
+            width: 220px; height: 100%;
+            background: radial-gradient(circle at top right, rgba(139, 16, 20, 0.08), transparent 70%);
+            pointer-events: none;
+        }
+
+        .chapter-tag-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .chapter-tag {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 12.5px;
+            font-weight: 900;
+            color: #8b1014;
+            letter-spacing: 2px;
+        }
+
+        .chapter-tag-title {
+            font-size: 13px;
+            color: #554e47;
+            font-weight: 700;
+        }
+
+        .verdict-headline {
+            font-family: 'Noto Serif KR', serif;
+            font-size: clamp(22px, 2.6vw, 29px);
+            font-weight: 900;
+            color: #12100e;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            letter-spacing: -0.6px;
+        }
+
+        .verdict-lead {
+            font-size: 15.5px;
+            color: #4a433d;
+            font-weight: 600;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            word-break: keep-all;
+        }
+
+        .verdict-desc-box {
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid rgba(197, 155, 39, 0.35);
+            border-radius: 12px;
+            padding: 18px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .verdict-desc-box p {
+            font-size: 14px;
+            color: #332d27;
+            line-height: 1.75;
+            margin: 0;
+            word-break: keep-all;
+        }
+
+        /* 4) 사주 명식(四柱) & 오행 분포 (좌우 2열 그리드) */
+        .chapter-bazi-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .chapter-card {
+            background: rgba(15, 18, 28, 0.94);
+            border: 1.5px solid rgba(212, 175, 55, 0.38);
+            border-radius: 18px;
+            padding: 26px 22px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .card-inner-header {
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .bazi-card-title {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 19px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 4px;
+            letter-spacing: -0.3px;
+        }
+
+        .bazi-card-title .hanja {
+            color: var(--gold-bright);
+            font-size: 16px;
+        }
+
+        .bazi-card-sub {
+            font-size: 12.5px;
+            color: rgba(200, 205, 220, 0.7);
+            margin: 0;
+        }
+
+        /* 사주 4기둥 표 */
+        .pillars-table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            margin-bottom: 16px;
+        }
+
+        .pillars-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 6px;
+            text-align: center;
+        }
+
+        .pillars-table th {
+            padding: 10px 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(240, 240, 248, 0.9);
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            line-height: 1.35;
+        }
+
+        .pillars-table th .p-sub {
+            font-size: 10.5px;
+            color: var(--gold-bright);
+            font-weight: 500;
+        }
+
+        .pillars-table th.day-pillar-th {
+            background: rgba(212, 175, 55, 0.16);
+            border-color: var(--gold-bright);
+            color: #fff6cc;
+        }
+
+        .pillars-table td {
+            padding: 12px 6px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 8px;
+            vertical-align: middle;
+        }
+
+        .pillars-table td.day-pillar-td {
+            background: rgba(212, 175, 55, 0.09);
+            border-color: rgba(212, 175, 55, 0.5);
+        }
+
+        .hanja-main {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 26px;
+            font-weight: 800;
+            color: #ffffff;
+            display: block;
+            line-height: 1.2;
+            margin-bottom: 4px;
+        }
+
+        .hanja-main.gold-active {
+            color: var(--gold-bright);
+            text-shadow: 0 0 12px rgba(223, 183, 56, 0.4);
+        }
+
+        .element-mini-tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .element-mini-tag.wood  { color: #4ade80; background: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.35); }
+        .element-mini-tag.fire  { color: #f87171; background: rgba(248, 113, 113, 0.15); border: 1px solid rgba(248, 113, 113, 0.35); }
+        .element-mini-tag.earth { color: #fbbf24; background: rgba(251, 191, 36, 0.15);  border: 1px solid rgba(251, 191, 36, 0.35); }
+        .element-mini-tag.metal { color: #e2e8f0; background: rgba(226, 232, 240, 0.15); border: 1px solid rgba(226, 232, 240, 0.35); }
+        .element-mini-tag.water { color: #60a5fa; background: rgba(96, 165, 250, 0.15);  border: 1px solid rgba(96, 165, 250, 0.35); }
+
+        .pillar-ganji-name {
+            font-size: 11px;
+            color: rgba(200, 205, 220, 0.6);
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .pillars-footer-notice {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: rgba(220, 224, 240, 0.85);
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-top: auto;
+        }
+
+        .pillars-footer-notice .notice-icon {
+            color: var(--gold-bright);
+        }
+
+        /* 오행 원형 도넛 차트 컴포넌트 */
+        .elements-donut-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0 20px 0;
+        }
+
+        .donut-chart-box {
+            position: relative;
+            width: 176px;
+            height: 176px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .donut-wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .donut-wheel::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 116px;
+            height: 116px;
+            background: #141724;
+            border-radius: 50%;
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.75);
+        }
+
+        .donut-center-info {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .donut-hanja {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--gold-bright);
+            line-height: 1.1;
+        }
+
+        .donut-label {
+            font-size: 11px;
+            color: rgba(210, 215, 230, 0.8);
+            line-height: 1.25;
+            margin-top: 2px;
+        }
+
+        .elements-stat-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .stat-col-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 4px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            position: relative;
+            border-bottom: 3px solid transparent;
+        }
+
+        .stat-col-item.wood  { border-bottom-color: #2ecc71; }
+        .stat-col-item.fire  { border-bottom-color: #e74c3c; }
+        .stat-col-item.earth { border-bottom-color: #f39c12; }
+        .stat-col-item.metal { border-bottom-color: #dfb738; }
+        .stat-col-item.water { border-bottom-color: #3498db; }
+
+        .stat-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 3px;
+        }
+
+        .stat-pct {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--gold-bright);
+        }
+
+        .stat-cnt {
+            font-size: 10px;
+            color: rgba(180, 185, 200, 0.6);
+        }
+
+        .elements-summary-text {
+            font-size: 12.5px;
+            color: rgba(220, 224, 240, 0.85);
+            background: rgba(212, 175, 55, 0.06);
+            border: 1px dashed rgba(212, 175, 55, 0.25);
+            border-radius: 8px;
+            padding: 10px 14px;
+            line-height: 1.6;
+            word-break: keep-all;
+            margin-top: auto;
+        }
+
+        /* 5) 第二章 · 타고난 성향 (2x2 그리드) */
+        .nature-grid-2x2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .nature-card {
+            background: rgba(16, 20, 32, 0.88);
+            border: 1.2px solid rgba(212, 175, 55, 0.3);
+            border-radius: 14px;
+            padding: 22px 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nature-card:hover {
+            border-color: var(--gold-bright);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(212, 175, 55, 0.15);
+        }
+
+        .nature-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 2px;
+        }
+
+        .nature-num-badge {
+            width: 26px;
+            height: 26px;
+            background: linear-gradient(135deg, #b7151b 0%, #7e0a0e 100%);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 800;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+        }
+
+        .nature-card-title {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 17px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        .nature-card-desc {
+            font-size: 13.5px;
+            color: rgba(220, 224, 240, 0.82);
+            line-height: 1.7;
+            margin: 0;
+            word-break: keep-all;
+        }
+
+        /* 6) 돈은 어디로 새고, 인연은 왜 반복될까 (4열 현실 실전 카드) */
+        .reality-title {
+            font-size: 21px !important;
+            color: #ffffff;
+        }
+
+        .reality-grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+
+        .reality-card {
+            background: rgba(16, 20, 32, 0.9);
+            border: 1.2px solid rgba(212, 175, 55, 0.32);
+            border-radius: 14px;
+            padding: 20px 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: var(--transition-smooth);
+        }
+
+        .reality-card:hover {
+            border-color: var(--gold-bright);
+            transform: translateY(-2px);
+        }
+
+        .reality-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .reality-icon-circle {
+            font-size: 18px;
+        }
+
+        .reality-cat-badge {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--gold-bright);
+            background: rgba(212, 175, 55, 0.12);
+            padding: 3px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .reality-card-h4 {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 16px;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .reality-card-p {
+            font-size: 13px;
+            color: rgba(220, 224, 240, 0.82);
+            line-height: 1.65;
+            margin: 0;
+            word-break: keep-all;
+        }
+
+        /* 7) 심층 운명서 페이월 및 전문 섹션 */
+        .chapter-paywall-report {
+            position: relative;
+            margin-top: 36px;
+            margin-bottom: 24px;
+        }
+
+        .paywall-boundary-line {
+            text-align: center;
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .paywall-boundary-line::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.45), transparent);
+        }
+
+        .boundary-text {
+            position: relative;
+            display: inline-block;
+            padding: 0 18px;
+            background: #0f121d;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--gold-bright);
+            letter-spacing: 1px;
+        }
+
+        .paywall-teaser-container {
+            position: relative;
+            border-radius: 18px;
+            background: rgba(16, 20, 32, 0.95);
+            border: 1.5px solid rgba(212, 175, 55, 0.45);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), inset 0 0 24px rgba(212, 175, 55, 0.06);
+            overflow: hidden;
+            padding: 32px 24px;
+        }
+
+        .paywall-lock-banner {
+            background: linear-gradient(180deg, rgba(28, 33, 50, 0.92) 0%, rgba(18, 21, 33, 0.97) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            border-radius: 14px;
+            padding: 28px 22px;
+            text-align: center;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+        }
+
+        .lock-icon-wrap {
+            font-size: 32px;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.4));
+        }
+
+        .lock-banner-title {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 10px;
+            letter-spacing: -0.3px;
+        }
+
+        .lock-banner-desc {
+            font-size: 14px;
+            color: rgba(220, 224, 240, 0.85);
+            line-height: 1.68;
+            max-width: 620px;
+            margin: 0 auto 22px auto;
+            word-break: keep-all;
+        }
+
+        .btn-unlock-inline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 34px;
+            background: linear-gradient(135deg, #dfb738 0%, #b88e1a 100%);
+            color: #0c0e17;
+            font-size: 16px;
+            font-weight: 800;
+            border: 1px solid #ffea88;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(223, 183, 56, 0.35);
+            transition: all 0.25s ease;
+        }
+
+        .btn-unlock-inline:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(223, 183, 56, 0.5);
+            filter: brightness(1.08);
+        }
+
+        /* 🌟 [가독성 혁신] 심층 운명서 매거진 스타일 챕터 카드 & 타이포그래피 시스템 */
+        .result-deep-report {
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            color: #dce1ee;
+            font-size: 15.5px;
+            line-height: 1.88;
+            letter-spacing: -0.25px;
+            transition: all 0.5s ease;
+        }
+
+        /* 챕터 카드 (개별 섹션 카드뷰) */
+        .deep-chapter-card {
+            background: linear-gradient(180deg, rgba(20, 25, 38, 0.94) 0%, rgba(14, 18, 28, 0.98) 100%);
+            border: 1.2px solid rgba(212, 175, 55, 0.32);
+            border-radius: 18px;
+            padding: 32px 28px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .deep-chapter-card:hover {
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.52);
+        }
+
+        /* 챕터 헤더 */
+        .deep-card-header {
+            margin-bottom: 22px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            position: relative;
+        }
+
+        .deep-card-header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 70px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--gold-bright), transparent);
+        }
+
+        .deep-chapter-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1.8px;
+            color: var(--gold-bright);
+            background: rgba(212, 175, 55, 0.12);
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            border: 1px solid rgba(212, 175, 55, 0.28);
+        }
+
+        .deep-card-title {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 21px;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            line-height: 1.35;
+            margin: 0;
+            letter-spacing: -0.3px;
+        }
+
+        .deep-card-title .card-icon {
+            font-size: 22px;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+        }
+
+        .deep-card-title .card-tag {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(220, 225, 240, 0.75);
+            background: rgba(255, 255, 255, 0.06);
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-family: 'Pretendard', sans-serif;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 핵심 은유 명언 박스 (Lead Quote Box) */
+        .lead-quote-box {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(139, 16, 20, 0.08) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.38);
+            border-radius: 12px;
+            padding: 18px 24px;
+            margin: 18px 0 24px 0;
+            text-align: center;
+            font-family: 'Noto Serif KR', serif;
+            font-size: 16.5px;
+            font-weight: 700;
+            color: #fff2cc;
+            line-height: 1.65;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), inset 0 0 16px rgba(212, 175, 55, 0.06);
+            word-break: keep-all;
+        }
+
+        .lead-quote-box .quote-mark {
+            color: var(--gold-bright);
+            font-size: 18px;
+            padding: 0 3px;
+            opacity: 0.8;
+        }
+
+        /* 본문 문단 스타일 */
+        .deep-card-body p {
+            font-size: 15.5px;
+            line-height: 1.9;
+            color: #dbe0ee;
+            margin-bottom: 20px;
+            word-break: keep-all;
+            letter-spacing: -0.2px;
+        }
+
+        .deep-card-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 키워드 하이라이트 (골드 앰버) */
+        .deep-card-body strong,
+        .result-deep-report strong,
+        strong.hl-keyword {
+            color: #ffd966 !important;
+            font-weight: 700 !important;
+            background: rgba(255, 217, 102, 0.12);
+            padding: 1px 6px;
+            border-radius: 4px;
+            border-bottom: 1.5px solid rgba(255, 217, 102, 0.45);
+        }
+
+        /* 처방전 / 개운법 / 솔루션 골든 콜아웃 박스 */
+        .solution-callout-box {
+            background: linear-gradient(135deg, rgba(28, 34, 52, 0.96) 0%, rgba(18, 22, 34, 0.98) 100%);
+            border: 1.2px solid rgba(212, 175, 55, 0.42);
+            border-left: 5px solid var(--gold-bright);
+            border-radius: 12px;
+            padding: 22px 24px;
+            margin: 26px 0 16px 0;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.38);
+        }
+
+        .callout-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed rgba(212, 175, 55, 0.28);
+        }
+
+        .callout-icon {
+            font-size: 20px;
+            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+        }
+
+        .callout-title {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 16.5px;
+            font-weight: 800;
+            color: #ffea88;
+            margin: 0;
+            letter-spacing: -0.2px;
+        }
+
+        .callout-body {
+            font-size: 14.8px;
+            line-height: 1.82;
+            color: #e5e9f4;
+        }
+
+        .callout-body p {
+            margin-bottom: 12px;
+        }
+
+        .callout-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        .callout-body ul, .callout-sub-list ul {
+            list-style: none !important;
+            padding-left: 0 !important;
+            margin: 10px 0 0 0 !important;
+        }
+
+        .callout-body li, .callout-sub-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 10px;
+            line-height: 1.75;
+            font-size: 14.5px;
+            color: #e2e7f4;
+        }
+
+        .callout-body li::before, .callout-sub-list li::before {
+            content: '◆';
+            position: absolute;
+            left: 0;
+            top: 1px;
+            color: var(--gold-bright);
+            font-size: 10px;
+        }
+
+        /* 추천 항목 넘버링 카드 (1., 2., 3. 리스트) */
+        .recommend-list {
+            list-style: none !important;
+            padding: 0 !important;
+            margin: 18px 0 !important;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .recommend-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(212, 175, 55, 0.22);
+            border-radius: 12px;
+            padding: 16px 18px;
+            transition: var(--transition-smooth);
+        }
+
+        .recommend-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(212, 175, 55, 0.45);
+            transform: translateX(4px);
+        }
+
+        .recommend-item .item-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            background: linear-gradient(135deg, #dfb738 0%, #b88e1a 100%);
+            color: #0c0e17;
+            font-size: 12.5px;
+            font-weight: 900;
+            border-radius: 7px;
+            flex-shrink: 0;
+            margin-top: 2px;
+            box-shadow: 0 2px 8px rgba(223, 183, 56, 0.35);
+        }
+
+        .recommend-item .item-content {
+            font-size: 14.8px;
+            line-height: 1.75;
+            color: #dce1ee;
+            flex: 1;
+        }
+
+        /* 일반 리스트 불릿 스타일 */
+        .deep-card-body ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 16px 0;
+        }
+
+        .deep-card-body ul > li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 12px;
+            line-height: 1.8;
+            font-size: 15px;
+            color: #dce1ee;
+        }
+
+        .deep-card-body ul > li::before {
+            content: '•';
+            position: absolute;
+            left: 4px;
+            top: -1px;
+            color: var(--gold-bright);
+            font-size: 16px;
+        }
+
+        .result-deep-report.teaser-mode {
+            max-height: 140px !important;
+            overflow: hidden !important;
+            filter: blur(6px) !important;
+            -webkit-filter: blur(6px) !important;
+            opacity: 0.3 !important;
+            user-select: none !important;
+            -webkit-user-select: none !important;
+            pointer-events: none !important;
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 85%) !important;
+            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 85%) !important;
+        }
+
+        /* 8) 하단 액션 버튼 영역 (복사 / 다시하기) */
+        .result-footer-actions {
+            margin-top: 36px;
+            margin-bottom: 110px;
+            display: flex;
+            gap: 14px;
+            width: 100%;
+        }
+
+        .action-btn {
+            flex: 1;
+            height: 52px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn.secondary {
+            background: rgba(24, 28, 44, 0.9);
+            color: #eae3d2;
+            border: 1px solid rgba(212, 175, 55, 0.38);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-btn.secondary:hover {
+            background: rgba(34, 40, 62, 0.98);
+            border-color: var(--gold-bright);
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #a7181e 0%, var(--primary-red) 100%);
+            color: #ffffff;
+            border: 1px solid rgba(255, 120, 120, 0.3);
+            box-shadow: 0 4px 18px var(--primary-red-glow);
+        }
+
+        .action-btn.primary:hover {
+            background: linear-gradient(135deg, #bd1d24 0%, #941116 100%);
+            box-shadow: 0 6px 24px rgba(167, 24, 30, 0.55);
+            transform: translateY(-2px);
+        }
+
+        /* 9) 하단 고정 스티키 페이월 바 (Floating Sticky Bar) */
+        .sticky-paywall-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120%);
+            width: min(840px, calc(100% - 32px));
+            background: rgba(14, 17, 26, 0.97);
+            border: 1.5px solid rgba(212, 175, 55, 0.6);
+            border-radius: 16px;
+            padding: 13px 22px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(212, 175, 55, 0.18);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+            box-sizing: border-box;
+        }
+
+        .sticky-paywall-bar.visible {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .sticky-bar-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .sticky-left-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .sticky-product-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(220, 225, 240, 0.9);
+        }
+
+        .sticky-price-group {
+            display: flex;
+            align-items: baseline;
+            gap: 7px;
+        }
+
+        .price-origin {
+            font-size: 12px;
+            color: rgba(160, 165, 180, 0.6);
+            text-decoration: line-through;
+        }
+
+        .price-discount {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #e74c3c;
+        }
+
+        .price-final {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--gold-bright);
+            font-family: 'Pretendard', sans-serif;
+        }
+
+        .price-unit {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .price-sub {
+            font-size: 11px;
+            color: rgba(180, 185, 200, 0.6);
+        }
+
+        .sticky-cta-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #dfb738 0%, #b88e1a 100%);
+            color: #0c0e17;
+            font-size: 15px;
+            font-weight: 800;
+            border: 1px solid #ffea88;
+            border-radius: 10px;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 4px 16px rgba(223, 183, 56, 0.35);
+            transition: all 0.22s ease;
+        }
+
+        .sticky-cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(223, 183, 56, 0.5);
+            filter: brightness(1.08);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* =========================================
+           6. 모바일 중심(Mobile-First) 세로 적층(Stacking) 최적화
+        ========================================= */
+        @media (max-width: 850px) {
+            .layout-wrapper { display: block !important; height: auto !important; min-height: 100vh; }
+            .left-visual { width: 100% !important; min-height: auto !important; flex: none !important; border: none !important; background: transparent !important; }
+            .right-area { width: 100% !important; flex: none !important; height: auto !important; overflow-y: visible !important; padding: 20px 15px 60px 15px !important; background: transparent !important; }
+
+            html, body {
+                height: auto !important;
+                min-height: 100% !important;
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
+            }
+
+            .left-visual {
+                padding: 48px 20px 40px 20px !important;
+                text-align: center !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+                align-items: center !important;
+                box-sizing: border-box !important;
+            }
+
+            .visual-badge {
+                margin: 0 auto 16px auto !important;
+            }
+
+            .visual-center {
+                max-width: 100% !important;
+                margin: 0 auto !important;
+            }
+
+            .visual-center h1 {
+                font-size: 26px !important;
+                line-height: 1.38 !important;
+                margin-bottom: 12px !important;
+            }
+
+            .visual-center p {
+                font-size: 14.5px !important;
+                line-height: 1.65 !important;
+                max-width: 420px !important;
+                margin: 0 auto !important;
+            }
+
+            .visual-footer {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                justify-content: center !important;
+                gap: 8px 14px !important;
+                margin-top: 22px !important;
+                font-size: 12px !important;
+                color: rgba(255, 255, 255, 0.65) !important;
+            }
+
+            /* 아래쪽(Bottom): 이미지 바로 밑에 위치하며, 아래로 스크롤하여 폼을 볼 수 있는 Normal Flow */
+            .right-area {
+                width: 100% !important;
+                flex: none !important;
+                height: auto !important;
+                overflow-y: visible !important;
+                padding: 30px 15px !important;
+                box-sizing: border-box !important;
+                display: block !important;
+            }
+
+            .form-container {
+                width: 100% !important;
+                max-width: 460px !important;
+                margin: 0 auto !important;
+            }
+
+            .paper-card {
+                padding: 28px 18px !important;
+                border-radius: var(--radius-md) !important;
+                box-sizing: border-box !important;
+            }
+
+            .form-header h2 {
+                font-size: 22px;
+            }
+
+            .input-field, select.input-field {
+                height: 52px;
+                font-size: 16px; /* iOS 자동 확대 방지 */
+            }
+
+            .date-inputs input {
+                font-size: 16px;
+            }
+
+            .toggle-label {
+                height: 46px;
+                font-size: 14.5px;
+            }
+
+            .submit-btn {
+                height: 56px;
+                font-size: 17px;
+            }
+
+            /* 🌟 결과 화면(result-mode) 모바일 최적화 */
+            .layout-wrapper.result-mode {
+                display: block !important;
+            }
+
+            .layout-wrapper.result-mode .left-visual {
+                display: none !important;
+            }
+
+            .layout-wrapper.result-mode .right-area {
+                padding: 20px 14px 100px 14px !important;
+                overflow-y: visible !important;
+            }
+
+            #result-screen {
+                max-width: 100% !important;
+                width: 100% !important;
+                margin: 0 auto !important;
+                box-sizing: border-box !important;
+            }
+
+            .result-hero-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .result-hero-quote {
+                text-align: left;
+                max-width: 100%;
+                border-right: none;
+                border-left: 3px solid var(--gold-bright);
+            }
+
+            .user-meta-chips-bar {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px !important;
+            }
+
+            .meta-chip {
+                padding: 8px 12px !important;
+                gap: 8px !important;
+            }
+
+            .chip-icon {
+                width: 28px !important;
+                height: 28px !important;
+                font-size: 13px !important;
+            }
+
+            .chip-val {
+                font-size: 12.5px !important;
+            }
+
+            .verdict-card {
+                padding: 24px 18px !important;
+            }
+
+            .verdict-headline {
+                font-size: 21px !important;
+            }
+
+            .chapter-bazi-grid {
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
+            }
+
+            .chapter-card {
+                padding: 20px 16px !important;
+            }
+
+            .hanja-main {
+                font-size: 22px !important;
+            }
+
+            .nature-grid-2x2 {
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+            }
+
+            .nature-card {
+                padding: 18px 16px !important;
+            }
+
+            .reality-grid-4 {
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+            }
+
+            .reality-card {
+                padding: 16px 14px !important;
+            }
+
+            .paywall-teaser-container {
+                padding: 22px 16px !important;
+            }
+
+            .deep-chapter-card {
+                padding: 22px 16px !important;
+                border-radius: 14px !important;
+            }
+
+            .deep-card-title {
+                font-size: 18.5px !important;
+            }
+
+            .deep-card-body p {
+                font-size: 14.8px !important;
+                line-height: 1.8 !important;
+            }
+
+            .solution-callout-box {
+                padding: 16px 16px !important;
+            }
+
+            .recommend-item {
+                padding: 12px 14px !important;
+            }
+
+            .lock-banner-title {
+                font-size: 18px !important;
+            }
+
+            .sticky-paywall-bar {
+                width: calc(100% - 20px) !important;
+                bottom: 12px !important;
+                padding: 10px 14px !important;
+                border-radius: 14px !important;
+            }
+
+            .sticky-bar-inner {
+                gap: 10px !important;
+            }
+
+            .sticky-product-title {
+                font-size: 11px !important;
+            }
+
+            .price-origin {
+                display: none;
+            }
+
+            .price-final {
+                font-size: 17px !important;
+            }
+
+            .sticky-cta-btn {
+                padding: 10px 16px !important;
+                font-size: 14px !important;
+            }
+
+            .result-footer-actions {
+                flex-direction: column !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="layout-wrapper">
+    <!-- 왼쪽 비주얼 영역 (신비로운 명리학 테마) -->
+    <aside class="left-visual">
+        <div class="visual-badge">
+            <span>✦</span> 천기누설 (天氣漏洩)
+        </div>
+
+        <div class="visual-center">
+            <h1>당신의 사주팔자 속<br><span>아직 깨어나지 않은</span><br>운명의 흐름을 봅니다</h1>
+            <p>생년월일시 네 기둥(四柱)에 새겨진 오행의 조화와 기운을 풀이하여, 타고난 잠재력과 다가올 인생의 황금기를 밝혀드립니다.</p>
+        </div>
+
+        <div class="visual-footer">
+            <span>✦ 정통 명리학(만세력) 기반</span>
+            <span>✦ AI 심층 카운슬링</span>
+            <span>✦ 100% 비공개 보안</span>
+        </div>
+    </aside>
+
+    <!-- 오른쪽 인터랙션 영역 -->
+    <main class="right-area">
+        
+        <div class="form-container">
+            
+            <!-- 입력 폼 화면 -->
+            <div id="form-screen" class="paper-card">
+                <div class="form-header">
+                    <span class="form-subtitle">PERSONAL DESTINY READING</span>
+                    <h2>당신의 명식을 펼쳐보세요</h2>
+                    <p class="sub-desc">정확한 생년월일시를 입력하면 맞춤형 심층 운명서가 작성됩니다.</p>
+                </div>
+
+                <!-- 1. 생년월일 -->
+                <div class="input-group">
+                    <label>
+                        <span>생년월일</span>
+                        <span class="badge req">필수</span>
+                    </label>
+                    <div class="date-inputs">
+                        <div class="date-input-wrap">
+                            <input type="number" id="year" class="input-field" placeholder="1995" value="1995" min="1920" max="2030">
+                            <span class="unit">년</span>
+                        </div>
+                        <div class="date-input-wrap">
+                            <input type="number" id="month" class="input-field" placeholder="08" value="08" min="1" max="12">
+                            <span class="unit">월</span>
+                        </div>
+                        <div class="date-input-wrap">
+                            <input type="number" id="day" class="input-field" placeholder="20" value="20" min="1" max="31">
+                            <span class="unit">일</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 성별 & 달력 구분 (토글 버튼) -->
+                <div style="display: flex; gap: 12px; margin-bottom: 22px;">
+                    <div style="flex: 1;">
+                        <label style="display: block; font-size: 13.5px; color: #3b3632; margin-bottom: 8px; font-weight: 600;">성별</label>
+                        <div class="toggle-group">
+                            <input type="radio" id="gender-m" name="gender" value="M" class="toggle-radio" checked>
+                            <label for="gender-m" class="toggle-label">남성</label>
+                            <input type="radio" id="gender-f" name="gender" value="F" class="toggle-radio">
+                            <label for="gender-f" class="toggle-label">여성</label>
+                        </div>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display: block; font-size: 13.5px; color: #3b3632; margin-bottom: 8px; font-weight: 600;">달력 구분</label>
+                        <div class="toggle-group">
+                            <input type="radio" id="cal-solar" name="calendar" value="양력" class="toggle-radio" checked>
+                            <label for="cal-solar" class="toggle-label">양력</label>
+                            <input type="radio" id="cal-lunar" name="calendar" value="음력" class="toggle-radio">
+                            <label for="cal-lunar" class="toggle-label">음력</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. 태어난 시간 -->
+                <div class="input-group">
+                    <label>
+                        <span>태어난 시간</span>
+                        <span class="badge">시주(時柱) 정밀 분석</span>
+                    </label>
+                    <div class="select-wrapper">
+                        <select id="birth_time" class="input-field">
+                            <option value="12:00">시간 모름 (삼주 기준 풀이)</option>
+                            <option value="00:30">자시 (子時) · 23:30 ~ 01:30</option>
+                            <option value="02:30">축시 (丑時) · 01:30 ~ 03:30</option>
+                            <option value="04:30">인시 (寅時) · 03:30 ~ 05:30</option>
+                            <option value="06:30">묘시 (卯時) · 05:30 ~ 07:30</option>
+                            <option value="08:30">진시 (辰時) · 07:30 ~ 09:30</option>
+                            <option value="10:30" selected>사시 (巳時) · 09:30 ~ 11:30</option>
+                            <option value="12:30">오시 (午時) · 11:30 ~ 13:30</option>
+                            <option value="14:30">미시 (未時) · 13:30 ~ 15:30</option>
+                            <option value="16:30">신시 (申時) · 15:30 ~ 17:30</option>
+                            <option value="18:30">유시 (酉時) · 17:30 ~ 19:30</option>
+                            <option value="20:30">술시 (戌時) · 19:30 ~ 21:30</option>
+                            <option value="22:30">해시 (亥時) · 21:30 ~ 23:30</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 4. 이름 (호칭) -->
+                <div class="input-group">
+                    <label>
+                        <span>사용자 성함</span>
+                        <span class="badge">선택</span>
+                    </label>
+                    <input type="text" id="name" class="input-field" placeholder="미입력 시 '사용자'로 작성됩니다" value="홍길동" maxlength="20">
+                </div>
+
+                <!-- 5. 약관 동의 -->
+                <label class="checkbox-group" for="agree">
+                    <input type="checkbox" id="agree" checked>
+                    <span>[필수] 개인 맞춤형 사주 분석 생성을 위한 명식 정보 처리에 동의합니다.</span>
+                </label>
+
+                <!-- 6. 제출 버튼 -->
+                <button type="button" id="submit-btn" class="submit-btn" onclick="startReading()">
+                    <span>🔮 나의 사주 무료로 펼치기</span>
+                </button>
+            </div>
+        </div> 
+
+        <!-- 사주 결과 화면 (독립 컨테이너, 데스크탑 최대 880px) -->
+        <div id="result-screen">
+            
+            <!-- 1. 결과 상단 헤더 & 명언 (Reference 3 상단) -->
+            <header class="result-hero-header">
+                <div class="result-hero-main">
+                    <h1 class="result-hero-title">무료 사주 결과</h1>
+                    <p class="result-hero-sub">당신의 사주를 바탕으로 분석한 결과입니다.<br>지금, 당신의 타고난 기질과 현재의 운 흐름을 확인해 보세요.</p>
+                </div>
+                <div class="result-hero-quote">
+                    <span class="quote-text">“운명을 정하는 것이 아니라, 더 나은 선택을 위한 지도입니다.”</span>
+                    <span class="quote-author">― 심층 운명 연구소</span>
+                </div>
+            </header>
+
+            <!-- 2. 유저 정보 4개 칩 바 (이름, 생년월일, 출생시간, 성별) -->
+            <div class="user-meta-chips-bar" id="user-meta-chips-bar">
+                <div class="meta-chip">
+                    <div class="chip-icon">👤</div>
+                    <div class="chip-content">
+                        <span class="chip-label">이름</span>
+                        <span class="chip-val" id="res-user-name">홍길동</span>
+                    </div>
+                </div>
+                <div class="meta-chip">
+                    <div class="chip-icon">📅</div>
+                    <div class="chip-content">
+                        <span class="chip-label">생년월일</span>
+                        <span class="chip-val" id="res-user-birth">1995.08.20 (양력)</span>
+                    </div>
+                </div>
+                <div class="meta-chip">
+                    <div class="chip-icon">🕒</div>
+                    <div class="chip-content">
+                        <span class="chip-label">출생시간</span>
+                        <span class="chip-val" id="res-user-time">사시 (巳時)</span>
+                    </div>
+                </div>
+                <div class="meta-chip">
+                    <div class="chip-icon">⚥</div>
+                    <div class="chip-content">
+                        <span class="chip-label">성별</span>
+                        <span class="chip-val" id="res-user-gender">남성</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. 第一章 당신의 사주 한마디 (와이드 수묵화/동양화 풍 카드) -->
+            <section class="section-chapter chapter-one" id="chapter-one-area">
+                <div class="verdict-card">
+                    <div class="chapter-tag-wrap">
+                        <span class="chapter-tag">第 一 章</span>
+                        <span class="chapter-tag-title">당신의 사주 한마디</span>
+                    </div>
+                    <h2 class="verdict-headline" id="verdict-headline">“자신만의 세계를 빚어내는 신념의 탐구자”</h2>
+                    <p class="verdict-lead" id="verdict-lead">속물적인 계산과 타협에 영혼을 팔지 않으며, 고독 속에서도 진정한 자아와 순수한 이상의 가치를 빚어내는 신념의 탐구자</p>
+                    <div class="verdict-desc-box" id="verdict-desc-box">
+                        <p>세상의 속물적인 계산과 타협에 영혼을 쉽게 내어주지 않으며, 고독 속에서도 진정한 자아와 순수한 이상의 가치를 묵묵히 빚어내는 삶의 방식을 고수합니다.</p>
+                        <p>남들이 눈앞의 이익을 좇아 소신을 바꿀 때, 당신은 홀로 깊은 방에 앉아 세상에 전할 진실한 울림을 길어 올리고 있습니다.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. 사주 명식(四柱) & 오행 분포 (좌우 2열 그리드) -->
+            <section class="section-chapter chapter-bazi-grid">
+                <!-- 좌측: 사주 명식 (四柱) -->
+                <div class="chapter-card bazi-card">
+                    <div class="card-inner-header">
+                        <h3 class="bazi-card-title">사주 명식 <span class="hanja">(四柱)</span></h3>
+                        <p class="bazi-card-sub">태어난 순간을 담은 네 기둥입니다.</p>
+                    </div>
+                    <div class="pillars-table-wrapper">
+                        <table class="pillars-table" id="pillars-table">
+                            <thead>
+                                <tr>
+                                    <th>년주<br><span class="p-sub">태어난 해</span></th>
+                                    <th>월주<br><span class="p-sub">태어난 달</span></th>
+                                    <th class="day-pillar-th">일주<br><span class="p-sub">나의 중심</span></th>
+                                    <th>시주<br><span class="p-sub">태어난 시간</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="pillars-tbody">
+                                <!-- JS 렌더링 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pillars-footer-notice">
+                        <span class="notice-icon">⚏</span>
+                        <span>일주의 위 글자가 나를 나타내는 <strong>'일간(日干)'</strong>이자 타고난 본원입니다.</span>
+                    </div>
+                </div>
+
+                <!-- 우측: 오행 분포 (원형 도넛 게이지 + 5개 기운 스탯) -->
+                <div class="chapter-card elements-card">
+                    <div class="card-inner-header">
+                        <h3 class="bazi-card-title">오행 분포</h3>
+                        <p class="bazi-card-sub">당신의 사주에 담긴 다섯 기운의 균형입니다.</p>
+                    </div>
+                    
+                    <div class="elements-donut-wrap">
+                        <div class="donut-chart-box">
+                            <div class="donut-wheel" id="donut-wheel"></div>
+                            <div class="donut-center-info">
+                                <span class="donut-hanja">五行</span>
+                                <span class="donut-label">나를 이루는<br>다섯 기운</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="elements-stat-row" id="elements-stat-row">
+                        <!-- 목, 화, 토, 금, 수 스탯 JS 바인딩 -->
+                    </div>
+                    <div class="elements-summary-text" id="elements-summary-text">
+                        사주 속 오행의 기운이 조화롭게 자리잡고 있어 깊은 통찰력과 잠재력을 지니고 있습니다.
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. 第二章 타고난 성향 (2x2 그리드) -->
+            <section class="section-chapter chapter-nature">
+                <div class="chapter-title-bar">
+                    <span class="chapter-badge">第二章</span>
+                    <h2 class="chapter-main-title">타고난 성향</h2>
+                    <span class="chapter-sub-desc">당신의 사주에 나타난 주요 성향입니다.</span>
+                </div>
+                <div class="nature-grid-2x2" id="nature-grid-2x2">
+                    <!-- 4개 성향 카드 (영혼의 결, 고독한 방, 타협 거부, 진심의 무게) -->
+                </div>
+            </section>
+
+            <!-- 6. 돈은 어디로 새고, 인연은 왜 반복될까 (4열 현실 실전 카드 그리드) -->
+            <section class="section-chapter chapter-reality">
+                <div class="chapter-title-bar">
+                    <h2 class="chapter-main-title reality-title">돈은 어디로 새고, 인연은 왜 반복될까</h2>
+                    <span class="chapter-sub-desc">당신의 사주가 현실에서 어떻게 드러나는지 확인해 보세요.</span>
+                </div>
+                <div class="reality-grid-4" id="reality-grid-4">
+                    <!-- 재물운, 인연운, 직업운, 생활과 균형 4개 카드 -->
+                </div>
+            </section>
+
+            <!-- 7. 심층 운명서 페이월 및 전문 섹션 -->
+            <section class="section-chapter chapter-paywall-report">
+                <div class="paywall-boundary-line">
+                    <span class="boundary-text">― 당신의 운명은 지금부터, 더욱 깊어집니다 ―</span>
+                </div>
+
+                <div class="paywall-teaser-container" id="paywall-teaser-container">
+                    <div class="paywall-lock-banner" id="paywall-lock-banner">
+                        <div class="lock-icon-wrap">🔒</div>
+                        <h3 class="lock-banner-title">무료 사주에서는 여기까지 확인할 수 있습니다.</h3>
+                        <p class="lock-banner-desc">앞으로의 운을 고민하는 당신에게 지금 가장 필요한 것은 막연한 불안감 대신 자신의 본질에 맞는 구체적인 생존 전략을 세우는 것입니다. 다가오는 10년 대운 속에서 이 신념의 탐구자 기질을 어떻게 무기로 활용할지 그 해답을 깊이 있게 열어보려 합니다.</p>
+                        <button type="button" class="btn-unlock-inline" onclick="handlePaywallClick()">
+                            <span>심층 운명서 열기 🔒</span>
+                        </button>
+                    </div>
+
+                    <!-- 블러 티저 본문 (클릭 시 티저 해제되어 선명 노출) -->
+                    <div id="ai-content" class="result-deep-report teaser-mode">
+                        <!-- AI 전체 본문 & 대운/개운법 -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 하단 액션 버튼 (공유 / 다시하기) -->
+            <div class="result-footer-actions">
+                <button type="button" class="action-btn secondary" onclick="copyResult()">
+                    <span>📋 리포트 전문 복사</span>
+                </button>
+                <button type="button" class="action-btn primary" onclick="resetForm()">
+                    <span>✨ 다른 사주 읽어보기</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 🌟 스크롤 따라다니는 하단 스티키 결제 바 (Sticky Floating Bar) -->
+        <aside class="sticky-paywall-bar" id="sticky-paywall-bar">
+            <div class="sticky-bar-inner">
+                <div class="sticky-left-info">
+                    <div class="sticky-product-title">나의 평생 심층 운명서</div>
+                    <div class="sticky-price-group">
+                        <span class="price-origin">29,000원</span>
+                        <span class="price-discount">80% 할인 중</span>
+                        <span class="price-final">5,900<span class="price-unit">원</span></span>
+                        <span class="price-sub">· 1회 결제</span>
+                    </div>
+                </div>
+                <button type="button" class="sticky-cta-btn" onclick="handlePaywallClick()">
+                    <span>심층 운명서 열기 🔒</span>
+                </button>
+            </div>
+        </aside>
+        
+        <!-- 로딩 오버레이 화면 (3D 고서 책장 넘김 & 등불 서재 연출) -->
+        <div id="loading-screen">
+            
+            <div class="loading-scene-wrap">
+                <!-- 촛불 등불 -->
+                <div class="candle-flame-wrap">
+                    <div class="candle-flame"></div>
+                    <div class="candle-wick"></div>
+                    <div class="candle-body"></div>
+                </div>
+
+                <!-- 🌟 [핵심] 3D 고서 책장 넘김 (Ancient Book Page-Flip) -->
+                <div class="ancient-book-stage">
+                    <div class="book-base">
+                        <!-- 책 왼쪽 페이지 (기저) -->
+                        <div class="book-cover left">
+                            <div class="book-inner-parchment">
+                                <span class="parchment-symbol">命</span>
+                                <div class="parchment-lines">
+                                    <div class="pline"></div>
+                                    <div class="pline"></div>
+                                    <div class="pline short"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="book-spine-gold"></div>
+
+                        <!-- 책 오른쪽 페이지 (기저) -->
+                        <div class="book-cover right">
+                            <div class="book-inner-parchment">
+                                <span class="parchment-symbol">運</span>
+                                <div class="parchment-lines">
+                                    <div class="pline"></div>
+                                    <div class="pline"></div>
+                                    <div class="pline short"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 넘어가는 책장들 (오른쪽에서 왼쪽으로 부드럽게 뒤집힘) -->
+                        <div class="turning-leaf leaf-1">
+                            <div class="leaf-face leaf-front">
+                                <span class="leaf-symbol">天</span>
+                                <div class="leaf-lines">
+                                    <div class="leaf-line"></div>
+                                    <div class="leaf-line short"></div>
+                                    <div class="leaf-line"></div>
+                                </div>
+                            </div>
+                            <div class="leaf-face leaf-back">
+                                <span class="leaf-symbol">地</span>
+                                <div class="leaf-lines">
+                                    <div class="leaf-line"></div>
+                                    <div class="leaf-line"></div>
+                                    <div class="leaf-line short"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="turning-leaf leaf-2">
+                            <div class="leaf-face leaf-front">
+                                <span class="leaf-symbol">道</span>
+                                <div class="leaf-lines">
+                                    <div class="leaf-line"></div>
+                                    <div class="leaf-line"></div>
+                                    <div class="leaf-line short"></div>
+                                </div>
+                            </div>
+                            <div class="leaf-face leaf-back">
+                                <span class="leaf-symbol">氣</span>
+                                <div class="leaf-lines">
+                                    <div class="leaf-line short"></div>
+                                    <div class="leaf-line"></div>
+                                    <div class="leaf-line"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 시네마틱 텍스트 (Reference 2) -->
+            <div class="loading-narrative">
+                <h2 class="loading-story-title">한 장씩 펼쳐지는 당신만의 이야기</h2>
+                <p class="loading-story-subtitle" id="step-title">사주 명식을 펼치고 있습니다...</p>
+            </div>
+
+            <!-- 🌟 AI 실시간 분석 로그(Log) 터미널 -->
+            <div class="loading-logs-wrapper">
+                <div class="loading-logs-header">
+                    <span class="log-indicator"></span>
+                    <span class="log-header-text">AI REAL-TIME ENGINE</span>
+                </div>
+                <div class="loading-logs" id="loading-logs">
+                    <!-- JS로 실시간 로그가 한 줄씩 쌓임 -->
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar" id="p-bar"></div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- =========================================
+   7. 자바스크립트 로직 (마크다운 파싱 & UI 인터랙션)
+========================================= -->
+<script>
+    // Marked 옵션 사전 설정 (GFM 활성화, 자동 줄바꿈 활성화)
+    if (typeof marked !== 'undefined') {
+        marked.use({
+            gfm: true,
+            breaks: true,
+            headerIds: false,
+            mangle: false
+        });
+    }
+
+    /**
+     * 마크다운 텍스트를 안전한 HTML로 변환하는 헬퍼 함수
+     */
+    function parseMarkdownToHtml(rawMarkdown) {
+        if (!rawMarkdown || typeof rawMarkdown !== 'string') return '';
+        let parsedHtml = '';
+        try {
+            if (typeof marked !== 'undefined' && typeof marked.parse === 'function') {
+                parsedHtml = marked.parse(rawMarkdown);
+            } else {
+                parsedHtml = rawMarkdown
+                    .replace(/\n\n/g, '</p><p>')
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            }
+        } catch (e) {
+            console.warn('Marked.parse error, using fallback:', e);
+            parsedHtml = rawMarkdown
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+        }
+        parsedHtml = parsedHtml.replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>');
+        parsedHtml = parsedHtml.replace(/<table>/g, '<div class="table-wrap"><table>');
+        parsedHtml = parsedHtml.replace(/<\/table>/g, '</table></div>');
+        return parsedHtml;
+    }
+
+    /**
+     * 🌟 [CRO & UX 최적화] 타사 레퍼런스 장점 재해석 5-Chapter 결과 렌더링 엔진
+     */
+    function renderStructuredSajuResult(apiData) {
+        if (!apiData) return;
+
+        const interpretation = apiData.interpretation || "";
+        const userInfo = apiData.user_info || {};
+        const pillarsDetail = apiData.pillars_detail || {};
+        const elementsCount = apiData.elements_count || {};
+        const dayMaster = apiData.day_master || "甲";
+
+        // 1. 유저 프로필 메타 칩 바 바인딩
+        const nameEl = document.getElementById('res-user-name');
+        const birthEl = document.getElementById('res-user-birth');
+        const timeEl = document.getElementById('res-user-time');
+        const genderEl = document.getElementById('res-user-gender');
+
+        if (nameEl) nameEl.textContent = userInfo.name || "사용자";
+        if (birthEl) birthEl.textContent = `${userInfo.birth_date || "1995.08.20"} (${userInfo.birth_type === '음력' ? '음력' : '양력'})`;
+        if (timeEl) timeEl.textContent = formatSajuTimeLabel(userInfo.birth_time || "10:30");
+        if (genderEl) genderEl.textContent = (userInfo.gender === 'F') ? "여성" : "남성";
+
+        // 2. 第一章: 당신의 사주 한마디 (와이드 수묵화풍 카드)
+        renderChapterOne(dayMaster, interpretation, userInfo.name);
+
+        // 3. 사주 명식 4기둥 표 (년주, 월주, 일주, 시주)
+        renderPillarsTable(pillarsDetail, dayMaster);
+
+        // 4. 오행 분포 원형 도넛 차트 & 5개 기운 스탯
+        renderElementsDonut(elementsCount);
+
+        // 5. 第二章: 타고난 성향 (2x2 그리드)
+        renderNatureCards(dayMaster, interpretation);
+
+        // 6. 돈은 어디로 새고, 인연은 왜 반복될까 (4열 실전 카드)
+        renderRealityCards(dayMaster, interpretation);
+
+        // 7. 심층 운명서 전문 & 페이월 래퍼
+        renderDeepReportContent(interpretation);
+
+        // 8. 하단 스티키 결제 바 노출 활성화
+        const stickyBar = document.getElementById('sticky-paywall-bar');
+        if (stickyBar) {
+            stickyBar.classList.add('visible');
+            const stickyBtn = stickyBar.querySelector('.sticky-cta-btn');
+            if (stickyBtn) {
+                stickyBtn.innerHTML = '<span>심층 운명서 열기 🔒</span>';
+            }
+        }
+    }
+
+    /**
+     * 시간 코드를 사주 시주 한글 명칭으로 변환
+     */
+    function formatSajuTimeLabel(timeStr) {
+        if (!timeStr || timeStr === "12:00") return "시간 모름 (삼주)";
+        const timeMap = {
+            "00:30": "자시 (子時)",
+            "02:30": "축시 (丑時)",
+            "04:30": "인시 (寅時)",
+            "06:30": "묘시 (卯時)",
+            "08:30": "진시 (辰時)",
+            "10:30": "사시 (巳時)",
+            "12:30": "오시 (午時)",
+            "14:30": "미시 (未時)",
+            "16:30": "신시 (申時)",
+            "18:30": "유시 (酉時)",
+            "20:30": "술시 (戌時)",
+            "22:30": "해시 (亥時)"
+        };
+        return timeMap[timeStr] || timeStr;
+    }
+
+    /**
+     * 第一章 사주 한마디 바인딩
+     */
+    function renderChapterOne(dayMaster, interpretation, userName) {
+        const headlineEl = document.getElementById('verdict-headline');
+        const leadEl = document.getElementById('verdict-lead');
+        const descBoxEl = document.getElementById('verdict-desc-box');
+
+        const headlines = {
+            "甲": {
+                title: "“우직한 신념으로 숲을 이루는 거목의 개척자”",
+                lead: "남들의 얕은 잔재주에 흔들리지 않으며, 뿌리 깊은 자아와 당당한 기상으로 목표를 쟁취하는 당당한 기질"
+            },
+            "乙": {
+                title: "“바위틈에서도 기어이 꽃을 피우는 생명력의 조율자”",
+                lead: "어떤 모진 비바람과 역경 속에서도 유연하게 적응하며 끝내 결실을 맺고야 마는 외유내강의 화초"
+            },
+            "丙": {
+                title: "“세상을 환하게 비추는 열정의 태양”",
+                lead: "가식이나 비겁함을 혐오하며, 뜨거운 열정과 투명한 진심으로 사람들의 마음을 움직이는 천생 리더"
+            },
+            "丁": {
+                title: "“어둠을 밝히며 온기를 전하는 등불의 지혜자”",
+                lead: "자신을 태워 주변을 따스하게 채우며, 보이지 않는 곳까지 세심하게 통찰하는 깊은 영혼의 소유자"
+            },
+            "戊": {
+                title: "“만물을 묵묵히 품어 안는 장엄한 대지의 수호자”",
+                lead: "가벼운 계산과 세파에 흔들리지 않는 묵직한 신뢰감으로 모든 이들의 의지가 되어주는 든든한 태산"
+            },
+            "己": {
+                title: "“풍요로운 결실을 길러내는 비옥한 전답의 조력자”",
+                lead: "속마음을 섣불리 드러내지 않으나 내실이 단단하고, 사람과 기회를 귀하게 가꾸어내는 탁월한 감각"
+            },
+            "庚": {
+                title: "“의리와 결단력으로 길을 내는 강철의 승부사”",
+                lead: "불의와 타협하지 않고 결단을 내려야 할 때 단칼에 매듭을 짓는 카리스마와 남다른 뚝심의 개척자"
+            },
+            "辛": {
+                title: "“자신만의 세계를 빚어내는 신념의 탐구자”",
+                lead: "속물적인 계산과 타협에 영혼을 팔지 않으며, 고독 속에서도 진정한 자아와 순수한 이상의 가치를 빚어내는 완벽주의자"
+            },
+            "壬": {
+                title: "“도도하게 흐르는 거대한 대양, 광활한 지혜의 전략가”",
+                lead: "모든 물길을 포용하며 유유히 흐르되, 한번 결심하면 누구도 막을 수 없는 웅장한 추진력의 승부사"
+            },
+            "癸": {
+                title: "“메마른 대지를 적시는 봄비, 총명한 영혼의 모사”",
+                lead: "사람의 마음을 소리 없이 파고드는 직관과 유연한 지혜로 위기를 기회로 바꾸는 타고난 감각가"
+            }
+        };
+
+        const item = headlines[dayMaster] || headlines["辛"];
+        if (headlineEl) headlineEl.textContent = item.title;
+        if (leadEl) leadEl.textContent = item.lead;
+
+        if (descBoxEl) {
+            descBoxEl.innerHTML = `
+                <p>세상의 속물적인 계산과 타협에 영혼을 쉽게 내어주지 않으며, 고독 속에서도 진정한 자아와 순수한 이상의 가치를 묵묵히 빚어내는 삶의 방식을 고수합니다.</p>
+                <p>남들이 눈앞의 이익을 좇아 소신을 바꿀 때, 당신은 홀로 깊은 방에 앉아 세상에 전할 진실한 울림을 길어 올리고 있습니다.</p>
+            `;
+        }
+    }
+
+    /**
+     * 사주 명식 4기둥 표 렌더링 (년주, 월주, 일주, 시주)
+     */
+    function renderPillarsTable(pillarsDetail, dayMaster) {
+        const tbody = document.getElementById('pillars-tbody');
+        if (!tbody) return;
+
+        // 기준 순서: 년주, 월주, 일주, 시주 (좌측 -> 우측)
+        const cols = [
+            pillarsDetail.year || { title: "년주", stem: { hanja: "辛", hangul: "신", element: "금" }, branch: { hanja: "未", hangul: "미", element: "토" } },
+            pillarsDetail.month || { title: "월주", stem: { hanja: "丙", hangul: "병", element: "화" }, branch: { hanja: "申", hangul: "신", element: "금" } },
+            pillarsDetail.day || { title: "일주", stem: { hanja: dayMaster || "壬", hangul: "임", element: "수" }, branch: { hanja: "子", hangul: "자", element: "수" } },
+            pillarsDetail.hour || { title: "시주", stem: { hanja: "庚", hangul: "경", element: "금" }, branch: { hanja: "子", hangul: "자", element: "수" } }
+        ];
+
+        const elemClassMap = { '목': 'wood', '화': 'fire', '토': 'earth', '금': 'metal', '수': 'water' };
+
+        let trStemHanja = '<tr>';
+        let trStemTag   = '<tr>';
+        let trBranchHanja = '<tr>';
+        let trBranchTag   = '<tr>';
+        let trGanjiName   = '<tr>';
+
+        cols.forEach((col, idx) => {
+            const isDay = (idx === 2); // 일주 강조
+            const dayClass = isDay ? 'day-pillar-td' : '';
+            const goldClass = isDay ? 'gold-active' : '';
+
+            const sElem = col.stem.element || '토';
+            const bElem = col.branch.element || '토';
+            const sClass = elemClassMap[sElem] || 'metal';
+            const bClass = elemClassMap[bElem] || 'metal';
+
+            trStemHanja += `<td class="${dayClass}"><span class="hanja-main ${goldClass}">${col.stem.hanja || '-'}</span></td>`;
+            trStemTag   += `<td class="${dayClass}"><span class="element-mini-tag ${sClass}">${col.stem.hangul || ''} · ${sElem}</span></td>`;
+            trBranchHanja += `<td class="${dayClass}"><span class="hanja-main ${goldClass}">${col.branch.hanja || '-'}</span></td>`;
+            trBranchTag   += `<td class="${dayClass}"><span class="element-mini-tag ${bClass}">${col.branch.hangul || ''} · ${bElem}</span></td>`;
+            trGanjiName   += `<td class="${dayClass}"><div class="pillar-ganji-name">${(col.stem.hangul || '') + (col.branch.hangul || '')}</div></td>`;
+        });
+
+        trStemHanja += '</tr>';
+        trStemTag   += '</tr>';
+        trBranchHanja += '</tr>';
+        trBranchTag   += '</tr>';
+        trGanjiName   += '</tr>';
+
+        tbody.innerHTML = trStemHanja + trStemTag + trBranchHanja + trBranchTag + trGanjiName;
+    }
+
+    /**
+     * 오행 분포 원형 도넛 휠 및 스탯 렌더링 (360도 무결점 코닉 그라디언트)
+     */
+    function renderElementsDonut(elementsCount) {
+        const donutWheel = document.getElementById('donut-wheel');
+        const statRow = document.getElementById('elements-stat-row');
+        const summaryText = document.getElementById('elements-summary-text');
+        if (!statRow) return;
+
+        const counts = {
+            '목': (elementsCount && typeof elementsCount['목'] === 'number') ? elementsCount['목'] : 0,
+            '화': (elementsCount && typeof elementsCount['화'] === 'number') ? elementsCount['화'] : 0,
+            '토': (elementsCount && typeof elementsCount['토'] === 'number') ? elementsCount['토'] : 0,
+            '금': (elementsCount && typeof elementsCount['금'] === 'number') ? elementsCount['금'] : 0,
+            '수': (elementsCount && typeof elementsCount['수'] === 'number') ? elementsCount['수'] : 0
+        };
+
+        const total = counts['목'] + counts['화'] + counts['토'] + counts['금'] + counts['수'] || 8;
+
+        const meta = [
+            { key: '목', name: '목 🌳', color: '#2ecc71', class: 'wood',  count: counts['목'] },
+            { key: '화', name: '화 🔥', color: '#e74c3c', class: 'fire',  count: counts['화'] },
+            { key: '토', name: '토 🏔️', color: '#f39c12', class: 'earth', count: counts['토'] },
+            { key: '금', name: '금 ⚔️', color: '#dfb738', class: 'metal', count: counts['금'] },
+            { key: '수', name: '수 💧', color: '#3498db', class: 'water', count: counts['수'] }
+        ];
+
+        // 1. 360도 완벽 밀폐 코닉 도넛 휠 렌더링
+        let currentDeg = 0;
+        const gradientStops = [];
+
+        meta.forEach(item => {
+            const itemDeg = (item.count / total) * 360;
+            const nextDeg = currentDeg + itemDeg;
+            item.pct = Math.round((item.count / total) * 100);
+            if (itemDeg > 0) {
+                gradientStops.push(`${item.color} ${currentDeg.toFixed(1)}deg ${nextDeg.toFixed(1)}deg`);
+            }
+            currentDeg = nextDeg;
+        });
+
+        if (donutWheel) {
+            if (gradientStops.length > 0) {
+                donutWheel.style.background = `conic-gradient(${gradientStops.join(', ')})`;
+            } else {
+                donutWheel.style.background = `conic-gradient(rgba(212,175,55,0.2) 0deg 360deg)`;
+            }
+        }
+
+        // 2. 하단 5개 기운 스탯 리스트 바인딩
+        let statHtml = '';
+        meta.forEach(item => {
+            statHtml += `
+                <div class="stat-col-item ${item.class}">
+                    <span class="stat-name">${item.key}</span>
+                    <span class="stat-pct">${item.pct}%</span>
+                    <span class="stat-cnt">${item.count}개</span>
+                </div>
+            `;
+        });
+        statRow.innerHTML = statHtml;
+
+        // 3. 우세 기운 통찰 문구 도출
+        const sorted = [...meta].sort((a, b) => b.count - a.count);
+        if (summaryText) {
+            const top1 = sorted[0].key;
+            const top2 = sorted[1].key;
+            summaryText.textContent = `${top1}과 ${top2}의 기운이 굳건하게 자리 잡고 있어, 생각의 깊이가 남다르고 난관을 슬기롭게 극복하는 저력이 있습니다.`;
+        }
+    }
+
+    /**
+     * 第二章 타고난 성향 (2x2 그리드 바인딩)
+     */
+    function renderNatureCards(dayMaster, interpretation) {
+        const grid = document.getElementById('nature-grid-2x2');
+        if (!grid) return;
+
+        const cards = [
+            {
+                num: "01",
+                title: "영혼의 결",
+                desc: "대중적인 유행이나 가벼운 농담보다는 대화의 깊이가 통하는 사람을 만났을 때 비로소 마음의 경계를 풀고 진짜 이야기를 꺼내 놓습니다. '아, 이 사람과는 결이 정말 다르구나'라는 생각이 스치는 순간, 조용히 마음의 문을 닫아버리곤 합니다."
+            },
+            {
+                num: "02",
+                title: "고독한 방",
+                desc: "누구에게도 방해받지 않는 혼자만의 공간과 시간이 주어질 때 비로소 에너지가 채워지고 머릿속 아이디어가 선명해집니다. '잠시 혼자만의 시간이 필요해'라며 조용히 방에 들어가 세상과의 접속을 끊고 내면에 집중합니다."
+            },
+            {
+                num: "03",
+                title: "타협 거부",
+                desc: "효율이나 현실적인 이익만을 앞세우며 영혼 없는 결정을 강요받을 때 겉으로는 고개를 끄덕여도 속으로는 깊은 회의감을 느낍니다. '내가 이걸 왜 해야 하지?'라는 생각이 차오르면 아무리 조건이 좋아도 마음이 이미 떠나 있습니다."
+            },
+            {
+                num: "04",
+                title: "진심의 무게",
+                desc: "가벼운 위로보다는 상대의 아픔에 온전히 공감하고 그 근본적인 원인을 함께 고민해 주는 방식으로 사람을 대합니다. '정말 괜찮은 걸까'라며 혼자서 밤새 상대의 상처를 곱씹고 치유의 방법을 찾아 헤맵니다."
+            }
+        ];
+
+        grid.innerHTML = cards.map(c => `
+            <div class="nature-card">
+                <div class="nature-card-header">
+                    <span class="nature-num-badge">${c.num}</span>
+                    <h3 class="nature-card-title">${c.title}</h3>
+                </div>
+                <p class="nature-card-desc">${c.desc}</p>
+            </div>
+        `).join('');
+    }
+
+    /**
+     * 돈은 어디로 새고, 인연은 왜 반복될까 (4열 카드 바인딩)
+     */
+    function renderRealityCards(dayMaster, interpretation) {
+        const grid = document.getElementById('reality-grid-4');
+        if (!grid) return;
+
+        const cards = [
+            {
+                icon: "🔗",
+                cat: "재물운",
+                title: "재물운",
+                desc: "돈을 버는 행위 그 자체보다 '내가 떳떳할 수 있는 가치 있는 일인가'를 먼저 따지며 쉽게 지갑을 열지 않습니다. 남들이 솔솔 풍기는 투자 정보에 영혼 없이 흔들리기보다 내가 확신하는 분야에만 조용히 자원을 투입하는 방식을 고수합니다."
+            },
+            {
+                icon: "❤️",
+                cat: "인연운",
+                title: "인연운",
+                desc: "수많은 사람들과 얕은 관계를 넓게 맺는 것보다 영혼의 깊이가 통하는 극소수의 인연과 진솔한 온기를 나누는 것을 훨씬 편안해합니다. 가식이나 계산적인 태도가 조금이라도 느껴지는 순간, 아무 말 없이 서서히 멀어지는 선택을 합니다."
+            },
+            {
+                icon: "💼",
+                cat: "직업운",
+                title: "직업운",
+                desc: "누구의 간섭도 받지 않고 나의 철학과 감성을 오롯이 녹여낼 수 있는 독립적이고 깊이 있는 영역에서 진짜 능력이 폭발합니다. 매뉴얼대로 찍어내는 조직 생활보다는 나만의 세계를 빚어내는 창작, 기획, 심리 치유 등의 길에서 빛을 발합니다."
+            },
+            {
+                icon: "🍃",
+                cat: "생활과 균형",
+                title: "생활과 균형",
+                desc: "신체적인 피로보다 마음의 결이 상했을 때 에너지가 빠르게 바닥나며 깊은 무기력증에 빠지곤 합니다. 복잡한 생각을 내려놓고 자연 속을 걷거나 혼자만의 고요한 사색을 즐기는 시간이 최고의 휴식이자 충전법입니다."
+            }
+        ];
+
+        grid.innerHTML = cards.map(c => `
+            <div class="reality-card">
+                <div class="reality-card-top">
+                    <span class="reality-icon-circle">${c.icon}</span>
+                    <span class="reality-cat-badge">${c.cat}</span>
+                </div>
+                <h4 class="reality-card-h4">${c.title}</h4>
+                <p class="reality-card-p">${c.desc}</p>
+            </div>
+        `).join('');
+    }
+
+    /**
+     * 🌟 [가독성 혁신] 심층 운명서 매거진 스타일 챕터 카드 & 타이포그래피 포맷팅 엔진
+     */
+    function formatDeepReportHtml(rawMarkdown) {
+        if (!rawMarkdown || typeof rawMarkdown !== 'string') return '';
+
+        // 1. 불필요한 머리글/사주표/중복 요약 제거
+        let md = rawMarkdown.trim()
+            .replace(/## 📜[\s\S]*?(?=(?:## 🔮|### 💡|### 👤|$))/i, '')
+            .replace(/## 🔮[\s\S]*?(?=(?:### 💡|### 👤|### 💰|$))/i, '')
+            .replace(/### 💡[\s\S]*?(?=(?:### 👤|### 💰|### 💼|$))/i, '');
+
+        // 2. '### ' 기준으로 개별 챕터 섹션 분할
+        const rawSections = md.split(/(?=###\s+)/).filter(s => s.trim().length > 0 && s.trim().startsWith('###'));
+
+        if (rawSections.length === 0) {
+            let fallbackHtml = parseMarkdownToHtml(md);
+            return `<article class="deep-chapter-card"><div class="deep-card-body">${fallbackHtml}</div></article>`;
+        }
+
+        const cardsHtml = rawSections.map((sec, idx) => {
+            const lines = sec.trim().split('\n');
+            const rawHeader = lines[0].replace(/^###\s*/, '').trim();
+            const contentMarkdown = lines.slice(1).join('\n').trim();
+
+            // 이모지 아이콘 추출
+            const emojiMatch = rawHeader.match(/([\u{1F300}-\u{1FAFF}]|[\u2600-\u26FF]|\u2764\uFE0F?)/u);
+            const icon = emojiMatch ? emojiMatch[0] : '📜';
+
+            // 부제/태그 괄호 추출 (예: 일간 + 월지 중심)
+            const tagMatch = rawHeader.match(/\((.*?)\)/);
+            const tag = tagMatch ? tagMatch[1] : '';
+
+            // 순수 텍스트 제목 추출
+            const title = rawHeader
+                .replace(/([\u{1F300}-\u{1FAFF}]|[\u2600-\u26FF]|\u2764\uFE0F?)/u, '')
+                .replace(/\(.*?\)/, '')
+                .replace(/^[•\-\*\s]+/, '')
+                .trim();
+
+            // 3. 본문 마크다운 파싱 (Marked.js 또는 내부 헬퍼)
+            let parsed = '';
+            try {
+                parsed = (typeof marked !== 'undefined' && typeof marked.parse === 'function')
+                    ? marked.parse(contentMarkdown)
+                    : parseMarkdownToHtml(contentMarkdown);
+            } catch (e) {
+                parsed = parseMarkdownToHtml(contentMarkdown);
+            }
+
+            // 4. 가독성 극대화 트랜스폼:
+
+            // A. 핵심 은유 명언 ("..." 또는 “...”) -> .lead-quote-box
+            parsed = parsed.replace(/<p>\s*<strong>\s*["“](.*?)["”]\s*<\/strong>\s*<\/p>/g,
+                '<div class="lead-quote-box"><span class="quote-mark">“</span>$1<span class="quote-mark">”</span></div>');
+            parsed = parsed.replace(/<p>\s*["“](.*?)["”]\s*<\/p>/g,
+                '<div class="lead-quote-box"><span class="quote-mark">“</span>$1<span class="quote-mark">”</span></div>');
+
+            // B. 💡 솔루션 / 개운법 / 꿀팁 / 승부수 블록을 프리미엄 콜아웃 박스로 변환
+            parsed = parsed.replace(/(?:<p>|<li>)\s*💡\s*(?:<strong>)?(.*?)(?:<\/strong>)?[:：]?([\s\S]*?)(?:<\/p>|<\/li>)/g, function(match, calloutTitle, calloutRest) {
+                const cleanTitle = calloutTitle.replace(/<\/?[^>]+(>|$)/g, "").trim();
+                return `
+                    <div class="solution-callout-box">
+                        <div class="callout-header">
+                            <span class="callout-icon">💡</span>
+                            <h4 class="callout-title">${cleanTitle || '개운 처방전'}</h4>
+                        </div>
+                        <div class="callout-body">
+                            ${calloutRest ? `<p>${calloutRest.trim()}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            // C. 콜아웃 박스 바로 뒤에 이어지는 <ul>을 콜아웃 내부 서브 리스트로 캡슐화
+            parsed = parsed.replace(/(<\/div>\s*<\/div>)\s*(<ul>[\s\S]*?<\/ul>)/g, function(match, closeTag, ulHtml) {
+                return `<div class="callout-sub-list">${ulHtml}</div>${closeTag}`;
+            });
+
+            // D. <ol> 추천 항목 리스트를 럭셔리 넘버링 카드(.recommend-list)로 스타일링
+            parsed = parsed.replace(/<ol>([\s\S]*?)<\/ol>/g, function(match, listInner) {
+                let itemIndex = 1;
+                const items = listInner.replace(/<li>([\s\S]*?)<\/li>/g, function(m, liContent) {
+                    const numStr = String(itemIndex++).padStart(2, '0');
+                    return `
+                        <div class="recommend-item">
+                            <span class="item-num">${numStr}</span>
+                            <div class="item-content">${liContent.trim()}</div>
+                        </div>
+                    `;
+                });
+                return `<div class="recommend-list">${items}</div>`;
+            });
+
+            // E. 본문 내 단락에서 "추천하는 구체적인 현대..." 같은 소제목 강조
+            parsed = parsed.replace(/<p>\s*•\s*(?:추천하는|핵심|구체적인)(.*?)<\/p>/g,
+                '<p style="font-weight: 700; color: #ffeb99; font-size: 15.5px; margin-top: 22px; margin-bottom: 10px;">◆ 추천하는 $1</p>');
+
+            // F. <strong> 키워드 골드 하이라이트 클래스 부여
+            parsed = parsed.replace(/<strong>(.*?)<\/strong>/g, '<strong class="hl-keyword">$1</strong>');
+
+            const partNum = String(idx + 1).padStart(2, '0');
+
+            return `
+                <article class="deep-chapter-card">
+                    <div class="deep-card-header">
+                        <span class="deep-chapter-badge">CHAPTER ${partNum}</span>
+                        <h3 class="deep-card-title">
+                            <span class="card-icon">${icon}</span>
+                            <span class="card-title-text">${title}</span>
+                            ${tag ? `<span class="card-tag">${tag}</span>` : ''}
+                        </h3>
+                    </div>
+                    <div class="deep-card-body">
+                        ${parsed}
+                    </div>
+                </article>
+            `;
+        });
+
+        return cardsHtml.join('\n');
+    }
+
+    /**
+     * 심층 운명서 전문 렌더링
+     */
+    function renderDeepReportContent(rawMarkdown) {
+        const aiContent = document.getElementById('ai-content');
+        if (!aiContent) return;
+
+        const formattedHtml = formatDeepReportHtml(rawMarkdown);
+        aiContent.innerHTML = formattedHtml;
+        aiContent.classList.add('teaser-mode');
+    }
+
+    /**
+     * 🌟 [사용자 요청] 심층 운명서 클릭 시 즉시 잠금 해제 & 스무스 스크롤
+     */
+    function handlePaywallClick() {
+        const lockBanner = document.getElementById('paywall-lock-banner');
+        const aiContent = document.getElementById('ai-content');
+        const stickyBar = document.getElementById('sticky-paywall-bar');
+
+        // 1. 블러 티저 완전 해제
+        if (aiContent) {
+            aiContent.classList.remove('teaser-mode');
+            aiContent.style.maxHeight = 'none';
+            aiContent.style.filter = 'none';
+            aiContent.style.maskImage = 'none';
+            aiContent.style.webkitMaskImage = 'none';
+            aiContent.style.opacity = '1';
+            aiContent.style.pointerEvents = 'auto';
+            aiContent.style.userSelect = 'auto';
+        }
+
+        // 2. 락 배너 부드러운 상태 전환
+        if (lockBanner) {
+            lockBanner.innerHTML = `
+                <div class="lock-icon-wrap" style="color: #2ecc71;">✓</div>
+                <h3 class="lock-banner-title" style="color: var(--gold-bright);">심층 운명서 전문 잠금 해제 완료</h3>
+                <p class="lock-banner-desc">재물, 대운의 황금기, 개운 처방전까지 모든 비전(秘傳) 풀이를 열람하실 수 있습니다.</p>
+            `;
+        }
+
+        // 3. 하단 스티키 바 상태 업데이트
+        if (stickyBar) {
+            const stickyBtn = stickyBar.querySelector('.sticky-cta-btn');
+            if (stickyBtn) {
+                stickyBtn.innerHTML = '<span>✓ 전편 열람 중</span>';
+                stickyBtn.style.background = 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)';
+                stickyBtn.style.borderColor = '#81c784';
+            }
+        }
+
+        // 4. 본문 시작 위치로 부드럽게 스크롤
+        setTimeout(() => {
+            if (aiContent) {
+                aiContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 120);
+    }
+
+    let lastResultText = "";
+
+    async function startReading() {
+        const agree = document.getElementById('agree');
+        if (!agree.checked) {
+            alert("사주 분석을 위해 개인정보 수집 및 처리에 동의해주세요.");
+            agree.focus();
+            return;
+        }
+
+        const yVal = document.getElementById('year').value.trim();
+        const mVal = document.getElementById('month').value.trim();
+        const dVal = document.getElementById('day').value.trim();
+
+        if (!yVal || !mVal || !dVal) {
+            alert("생년월일을 빠짐없이 입력해 주세요.");
+            return;
+        }
+
+        const y = yVal.padStart(4, '0');
+        const m = mVal.padStart(2, '0');
+        const d = dVal.padStart(2, '0');
+        const gender = document.querySelector('input[name="gender"]:checked').value;
+        const calendar = document.querySelector('input[name="calendar"]:checked').value;
+        
+        const nameInput = document.getElementById('name');
+        const rawName = nameInput ? nameInput.value.trim() : "";
+        const finalName = (!rawName || rawName.length === 0) ? "사용자" : rawName;
+        
+        const birthTime = document.getElementById('birth_time').value;
+
+        const formScreen = document.getElementById('form-screen');
+        const loadingScreen = document.getElementById('loading-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const pBar = document.getElementById('p-bar');
+        const stepTitle = document.getElementById('step-title');
+
+        // 로딩 화면 전환
+        formScreen.style.display = 'none';
+        loadingScreen.style.display = 'flex';
+        pBar.style.width = '0%';
+        
+        setTimeout(() => { pBar.style.width = '88%'; }, 150);
+
+        // 🌟 실시간 분석 로그 UI
+        const logsContainer = document.getElementById('loading-logs');
+        if (logsContainer) {
+            logsContainer.innerHTML = '';
+        }
+
+        const logSequence = [
+            "▸ 사주 원국 명식 4기둥 스캔 중...",
+            "▸ 일간과 월지의 오행 상호작용 계산 완료",
+            "▸ 10년 대운의 물줄기와 인생 황금기 도출 중...",
+            "▸ 재물운과 적성 직업운 심층 데이터 추출 중...",
+            `▸ ${finalName} 맞춤형 심층 운명서 편찬 완료!`,
+            "▸ 액운 방지 및 길운 개운 비책 정리 중...",
+            "▸ 최종 심층 리포트 데이터 검수 완료"
+        ];
+
+        let logIdx = 0;
+        function pushNextLog() {
+            if (!logsContainer) return;
+            if (logIdx >= logSequence.length) return;
+
+            const prevActive = logsContainer.querySelector('.log-line.active');
+            if (prevActive) {
+                prevActive.classList.remove('active');
+                prevActive.style.color = 'rgba(255, 255, 255, 0.72)';
+            }
+
+            const lineEl = document.createElement('div');
+            lineEl.className = 'log-line active';
+            lineEl.textContent = logSequence[logIdx];
+            logsContainer.appendChild(lineEl);
+            logIdx++;
+
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+        }
+
+        pushNextLog();
+        const logTimer = setInterval(pushNextLog, 750);
+
+        // 시네마틱 서브타이틀 롤링
+        const rollingTitles = [
+            "사주 명식을 펼치고 있습니다...",
+            "오행과 십신의 기운을 해독하는 중...",
+            "대운과 인생의 황금기를 찾는 중...",
+            `${finalName}님을 위한 운명서를 작성하는 중...`
+        ];
+        let titleIdx = 0;
+        if (stepTitle) stepTitle.textContent = rollingTitles[0];
+        const titleTimer = setInterval(() => {
+            titleIdx = (titleIdx + 1) % rollingTitles.length;
+            if (stepTitle) {
+                stepTitle.style.opacity = '0';
+                setTimeout(() => {
+                    stepTitle.textContent = rollingTitles[titleIdx];
+                    stepTitle.style.opacity = '1';
+                }, 250);
+            }
+        }, 2600);
+
+        const requestData = {
+            name: finalName,
+            gender: gender,
+            birth_date: `${y}-${m}-${d}`,
+            birth_time: birthTime,
+            birth_type: calendar,
+            is_leap_month: false
+        };
+
+        try {
+            const response = await fetch('/api/v1/analyze-saju', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            });
+
+            const data = await response.json();
+
+            clearInterval(logTimer);
+            clearInterval(titleTimer);
+
+            if (data.status === "success" && data.interpretation) {
+                lastResultText = data.interpretation;
+                pBar.style.width = '100%';
+
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                    
+                    // 🌟 5-Chapter 결과 렌더링
+                    renderStructuredSajuResult(data);
+                    
+                    document.querySelector('.layout-wrapper').classList.add('result-mode');
+                    resultScreen.style.display = 'block';
+                    
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 600);
+            } else {
+                throw new Error(data.detail || "사주 분석 데이터를 받아오지 못했습니다.");
+            }
+        } catch (error) {
+            clearInterval(logTimer);
+            clearInterval(titleTimer);
+            document.querySelector('.layout-wrapper').classList.remove('result-mode');
+            loadingScreen.style.display = 'none';
+            formScreen.style.display = 'block';
+            alert("분석 중 오류가 발생했습니다: " + error.message);
+        }
+    }
+
+    function resetForm() {
+        document.querySelector('.layout-wrapper').classList.remove('result-mode');
+        document.getElementById('result-screen').style.display = 'none';
+        document.getElementById('form-screen').style.display = 'block';
+        
+        const stickyBar = document.getElementById('sticky-paywall-bar');
+        if (stickyBar) stickyBar.classList.remove('visible');
+
+        const aiContent = document.getElementById('ai-content');
+        if (aiContent) {
+            aiContent.innerHTML = '';
+            aiContent.classList.add('teaser-mode');
+            aiContent.style.maxHeight = '';
+            aiContent.style.filter = '';
+            aiContent.style.opacity = '';
+            aiContent.style.maskImage = '';
+            aiContent.style.webkitMaskImage = '';
+        }
+
+        const lockBanner = document.getElementById('paywall-lock-banner');
+        if (lockBanner) {
+            lockBanner.innerHTML = `
+                <div class="lock-icon-wrap">🔒</div>
+                <h3 class="lock-banner-title">무료 사주에서는 여기까지 확인할 수 있습니다.</h3>
+                <p class="lock-banner-desc">앞으로의 운을 고민하는 당신에게 지금 가장 필요한 것은 막연한 불안감 대신 자신의 본질에 맞는 구체적인 생존 전략을 세우는 것입니다. 다가오는 10년 대운 속에서 이 신념의 탐구자 기질을 어떻게 무기로 활용할지 그 해답을 깊이 있게 열어보려 합니다.</p>
+                <button type="button" class="btn-unlock-inline" onclick="handlePaywallClick()">
+                    <span>심층 운명서 열기 🔒</span>
+                </button>
+            `;
+            lockBanner.style.borderColor = 'rgba(212, 175, 55, 0.5)';
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 스크롤 시 스티키 바 표시 제어
+    window.addEventListener('scroll', () => {
+        const isResultMode = document.querySelector('.layout-wrapper')?.classList.contains('result-mode');
+        const stickyBar = document.getElementById('sticky-paywall-bar');
+        if (isResultMode && stickyBar) {
+            stickyBar.classList.add('visible');
+        }
+    });
+
+    function copyResult() {
+        if (!lastResultText) {
+            alert("복사할 결과 내용이 없습니다.");
+            return;
+        }
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(lastResultText)
+                .then(() => alert("사주 리포트 전문이 클립보드에 복사되었습니다."))
+                .catch(() => fallbackCopy(lastResultText));
+        } else {
+            fallbackCopy(lastResultText);
+        }
+    }
+
+    function fallbackCopy(text) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            alert("사주 리포트 전문이 클립보드에 복사되었습니다.");
+        } catch (err) {
+            alert("복사 권한이 없어 수동으로 복사해주세요.");
+        }
+        document.body.removeChild(textarea);
+    }
+</script>
+
+</body>
+</html>

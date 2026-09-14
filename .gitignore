@@ -1,0 +1,64 @@
+# =============================================================
+# Saju Project Git Ignore
+# =============================================================
+
+# 1. 보안 민감 파일 (환경 변수)
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# 2. 파이썬 바이트코드 & 캐시
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 3. 가상환경
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# 4. SQLite 로컬 데이터베이스
+*.db
+*.sqlite3
+*.db-journal
+
+# 5. IDE 및 에디터 설정
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# 6. 운영체제 임시 파일
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 7. 로컬 테스트 및 임시 산출물
+latest_*.txt
+test_*.txt
+*.bak
+*.exe
