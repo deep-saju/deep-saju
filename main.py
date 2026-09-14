@@ -31,7 +31,14 @@ PORTONE_STORE_ID = os.getenv("PORTONE_STORE_ID", "")
 # 1. 데이터베이스 세팅 (SQLite & SQLAlchemy)
 # -------------------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "saju_database.db")
+
+# Vercel / AWS Lambda 등 서버리스 환경(읽기 전용 파일시스템) 대응:
+# VERCEL 환경변수가 있거나 BASE_DIR에 쓰기 권한이 없는 경우 /tmp에 DB 생성
+if os.getenv("VERCEL") or not os.access(BASE_DIR, os.W_OK):
+    DB_PATH = os.path.join("/tmp", "saju_database.db")
+else:
+    DB_PATH = os.path.join(BASE_DIR, "saju_database.db")
+
 DATABASE_URL = f"sqlite:///{DB_PATH}"
 
 engine = create_engine(
@@ -53,8 +60,11 @@ class SajuHistory(Base):
     ai_interpretation = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.now)
 
-# 테이블 자동 생성
-Base.metadata.create_all(bind=engine)
+# 테이블 자동 생성 (서버리스 환경에서 예외 발생 시 서비스 중단 방지)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as db_init_err:
+    print(f"[WARNING] Database initialization skipped or failed: {db_init_err}")
 
 # DB 세션 의존성 주입 (Dependency)
 def get_db():
@@ -304,16 +314,25 @@ def generate_emergency_saju_report(name: str, saju_data: dict) -> str:
 """
 
 # -------------------------------------------------------------
-# 4. 사주 분석 API (다단계 Fallback 모델 및 안전 엔진 탑재)
+# 4. 헬스체크 및 사주 분석 API (다단계 Fallback 모델 및 안전 엔진 탑재)
 # -------------------------------------------------------------
+@app.get("/api/health")
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "service": "Deep Saju API"}
+
 CANDIDATE_MODELS = [
+    "gemini-2.5-flash",
     "gemini-3.5-flash",
-    "gemini-3.1-flash-lite",
     "gemini-flash-latest",
-    "gemini-3.6-flash"
+    "gemini-2.5-flash-lite",
+    "gemini-3.1-flash-lite"
 ]
 
 @app.post("/api/v1/analyze-saju")
+@app.post("/v1/analyze-saju")
+@app.post("/api/analyze-saju")
+@app.post("/analyze-saju")
 def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
     try:
         final_name = user_input.name.strip() if user_input.name and user_input.name.strip() else "사용자"
@@ -352,19 +371,25 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
         if not interpretation_text:
             interpretation_text = generate_emergency_saju_report(final_name, saju_json_data)
         
-        # 🌟 [DB 영구 저장] 분석 결과 및 입력 데이터를 SQLite에 Insert
-        history_record = SajuHistory(
-            name=user_input.name,
-            gender=user_input.gender,
-            birth_date=user_input.birth_date,
-            birth_time=user_input.birth_time,
-            birth_type=user_input.birth_type,
-            ai_interpretation=interpretation_text,
-            created_at=datetime.now()
-        )
-        db.add(history_record)
-        db.commit()
-        db.refresh(history_record)
+        # 🌟 [DB 영구 저장] 분석 결과 및 입력 데이터를 SQLite에 Insert (서버리스 오류 방어)
+        history_id = 0
+        try:
+            history_record = SajuHistory(
+                name=user_input.name,
+                gender=user_input.gender,
+                birth_date=user_input.birth_date,
+                birth_time=user_input.birth_time,
+                birth_type=user_input.birth_type,
+                ai_interpretation=interpretation_text,
+                created_at=datetime.now()
+            )
+            db.add(history_record)
+            db.commit()
+            db.refresh(history_record)
+            history_id = history_record.id
+        except Exception as db_err:
+            db.rollback()
+            print(f"[WARNING] DB 저장 건너뜀 (서버리스 환경): {db_err}")
         
         return {
             "status": "success",
@@ -379,7 +404,7 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
                 "birth_time": user_input.birth_time,
                 "birth_type": user_input.birth_type
             },
-            "history_id": history_record.id
+            "history_id": history_id
         }
     except Exception as e:
         db.rollback()
@@ -406,9 +431,12 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
             raise HTTPException(status_code=500, detail="사주 분석 엔진 일시 점검 중입니다. 잠시 후 다시 시도해 주세요.")
 
 # -------------------------------------------------------------
-# 4. 테스트용 사주 분석 이력 조회 API (최근 10건)
+# 5. 테스트용 사주 분석 이력 조회 API (최근 10건)
 # -------------------------------------------------------------
 @app.get("/api/v1/saju-history")
+@app.get("/v1/saju-history")
+@app.get("/api/saju-history")
+@app.get("/saju-history")
 async def get_saju_history(db: Session = Depends(get_db)):
     """
     DB에 영구 저장된 사주 분석 기록 중 최근 10건을 최신순으로 조회합니다.
