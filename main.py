@@ -15,7 +15,16 @@ from dotenv import load_dotenv
 from saju_counseling_engine import (
     build_personalized_emergency_report,
     build_dynamic_gemini_prompt,
-    DAY_MASTER_META
+    DAY_MASTER_META,
+    SYSTEM_GUNGHAP_PROMPT,
+    build_gunghap_gemini_prompt,
+    build_personalized_gunghap_report,
+    SYSTEM_TODAY_PROMPT,
+    build_today_gemini_prompt,
+    build_personalized_today_report,
+    SYSTEM_TOJEONG_PROMPT,
+    build_tojeong_gemini_prompt,
+    build_personalized_tojeong_report
 )
 
 # -------------------------------------------------------------
@@ -105,6 +114,35 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class PartnerInput(BaseModel):
+    name: Optional[str] = Field("인연", description="상대방 이름")
+    gender: str = Field("F", description="상대방 성별 (M 또는 F)")
+    birth_date: str = Field("1996-05-15", description="상대방 생년월일 (YYYY-MM-DD)")
+    birth_time: str = Field("12:00", description="상대방 출생시간 (HH:MM)")
+    birth_type: str = Field("양력", description="양력 또는 음력")
+    is_leap_month: bool = Field(False, description="음력 윤달 여부")
+
+    @field_validator("gender")
+    @classmethod
+    def check_partner_gender(cls, v: str) -> str:
+        if v not in ("M", "F"):
+            return "F"
+        return v
+
+    @field_validator("birth_type")
+    @classmethod
+    def check_partner_birth_type(cls, v: str) -> str:
+        if v not in ("양력", "음력"):
+            return "양력"
+        return v
+
+    @field_validator("birth_date")
+    @classmethod
+    def check_partner_birth_date(cls, v: str) -> str:
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
+            return "1996-05-15"
+        return v
+
 class UserInput(BaseModel):
     name: str = Field(..., description="사용자 이름")
     gender: str = Field(..., description="성별 (M 또는 F)")
@@ -112,6 +150,8 @@ class UserInput(BaseModel):
     birth_time: str = Field(..., description="출생시간 (HH:MM)")
     birth_type: str = Field("양력", description="양력 또는 음력")
     is_leap_month: bool = Field(False, description="음력 윤달 여부")
+    category: Optional[str] = Field("saju", description="카테고리: saju, gunghap, today, tojeong")
+    partner: Optional[PartnerInput] = Field(None, description="궁합 감정 시 상대방 정보")
 
     @field_validator("gender")
     @classmethod
@@ -390,8 +430,67 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
 
         saju_json_data = calculate_saju_engine(user_input)
         saju_json_data["user_info"]["name"] = final_name
-        
-        prompt = build_dynamic_gemini_prompt(final_name, saju_json_data)
+
+        category = (user_input.category or "saju").strip().lower()
+
+        # -------------------------------------------------------------
+        # [카테고리별 조건부 라우팅 및 LLM 프롬프트 분기]
+        # -------------------------------------------------------------
+        if category == "gunghap":
+            # A. 인연과 궁합 (gunghap)
+            partner = user_input.partner or PartnerInput()
+            partner_name = (partner.name or "인연").strip() or "인연"
+            partner.name = partner_name
+            partner_saju_data = calculate_saju_engine(partner)
+            partner_saju_data["user_info"]["name"] = partner_name
+
+            prompt = build_gunghap_gemini_prompt(final_name, saju_json_data, partner_name, partner_saju_data)
+            current_sys_prompt = SYSTEM_GUNGHAP_PROMPT
+            fallback_fn = lambda: build_personalized_gunghap_report(final_name, saju_json_data, partner_name, partner_saju_data)
+
+        elif category == "today":
+            # B. 오늘의 운세 (today)
+            now = datetime.now()
+            solar_today = Solar.fromYmdHms(now.year, now.month, now.day, 12, 0, 0)
+            lunar_today = solar_today.getLunar()
+            bazi_today = lunar_today.getEightChar()
+            today_gan = bazi_today.getDayGan()
+            today_zhi = bazi_today.getDayZhi()
+            today_ganzhi = f"{today_gan}{today_zhi}"
+            year_ganzhi = f"{bazi_today.getYearGan()}{bazi_today.getYearZhi()}"
+            today_info = {
+                "date_str": now.strftime("%Y년 %m월 %d일"),
+                "solar_str": f"양력 {now.year}년 {now.month}월 {now.day}일",
+                "day_gan": today_gan,
+                "day_zhi": today_zhi,
+                "day_ganzhi": today_ganzhi,
+                "year_ganzhi": year_ganzhi
+            }
+
+            prompt = build_today_gemini_prompt(final_name, saju_json_data, today_info)
+            current_sys_prompt = SYSTEM_TODAY_PROMPT
+            fallback_fn = lambda: build_personalized_today_report(final_name, saju_json_data, today_info)
+
+        elif category == "tojeong":
+            # C. 토정비결 (tojeong)
+            now = datetime.now()
+            solar_now = Solar.fromYmdHms(now.year, 6, 1, 12, 0, 0)
+            bazi_year = solar_now.getLunar().getEightChar()
+            year_ganzhi = f"{bazi_year.getYearGan()}{bazi_year.getYearZhi()}"
+            year_info = {
+                "year": now.year,
+                "year_ganzhi": year_ganzhi
+            }
+
+            prompt = build_tojeong_gemini_prompt(final_name, saju_json_data, year_info)
+            current_sys_prompt = SYSTEM_TOJEONG_PROMPT
+            fallback_fn = lambda: build_personalized_tojeong_report(final_name, saju_json_data, year_info)
+
+        else:
+            # 기본: 평생 사주 (saju) - 기존 로직 및 마스터 프롬프트 완벽 유지
+            prompt = build_dynamic_gemini_prompt(final_name, saju_json_data)
+            current_sys_prompt = SYSTEM_MASTER_PROMPT
+            fallback_fn = lambda: generate_emergency_saju_report(final_name, saju_json_data)
 
         interpretation_text = None
         last_error = None
@@ -402,7 +501,7 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
                 try:
                     model = genai.GenerativeModel(
                         model_name=model_name, 
-                        system_instruction=SYSTEM_MASTER_PROMPT
+                        system_instruction=current_sys_prompt
                     )
                     response = model.generate_content(prompt)
                     if response and response.text and len(response.text.strip()) > 50:
@@ -418,7 +517,7 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
 
         # 🌟 2단계: 모든 AI 모델이 Quota 소진 등으로 응답 불가할 때 고품질 안전 폴백 가동
         if not interpretation_text:
-            interpretation_text = generate_emergency_saju_report(final_name, saju_json_data)
+            interpretation_text = fallback_fn()
         
         # 🌟 [DB 영구 저장] 분석 결과 및 입력 데이터를 SQLite에 Insert (서버리스 오류 방어)
         history_id = 0
@@ -442,6 +541,7 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
         
         return {
             "status": "success",
+            "category": category,
             "interpretation": interpretation_text,
             "elements_count": saju_json_data.get("elements_count", {}),
             "pillars_detail": saju_json_data.get("pillars_detail", {}),
@@ -459,16 +559,48 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
         db.rollback()
         # 치명적 서버 오류 시에도 가능한 안전 폴백 제공
         try:
+            req_cat = getattr(user_input, "category", "saju") or "saju"
             fallback_saju = calculate_saju_engine(user_input)
-            fallback_text = generate_emergency_saju_report(user_input.name, fallback_saju)
+            u_name = user_input.name or "사용자"
+
+            if req_cat == "gunghap":
+                partner_fallback = getattr(user_input, "partner", None) or PartnerInput()
+                p_name = partner_fallback.name or "인연"
+                partner_fallback_saju = calculate_saju_engine(partner_fallback)
+                fallback_text = build_personalized_gunghap_report(u_name, fallback_saju, p_name, partner_fallback_saju)
+            elif req_cat == "today":
+                now = datetime.now()
+                solar_today = Solar.fromYmdHms(now.year, now.month, now.day, 12, 0, 0)
+                bazi_today = solar_today.getLunar().getEightChar()
+                t_info = {
+                    "date_str": now.strftime("%Y년 %m월 %d일"),
+                    "solar_str": f"양력 {now.year}년 {now.month}월 {now.day}일",
+                    "day_gan": bazi_today.getDayGan(),
+                    "day_zhi": bazi_today.getDayZhi(),
+                    "day_ganzhi": f"{bazi_today.getDayGan()}{bazi_today.getDayZhi()}",
+                    "year_ganzhi": f"{bazi_today.getYearGan()}{bazi_today.getYearZhi()}"
+                }
+                fallback_text = build_personalized_today_report(u_name, fallback_saju, t_info)
+            elif req_cat == "tojeong":
+                now = datetime.now()
+                bazi_y = Solar.fromYmdHms(now.year, 6, 1, 12, 0, 0).getLunar().getEightChar()
+                y_info = {
+                    "year": now.year,
+                    "year_ganzhi": f"{bazi_y.getYearGan()}{bazi_y.getYearZhi()}"
+                }
+                fallback_text = build_personalized_tojeong_report(u_name, fallback_saju, y_info)
+            else:
+                fallback_text = generate_emergency_saju_report(u_name, fallback_saju)
+
             return {
                 "status": "success",
+                "category": req_cat,
                 "interpretation": fallback_text,
                 "elements_count": fallback_saju.get("elements_count", {}),
                 "pillars_detail": fallback_saju.get("pillars_detail", {}),
                 "day_master": fallback_saju.get("day_master", "甲"),
                 "user_info": {
-                    "name": user_input.name or "사용자",
+                    "name": u_name,
                     "gender": user_input.gender,
                     "birth_date": user_input.birth_date,
                     "birth_time": user_input.birth_time,

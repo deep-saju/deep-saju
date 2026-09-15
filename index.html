@@ -1835,7 +1835,7 @@
     <section id="category-screen">
         <div class="category-grid">
             <!-- 1. 사주 -->
-            <div class="cat-card" onclick="openSajuForm('사주', '평생의 명식과 사주팔자, 10년 대운과 부귀의 흐름')">
+            <div class="cat-card" onclick="openSajuForm('saju', '평생 사주', '평생의 명식과 사주팔자, 10년 대운과 부귀의 흐름')">
                 <div class="cat-img-box wm-crop-container">
                     <img src="icon_saju_new.png" alt="사주" class="wm-crop-img">
                 </div>
@@ -1850,7 +1850,7 @@
             </div>
 
             <!-- 2. 오늘의 운세 -->
-            <div class="cat-card" onclick="openSajuForm('오늘의 운세', '오늘 하루 하늘이 내리는 기운과 피해야 할 액운')">
+            <div class="cat-card" onclick="openSajuForm('today', '오늘의 운세', '오늘 하루 하늘이 내리는 기운과 피해야 할 액운')">
                 <div class="cat-img-box wm-crop-container">
                     <img src="icon_today_new.png" alt="오늘의 운세" class="wm-crop-img">
                 </div>
@@ -1865,7 +1865,7 @@
             </div>
 
             <!-- 3. 궁합 -->
-            <div class="cat-card" onclick="openSajuForm('궁합', '나와 상대의 오행 조화, 천생연분의 붉은 실')">
+            <div class="cat-card" onclick="openSajuForm('gunghap', '인연과 궁합', '나와 상대의 오행 조화, 천생연분의 붉은 실')">
                 <div class="cat-img-box wm-crop-container">
                     <img src="icon_gunghap.png" alt="궁합" class="wm-crop-img">
                 </div>
@@ -1880,7 +1880,7 @@
             </div>
 
             <!-- 4. 토정비결 -->
-            <div class="cat-card" onclick="openSajuForm('토정비결', '한 해 열두 달의 신수와 길흉화복의 비책')">
+            <div class="cat-card" onclick="openSajuForm('tojeong', '토정비결', '한 해 열두 달의 신수와 길흉화복의 비책')">
                 <div class="cat-img-box wm-crop-container">
                     <img src="icon_tojeong.png" alt="토정비결" class="wm-crop-img">
                 </div>
@@ -1912,6 +1912,11 @@
             <div class="form-danja-header">
                 <h2 class="form-danja-title">이곳에 사주 단자를 적어 올리시오</h2>
                 <p class="form-danja-sub" id="form-danja-desc">정성껏 올린 생년월일시를 바탕으로 점술가가 명식을 펼치오이다.</p>
+            </div>
+
+            <!-- 본인 사주 단자 제목 (궁합 시에만 활성화) -->
+            <div id="user1-section-title" style="display: none; font-size: 15px; font-weight: 800; color: var(--text-gold); margin-bottom: 18px; padding-bottom: 8px; border-bottom: 1px solid var(--border-gold); letter-spacing: 1px;">
+                ✦ 본인 (第一人) 사주 단자
             </div>
 
             <!-- 1. 생년월일 -->
@@ -2002,6 +2007,104 @@
                     <span class="badge">선택</span>
                 </label>
                 <input type="text" id="name" class="input-field" placeholder="미입력 시 '선비'로 불리옵니다" maxlength="20">
+            </div>
+
+            <!-- 🌟 [인연과 궁합 전용] 상대방 사주 단자 입력 섹션 -->
+            <div id="partner-saju-section" style="display: none; margin-top: 26px; padding-top: 22px; border-top: 1.5px dashed var(--border-gold);">
+                <div style="font-size: 15px; font-weight: 800; color: var(--text-gold-light); margin-bottom: 18px; padding-bottom: 8px; border-bottom: 1px solid var(--border-gold); display: flex; align-items: center; justify-content: space-between;">
+                    <span>✦ 상대방 (第二人) 사주 단자</span>
+                    <span style="font-size: 11px; color: var(--text-sub); font-weight: 500; letter-spacing: 0.5px;">궁합 감정 대상</span>
+                </div>
+
+                <!-- 상대방 생년월일 -->
+                <div class="input-group">
+                    <label>
+                        <span>상대방 생년월일 (生年月日)</span>
+                        <span class="badge req">필수</span>
+                    </label>
+                    <div class="date-inputs">
+                        <div class="date-input-wrap">
+                            <input type="tel" id="partner_year" class="input-field" placeholder="1996" maxlength="4" inputmode="numeric" autocomplete="off">
+                            <span class="unit">년</span>
+                        </div>
+                        <div class="date-input-wrap">
+                            <input type="tel" id="partner_month" class="input-field" placeholder="05" maxlength="2" inputmode="numeric" autocomplete="off">
+                            <span class="unit">월</span>
+                        </div>
+                        <div class="date-input-wrap">
+                            <input type="tel" id="partner_day" class="input-field" placeholder="15" maxlength="2" inputmode="numeric" autocomplete="off">
+                            <span class="unit">일</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 상대방 성별 & 달력 구분 -->
+                <div style="display: flex; gap: 12px; margin-bottom: 22px;">
+                    <div style="flex: 1;">
+                        <label style="display: block; font-size: 14px; color: var(--text-gold-light); margin-bottom: 8px; font-weight: 700;">상대방 성별</label>
+                        <div class="toggle-group">
+                            <input type="radio" id="partner-gender-m" name="partner_gender" value="M" class="toggle-radio">
+                            <label for="partner-gender-m" class="toggle-label">남성 (乾命)</label>
+                            <input type="radio" id="partner-gender-f" name="partner_gender" value="F" class="toggle-radio" checked>
+                            <label for="partner-gender-f" class="toggle-label">여성 (坤命)</label>
+                        </div>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display: block; font-size: 14px; color: var(--text-gold-light); margin-bottom: 8px; font-weight: 700;">달력 구분</label>
+                        <div class="toggle-group">
+                            <input type="radio" id="partner-cal-solar" name="partner_calendar" value="양력" class="toggle-radio" checked>
+                            <label for="partner-cal-solar" class="toggle-label">양력</label>
+                            <input type="radio" id="partner-cal-lunar" name="partner_calendar" value="음력" class="toggle-radio">
+                            <label for="partner-cal-lunar" class="toggle-label">음력</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 상대방 태어난 시간 -->
+                <div class="input-group">
+                    <label>
+                        <span>상대방 태어난 시간 (時柱)</span>
+                        <span class="badge">시주 정밀 감정</span>
+                    </label>
+                    <div class="select-wrapper">
+                        <select id="partner_birth_time" class="input-field">
+                            <option value="12:00">시간 모름 (삼주 기준 풀이)</option>
+                            <option value="00:30">자시 (子時) · 23:30 ~ 01:30</option>
+                            <option value="02:30">축시 (丑時) · 01:30 ~ 03:30</option>
+                            <option value="04:30">인시 (寅時) · 03:30 ~ 05:30</option>
+                            <option value="06:30">묘시 (卯時) · 05:30 ~ 07:30</option>
+                            <option value="08:30">진시 (辰時) · 07:30 ~ 09:30</option>
+                            <option value="10:30">사시 (巳時) · 09:30 ~ 11:30</option>
+                            <option value="12:30">오시 (午時) · 11:30 ~ 13:30</option>
+                            <option value="14:30">미시 (未時) · 13:30 ~ 15:30</option>
+                            <option value="16:30">신시 (申時) · 15:30 ~ 17:30</option>
+                            <option value="18:30">유시 (酉時) · 17:30 ~ 19:30</option>
+                            <option value="20:30">술시 (戌時) · 19:30 ~ 21:30</option>
+                            <option value="22:30">해시 (亥時) · 21:30 ~ 23:30</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 상대방 음력 윤달 체크박스 -->
+                <div class="input-group" id="partner-leap-month-group" style="display: none;">
+                    <label>
+                        <span>상대방 윤달 여부</span>
+                        <span class="badge">음력 윤달</span>
+                    </label>
+                    <label class="checkbox-group" style="margin: 0;">
+                        <input type="checkbox" id="partner_is_leap_month">
+                        <span>해당 월이 윤달에 속합니다.</span>
+                    </label>
+                </div>
+
+                <!-- 상대방 성함 -->
+                <div class="input-group">
+                    <label>
+                        <span>상대방 성함 (姓名)</span>
+                        <span class="badge">선택</span>
+                    </label>
+                    <input type="text" id="partner_name" class="input-field" placeholder="미입력 시 '인연'으로 불리옵니다" maxlength="20">
+                </div>
             </div>
 
             <!-- 5. 약관 동의 -->
@@ -2304,18 +2407,40 @@
         });
     }
 
+    // 현재 선택된 카테고리 (saju, gunghap, today, tojeong)
+    let currentCategory = 'saju';
+
     /**
-     * [UX 요구사항] 카테고리 클릭 시 화면 전환 (Fade-out -> Fade-in)
+     * [UX 요구사항] 카테고리 클릭 시 화면 전환 (Fade-out -> Fade-in) 및 궁합 폼 동적 확장
      */
-    function openSajuForm(categoryName, categoryDesc) {
+    function openSajuForm(categoryKey, categoryName, categoryDesc) {
+        currentCategory = categoryKey || 'saju';
+
         const catScreen = document.getElementById('category-screen');
         const formScreen = document.getElementById('form-screen');
         const badge = document.getElementById('chosen-cat-badge');
         const descEl = document.getElementById('form-danja-desc');
+        const titleEl = document.querySelector('.form-danja-title');
+        const submitBtn = document.getElementById('submit-btn');
+        const partnerSection = document.getElementById('partner-saju-section');
+        const user1Title = document.getElementById('user1-section-title');
 
         if (badge) badge.textContent = categoryName;
         if (descEl && categoryDesc) {
             descEl.textContent = `${categoryDesc} - 사주 단자를 적어 올리시오.`;
+        }
+
+        // [인연과 궁합] 카테고리일 때만 폼을 확장하여 두 사람 정보 입력 UI 가동
+        if (currentCategory === 'gunghap') {
+            if (titleEl) titleEl.textContent = "두 사람의 사주 단자를 적어 올리시오";
+            if (user1Title) user1Title.style.display = 'block';
+            if (partnerSection) partnerSection.style.display = 'block';
+            if (submitBtn) submitBtn.innerHTML = "<span>두 분의 궁합 단자 올리기 ➔</span>";
+        } else {
+            if (titleEl) titleEl.textContent = "이곳에 사주 단자를 적어 올리시오";
+            if (user1Title) user1Title.style.display = 'none';
+            if (partnerSection) partnerSection.style.display = 'none';
+            if (submitBtn) submitBtn.innerHTML = "<span>사주 단자 올리기 ➔</span>";
         }
 
         // 카테고리 Fade-out 후 폼 Fade-in
@@ -2338,60 +2463,115 @@
     }
 
     /**
-     * [UX 요구사항] 생년월일 꽉 차면 자동으로 다음 칸 이동 & 엄격한 자릿수 제어
+     * [UX 요구사항] 생년월일 꽉 차면 자동으로 다음 칸 이동 & 엄격한 자릿수 제어 (본인 및 상대방)
      */
     function initDateInputs() {
+        // 1. 본인 입력창
         const yearInput = document.getElementById('year');
         const monthInput = document.getElementById('month');
         const dayInput = document.getElementById('day');
 
-        if (!yearInput || !monthInput || !dayInput) return;
+        if (yearInput && monthInput && dayInput) {
+            yearInput.addEventListener('input', (e) => {
+                let val = e.target.value.replace(/[^0-9]/g, '');
+                if (val.length > 4) val = val.slice(0, 4);
+                e.target.value = val;
+                if (val.length === 4) {
+                    monthInput.focus();
+                    monthInput.select();
+                }
+            });
 
-        // 1. 년도 (4자리)
-        yearInput.addEventListener('input', (e) => {
-            let val = e.target.value.replace(/[^0-9]/g, '');
-            if (val.length > 4) val = val.slice(0, 4);
-            e.target.value = val;
-            if (val.length === 4) {
-                monthInput.focus();
-                monthInput.select();
-            }
-        });
+            monthInput.addEventListener('input', (e) => {
+                let val = e.target.value.replace(/[^0-9]/g, '');
+                if (val.length > 2) val = val.slice(0, 2);
+                e.target.value = val;
+                if (val.length === 2) {
+                    dayInput.focus();
+                    dayInput.select();
+                }
+            });
 
-        // 2. 월 (2자리, 최대 12)
-        monthInput.addEventListener('input', (e) => {
-            let val = e.target.value.replace(/[^0-9]/g, '');
-            if (val.length > 2) val = val.slice(0, 2);
-            e.target.value = val;
+            monthInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && monthInput.value === '') {
+                    yearInput.focus();
+                }
+            });
 
-            if (val.length === 2) {
-                dayInput.focus();
-                dayInput.select();
-            }
-        });
+            dayInput.addEventListener('input', (e) => {
+                let val = e.target.value.replace(/[^0-9]/g, '');
+                if (val.length > 2) val = val.slice(0, 2);
+                e.target.value = val;
+                if (val.length === 2) {
+                    const nameInput = document.getElementById('name');
+                    if (nameInput) nameInput.focus();
+                }
+            });
 
-        monthInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace' && monthInput.value === '') {
-                yearInput.focus();
-            }
-        });
+            dayInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && dayInput.value === '') {
+                    monthInput.focus();
+                }
+            });
+        }
 
-        // 3. 일 (2자리, 최대 31)
-        dayInput.addEventListener('input', (e) => {
-            let val = e.target.value.replace(/[^0-9]/g, '');
-            if (val.length > 2) val = val.slice(0, 2);
-            e.target.value = val;
+        // 2. 상대방(궁합) 입력창
+        const pYearInput = document.getElementById('partner_year');
+        const pMonthInput = document.getElementById('partner_month');
+        const pDayInput = document.getElementById('partner_day');
 
-            if (val.length === 2) {
-                const nameInput = document.getElementById('name');
-                if (nameInput) nameInput.focus();
-            }
-        });
+        if (pYearInput && pMonthInput && pDayInput) {
+            pYearInput.addEventListener('input', (e) => {
+                let val = e.target.value.replace(/[^0-9]/g, '');
+                if (val.length > 4) val = val.slice(0, 4);
+                e.target.value = val;
+                if (val.length === 4) {
+                    pMonthInput.focus();
+                    pMonthInput.select();
+                }
+            });
 
-        dayInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace' && dayInput.value === '') {
-                monthInput.focus();
-            }
+            pMonthInput.addEventListener('input', (e) => {
+                let val = e.target.value.replace(/[^0-9]/g, '');
+                if (val.length > 2) val = val.slice(0, 2);
+                e.target.value = val;
+                if (val.length === 2) {
+                    pDayInput.focus();
+                    pDayInput.select();
+                }
+            });
+
+            pMonthInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && pMonthInput.value === '') {
+                    pYearInput.focus();
+                }
+            });
+
+            pDayInput.addEventListener('input', (e) => {
+                let val = e.target.value.replace(/[^0-9]/g, '');
+                if (val.length > 2) val = val.slice(0, 2);
+                e.target.value = val;
+                if (val.length === 2) {
+                    const pNameInput = document.getElementById('partner_name');
+                    if (pNameInput) pNameInput.focus();
+                }
+            });
+
+            pDayInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && pDayInput.value === '') {
+                    pMonthInput.focus();
+                }
+            });
+        }
+
+        // 상대방 음력 윤달 토글
+        document.querySelectorAll('input[name="partner_calendar"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                const leapGroup = document.getElementById('partner-leap-month-group');
+                if (leapGroup) {
+                    leapGroup.style.display = (radio.value === '음력' && radio.checked) ? 'block' : 'none';
+                }
+            });
         });
     }
 
@@ -2407,11 +2587,16 @@
     function goBackToCategories() {
         const catScreen = document.getElementById('category-screen');
         const formScreen = document.getElementById('form-screen');
+        const partnerSection = document.getElementById('partner-saju-section');
+        const user1Title = document.getElementById('user1-section-title');
 
         formScreen.style.opacity = '0';
         formScreen.style.transform = 'translateY(10px)';
         setTimeout(() => {
             formScreen.style.display = 'none';
+            if (partnerSection) partnerSection.style.display = 'none';
+            if (user1Title) user1Title.style.display = 'none';
+
             catScreen.style.display = 'block';
             catScreen.style.opacity = '0';
             catScreen.style.transform = 'translateY(-10px)';
@@ -2459,6 +2644,23 @@
         const pillarsDetail = apiData.pillars_detail || {};
         const elementsCount = apiData.elements_count || {};
         const dayMaster = apiData.day_master || "甲";
+
+        const activeCat = apiData.category || currentCategory;
+        const heroTitle = document.querySelector('.result-hero-title');
+        const heroSub = document.querySelector('.result-hero-sub');
+        if (activeCat === 'gunghap') {
+            if (heroTitle) heroTitle.textContent = "인연과 궁합 감정 결과지";
+            if (heroSub) heroSub.textContent = "두 사람의 명식을 대조하여 음양오행의 상생상극과 백년가약의 비책을 풀이하였소이다.";
+        } else if (activeCat === 'today') {
+            if (heroTitle) heroTitle.textContent = "오늘의 운세 감정 결과지";
+            if (heroSub) heroSub.textContent = "금일 일진(日辰)과 선비님의 본원을 대조하여 하루의 길흉화복을 풀이하였소이다.";
+        } else if (activeCat === 'tojeong') {
+            if (heroTitle) heroTitle.textContent = "토정비결 신수 감정 결과지";
+            if (heroSub) heroSub.textContent = "토정 이지함 선생의 비결서에 의거하여 올 한 해 열두 달의 신수를 풀이하였소이다.";
+        } else {
+            if (heroTitle) heroTitle.textContent = "사주 감정 결과지";
+            if (heroSub) heroSub.textContent = "올리신 사주 단자를 바탕으로 음양오행과 대운의 물줄기를 풀이하였소이다.";
+        }
 
         const nameEl = document.getElementById('res-user-name');
         const birthEl = document.getElementById('res-user-birth');
@@ -2961,6 +3163,57 @@
         const pBar = document.getElementById('p-bar');
         const stepTitle = document.getElementById('step-title');
 
+        // [인연과 궁합] 선택 시 상대방 사주 단자 유효성 검사 및 데이터 추출
+        let partnerData = null;
+        if (currentCategory === 'gunghap') {
+            const pYVal = document.getElementById('partner_year').value.trim();
+            const pMVal = document.getElementById('partner_month').value.trim();
+            const pDVal = document.getElementById('partner_day').value.trim();
+
+            if (!pYVal || !pMVal || !pDVal) {
+                alert("상대방의 생년월일을 빠짐없이 입력해 주세요.");
+                return;
+            }
+
+            const pYNum = parseInt(pYVal, 10);
+            const pMNum = parseInt(pMVal, 10);
+            const pDNum = parseInt(pDVal, 10);
+            if (isNaN(pYNum) || pYNum < 1900 || pYNum > currentYear) {
+                alert(`상대방의 출생 연도는 1900년 ~ ${currentYear}년 사이로 입력해 주세요.`);
+                return;
+            }
+            if (isNaN(pMNum) || pMNum < 1 || pMNum > 12) {
+                alert("상대방의 출생 월은 1 ~ 12 사이로 입력해 주세요.");
+                return;
+            }
+            const pDaysInMonth = new Date(pYNum, pMNum, 0).getDate();
+            if (isNaN(pDNum) || pDNum < 1 || pDNum > pDaysInMonth) {
+                alert(`상대방의 ${pMNum}월 날짜는 1 ~ ${pDaysInMonth}일 사이로 입력해 주세요.`);
+                return;
+            }
+
+            const pY = pYVal.padStart(4, '0');
+            const pM = pMVal.padStart(2, '0');
+            const pD = pDVal.padStart(2, '0');
+            const pGender = document.querySelector('input[name="partner_gender"]:checked').value;
+            const pCalendar = document.querySelector('input[name="partner_calendar"]:checked').value;
+            const pNameInput = document.getElementById('partner_name');
+            const pRawName = pNameInput ? pNameInput.value.trim() : "";
+            const pFinalName = (!pRawName || pRawName.length === 0) ? "인연" : pRawName;
+            const pBirthTime = document.getElementById('partner_birth_time').value;
+            const pLeapEl = document.getElementById('partner_is_leap_month');
+            const pIsLeapMonth = !!pLeapEl && pLeapEl.checked;
+
+            partnerData = {
+                name: pFinalName,
+                gender: pGender,
+                birth_date: `${pY}-${pM}-${pD}`,
+                birth_time: pBirthTime,
+                birth_type: pCalendar,
+                is_leap_month: pIsLeapMonth
+            };
+        }
+
         // 로딩 화면 전환 (붓글씨 애니메이션 가동)
         formScreen.style.display = 'none';
         loadingScreen.style.display = 'flex';
@@ -2971,15 +3224,45 @@
         const logsContainer = document.getElementById('loading-logs');
         if (logsContainer) logsContainer.innerHTML = '';
 
-        const logSequence = [
-            "▸ 사주 단자의 네 기둥(四柱)을 봉심(奉審)하는 중...",
-            "▸ 일간과 월지의 오행 상호작용 및 신살 계산 완료",
-            "▸ 10년 대운의 물줄기와 부귀영화 황금기 도출 중...",
-            "▸ 재물운과 적성 직업운 심층 데이터 추출 중...",
-            `▸ ${finalName} 맞춤형 심층 운명서 편찬 완료!`,
-            "▸ 액운 방지 및 길운 개운 비책 정리 중...",
-            "▸ 최종 심층 리포트 데이터 검수 완료"
-        ];
+        // 카테고리별 맞춤 점술방 秘傳 로그 시퀀스
+        let logSequence = [];
+        if (currentCategory === 'gunghap') {
+            const pName = partnerData ? partnerData.name : "인연";
+            logSequence = [
+                "▸ 두 분의 사주 단자를 정성껏 봉심(奉審)하는 중...",
+                "▸ 일간과 오행의 상생상극 및 음양 조화 계산 완료",
+                "▸ 전생과 현생을 잇는 인연의 깊이와 갈등 지점 분석 중...",
+                `▸ ${finalName} 선비님과 ${pName} 님의 백년해로 비책 도출 중...`,
+                "▸ 조선시대풍 3대 관계 개운법 정리 중...",
+                "▸ 최종 궁합 감정서 편찬 완료!"
+            ];
+        } else if (currentCategory === 'today') {
+            logSequence = [
+                "▸ 오늘의 일진(日辰)과 천기를 봉심(奉審)하는 중...",
+                "▸ 선비님의 일간과 오늘의 천간/지지 대조 완료",
+                "▸ 귀인(貴人)이 오는 길한 방위와 승부 시간대 도출 중...",
+                "▸ 오늘 반드시 피해야 할 액운과 경계 요인 분석 중...",
+                "▸ 하루를 승리로 이끄는 금일 비책(秘策) 정리 완료!"
+            ];
+        } else if (currentCategory === 'tojeong') {
+            logSequence = [
+                "▸ 토정 이지함 선생의 신수 비결서를 펼치는 중...",
+                "▸ 올해 세운(歲運)과 선비님의 사주 원국 대조 완료",
+                "▸ 상반기와 하반기 12달의 운기 흐름 분석 중...",
+                "▸ 올해 반드시 잡아야 할 천운의 기회 및 삼재팔난 경고 도출 중...",
+                "▸ 토정 선생의 최종 신수 총평 작성 완료!"
+            ];
+        } else {
+            logSequence = [
+                "▸ 사주 단자의 네 기둥(四柱)을 봉심(奉審)하는 중...",
+                "▸ 일간과 월지의 오행 상호작용 및 신살 계산 완료",
+                "▸ 10년 대운의 물줄기와 부귀영화 황금기 도출 중...",
+                "▸ 재물운과 적성 직업운 심층 데이터 추출 중...",
+                `▸ ${finalName} 맞춤형 심층 운명서 편찬 완료!`,
+                "▸ 액운 방지 및 길운 개운 비책 정리 중...",
+                "▸ 최종 심층 리포트 데이터 검수 완료"
+            ];
+        }
 
         let logIdx = 0;
         function pushNextLog() {
@@ -3029,7 +3312,9 @@
             birth_date: `${y}-${m}-${d}`,
             birth_time: birthTime,
             birth_type: calendar,
-            is_leap_month: isLeapMonth
+            is_leap_month: isLeapMonth,
+            category: currentCategory,
+            partner: partnerData
         };
 
         try {
