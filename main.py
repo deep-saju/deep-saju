@@ -566,10 +566,49 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
             db.rollback()
             print(f"[WARNING] DB 저장 건너뜀 (서버리스 환경): {db_err}")
         
+        # 궁합 점수 (0~100) 추출 또는 역학 기반 산출
+        gunghap_score = None
+        if category == "gunghap":
+            import re
+            m = re.search(r'\[궁합점수:\s*(\d{1,3})\s*점?\]', interpretation_text)
+            if not m:
+                m = re.search(r'궁합\s*점수[는은]?\s*(\d{1,3})\s*점', interpretation_text)
+            if not m:
+                m = re.search(r'(\d{1,3})\s*점\s*\(', interpretation_text)
+            if m:
+                try:
+                    val = int(m.group(1))
+                    if 0 <= val <= 100:
+                        gunghap_score = val
+                except Exception:
+                    pass
+
+            if gunghap_score is None:
+                u1_stem = saju_json_data.get("day_master", "甲")
+                u2_stem = partner_day_master or "己"
+                elem_gen = {"목": "화", "화": "토", "토": "금", "금": "수", "수": "목"}
+                elem_kill = {"목": "토", "토": "수", "수": "화", "화": "금", "금": "목"}
+                from saju_counseling_engine import DAY_MASTER_META
+                e1 = DAY_MASTER_META.get(u1_stem, {}).get("element", "목")
+                e2 = DAY_MASTER_META.get(u2_stem, {}).get("element", "토")
+                if elem_gen.get(e1) == e2:
+                    gunghap_score = 94
+                elif elem_gen.get(e2) == e1:
+                    gunghap_score = 96
+                elif elem_kill.get(e1) == e2:
+                    gunghap_score = 82
+                elif elem_kill.get(e2) == e1:
+                    gunghap_score = 80
+                elif e1 == e2:
+                    gunghap_score = 88
+                else:
+                    gunghap_score = 86
+
         return {
             "status": "success",
             "category": category,
             "interpretation": interpretation_text,
+            "gunghap_score": gunghap_score,
             "elements_count": saju_json_data.get("elements_count", {}),
             "pillars_detail": saju_json_data.get("pillars_detail", {}),
             "day_master": saju_json_data.get("day_master", "甲"),
@@ -594,12 +633,30 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
             req_cat = getattr(user_input, "category", "saju") or "saju"
             fallback_saju = calculate_saju_engine(user_input)
             u_name = user_input.name or "사용자"
+            fallback_partner_info = None
+            fallback_partner_pillars = {}
+            fallback_partner_elements = {}
+            fallback_partner_dm = "己"
+            fallback_gh_score = None
 
             if req_cat == "gunghap":
                 partner_fallback = getattr(user_input, "partner", None) or PartnerInput()
                 p_name = partner_fallback.name or "인연"
                 partner_fallback_saju = calculate_saju_engine(partner_fallback)
+                fallback_partner_info = {
+                    "name": p_name,
+                    "gender": partner_fallback.gender,
+                    "birth_date": partner_fallback.birth_date,
+                    "birth_time": partner_fallback.birth_time,
+                    "birth_type": partner_fallback.birth_type
+                }
+                fallback_partner_pillars = partner_fallback_saju.get("pillars_detail", {})
+                fallback_partner_elements = partner_fallback_saju.get("elements_count", {})
+                fallback_partner_dm = partner_fallback_saju.get("day_master", "己")
                 fallback_text = build_personalized_gunghap_report(u_name, fallback_saju, p_name, partner_fallback_saju)
+                import re
+                m = re.search(r'\[궁합점수:\s*(\d{1,3})\s*점?\]', fallback_text)
+                fallback_gh_score = int(m.group(1)) if m else 88
             elif req_cat == "today":
                 now = datetime.now()
                 solar_today = Solar.fromYmdHms(now.year, now.month, now.day, 12, 0, 0)
@@ -628,9 +685,14 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
                 "status": "success",
                 "category": req_cat,
                 "interpretation": fallback_text,
+                "gunghap_score": fallback_gh_score,
                 "elements_count": fallback_saju.get("elements_count", {}),
                 "pillars_detail": fallback_saju.get("pillars_detail", {}),
                 "day_master": fallback_saju.get("day_master", "甲"),
+                "partner_info": fallback_partner_info,
+                "partner_pillars_detail": fallback_partner_pillars,
+                "partner_elements_count": fallback_partner_elements,
+                "partner_day_master": fallback_partner_dm,
                 "user_info": {
                     "name": u_name,
                     "gender": user_input.gender,

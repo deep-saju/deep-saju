@@ -1532,9 +1532,11 @@
             background: rgba(14, 11, 8, 0.82);
             border: 1.5px solid var(--border-gold);
             border-radius: 6px;
-            padding: 24px 22px;
+            padding: 26px 24px;
             margin: 0 auto 26px auto;
-            max-width: 680px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
             text-align: left;
             box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
         }
@@ -2019,9 +2021,11 @@
             background: linear-gradient(180deg, rgba(28, 22, 16, 0.95) 0%, rgba(18, 14, 11, 0.98) 100%);
             border: 1.5px solid var(--border-gold);
             border-radius: 6px;
-            padding: 26px 22px;
+            padding: 26px 24px;
             margin: 0 auto 26px auto;
-            max-width: 680px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
             text-align: left;
             box-shadow: 0 0 25px rgba(223, 183, 56, 0.15), inset 0 0 20px rgba(0, 0, 0, 0.6);
         }
@@ -2035,7 +2039,9 @@
             border-radius: 6px;
             padding: 28px 24px;
             margin: 0 auto 24px auto;
-            max-width: 680px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
             text-align: center;
             box-shadow: 0 0 30px rgba(223, 183, 56, 0.18), inset 0 0 25px rgba(0, 0, 0, 0.65);
             position: relative;
@@ -3567,6 +3573,8 @@
             if (todayToc) todayToc.style.display = 'none';
 
             // 🌟 궁합 지수 티저 게이지(? %) 및 결제창 직전 심층 운명서 목차 노출
+            window.currentGunghapScore = (typeof apiData.gunghap_score === 'number') ? apiData.gunghap_score : 88;
+            resetGunghapGaugeTeaser();
             if (gunghapGauge) gunghapGauge.style.display = 'block';
             if (gunghapToc) gunghapToc.style.display = 'block';
 
@@ -4189,6 +4197,84 @@
         aiContent.classList.add('teaser-mode');
     }
 
+    function resetGunghapGaugeTeaser() {
+        const qmarkEl = document.querySelector('.teaser-gauge-qmark');
+        if (qmarkEl) {
+            qmarkEl.innerHTML = '? <span class="qmark-unit">%</span>';
+            qmarkEl.style.color = '';
+            qmarkEl.style.textShadow = '';
+        }
+        const lockedLabelEl = document.querySelector('.teaser-gauge-locked-label');
+        if (lockedLabelEl) {
+            lockedLabelEl.textContent = '🔒 비전 봉인중';
+            lockedLabelEl.style.background = '';
+            lockedLabelEl.style.borderColor = '';
+            lockedLabelEl.style.color = '';
+        }
+        const ctaHeadlineEl = document.querySelector('.teaser-gauge-cta-headline');
+        if (ctaHeadlineEl) {
+            ctaHeadlineEl.innerHTML = '두 사람의 천생연분 지수는? <span class="teaser-highlight">(심층 운명서 결제 후 공개됩니다)</span>';
+        }
+        const hanjaEl = document.querySelector('.teaser-gauge-hanja');
+        if (hanjaEl) {
+            hanjaEl.textContent = '宮合指數 · 秘傳封印';
+        }
+        const ringEl = document.querySelector('.teaser-gauge-ring');
+        if (ringEl) {
+            ringEl.style.background = 'conic-gradient(var(--text-gold) 0deg 245deg, rgba(223, 183, 56, 0.18) 245deg 360deg)';
+        }
+    }
+
+    function unlockGunghapGaugeScore() {
+        const gaugeCard = document.getElementById('gunghap-teaser-gauge-card');
+        if (!gaugeCard || gaugeCard.style.display === 'none') return;
+
+        const targetScore = (typeof window.currentGunghapScore === 'number') ? window.currentGunghapScore : 88;
+        const qmarkEl = document.querySelector('.teaser-gauge-qmark');
+        const lockedLabelEl = document.querySelector('.teaser-gauge-locked-label');
+        const ctaHeadlineEl = document.querySelector('.teaser-gauge-cta-headline');
+        const hanjaEl = document.querySelector('.teaser-gauge-hanja');
+        const ringEl = document.querySelector('.teaser-gauge-ring');
+
+        if (qmarkEl) {
+            let start = Math.max(10, targetScore - 30);
+            let current = start;
+            qmarkEl.style.transition = 'all 0.3s ease';
+            
+            const countTimer = setInterval(() => {
+                current += 2;
+                if (current >= targetScore) {
+                    current = targetScore;
+                    clearInterval(countTimer);
+                    qmarkEl.innerHTML = `${targetScore} <span class="qmark-unit">%</span>`;
+                    qmarkEl.style.color = 'var(--text-gold-light)';
+                    qmarkEl.style.textShadow = '0 0 20px rgba(255, 240, 189, 0.95), 0 0 35px rgba(223, 183, 56, 0.8)';
+                } else {
+                    qmarkEl.innerHTML = `${current} <span class="qmark-unit">%</span>`;
+                }
+                if (ringEl) {
+                    const deg = Math.round(current * 3.6);
+                    ringEl.style.background = `conic-gradient(var(--text-gold) 0deg ${deg}deg, rgba(223, 183, 56, 0.18) ${deg}deg 360deg)`;
+                }
+            }, 30);
+        }
+
+        if (lockedLabelEl) {
+            lockedLabelEl.textContent = '✓ 천생연분 확인 완료';
+            lockedLabelEl.style.background = 'rgba(43, 122, 109, 0.4)';
+            lockedLabelEl.style.borderColor = 'var(--point-jade-light)';
+            lockedLabelEl.style.color = 'var(--text-gold-light)';
+        }
+
+        if (ctaHeadlineEl) {
+            ctaHeadlineEl.innerHTML = `두 사람의 천생연분 궁합 지수는 <span class="teaser-highlight" style="color: var(--text-gold); font-size: 20px; font-weight: 800;">${targetScore}%</span> 입니다!`;
+        }
+
+        if (hanjaEl) {
+            hanjaEl.textContent = '宮合指數 · 秘傳解禁';
+        }
+    }
+
     function handlePaywallClick() {
         const lockBanner = document.getElementById('paywall-lock-banner');
         const aiContent = document.getElementById('ai-content');
@@ -4223,6 +4309,9 @@
                 stickyBtn.style.borderColor = 'var(--point-jade-light)';
             }
         }
+
+        // 🌟 [궁합 전용] 결제 잠금 해제 시 실제 궁합 점수로 부드럽게 전환
+        unlockGunghapGaugeScore();
 
         setTimeout(() => {
             if (aiContent) {
@@ -4546,7 +4635,10 @@
         const todayDash = document.getElementById('today-dashboard-section');
         if (todayDash) todayDash.style.display = 'none';
         const ghGauge = document.getElementById('gunghap-teaser-gauge-card');
-        if (ghGauge) ghGauge.style.display = 'none';
+        if (ghGauge) {
+            ghGauge.style.display = 'none';
+            resetGunghapGaugeTeaser();
+        }
         const ghToc = document.getElementById('gunghap-toc-card');
         if (ghToc) ghToc.style.display = 'none';
         const todayToc = document.getElementById('today-toc-card');

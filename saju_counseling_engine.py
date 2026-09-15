@@ -734,7 +734,8 @@ SYSTEM_GUNGHAP_PROMPT = """당신은 조선 왕실의 국사(國師)이자 사�
 4. 두 사람이 함께하면 좋은 '데이트 방위(방향)'나 '행운의 취미(함께할 소일거리)'를 구체적으로 덧붙이시오.
 5. 갈등을 극복하고 백년해로하기 위한 '조선시대풍 3대 관계 개운 비책'을 상세하고 방대하게 서술하시오.
 6. 호칭은 '의뢰인 선비님(이름)'과 '배필(상대방 이름)'로 부르며, 모든 풀이는 두 사람의 실제 일간과 오행 데이터에 기반하여 100% 개별화하여 작성하시오.
-7. 마크다운 규격: 각 장은 반드시 '### ' 머릿글로 시작하여 카드로 분리될 수 있게 하시오."""
+7. 두 사람의 최종 궁합 점수를 0에서 100 사이의 숫자로 반드시 산정하여 본문 내에 '[궁합점수: XX점]' 형태로 명확하게 기재하시오.
+8. 마크다운 규격: 각 장은 반드시 '### ' 머릿글로 시작하여 카드로 분리될 수 있게 하시오."""
 
 def build_gunghap_gemini_prompt(u1_name: str, u1_saju: dict, u2_name: str, u2_saju: dict) -> str:
     u1_stem = u1_saju.get("day_master", "甲")
@@ -758,6 +759,7 @@ def build_gunghap_gemini_prompt(u1_name: str, u1_saju: dict, u2_name: str, u2_sa
 [작성 지침 - 내용 대폭 확장 요구]
 위 두 사람의 일간과 오행을 대조하여 내용을 대폭 늘려서 작성하시오.
 단순한 상생/상극을 넘어서, '두 사람 중 관계의 주도권(기운)을 쥐고 있는 사람은 누구인지', '크게 다투었을 때 먼저 사과해야 풀리는 쪽은 누구인지(화해 비책)'를 명확히 판별하고, 두 사람이 함께하면 좋은 '데이트 방위(방향)'와 '행운의 취미'를 덧붙여 분량을 풍성하게 작성하시오.
+또한 두 사람의 최종 궁합 점수를 0에서 100 사이의 숫자로 반드시 산출하여 '[궁합점수: XX점]' 형태로 본문 내에 기재하시오.
 어투는 조선 도사의 고풍스럽고 묵직한 하오체/하게체를 엄수하시오:
 
 ### 📜 두 분의 천생인연과 오행 상생상극 총평
@@ -785,22 +787,27 @@ def build_personalized_gunghap_report(u1_name: str, u1_saju: dict, u2_name: str,
     if elem_gen.get(e1) == e2:
         rel_type = f"{m1['name']}이 {m2['name']}을 생(生)하여 주는 수어지교(水魚之交)의 상생"
         compat_summary = f"{u1} 선비님께서 {u2} 님을 아낌없이 북돋우고 품어주는 지극한 상생의 연분"
+        numeric_score = 94
         harmony_score = "94점 (천생의 연분)"
     elif elem_gen.get(e2) == e1:
         rel_type = f"{m2['name']}이 {u1} 선비님의 {m1['name']}을 든든히 뒷받침하는 지극한 보필의 상생"
         compat_summary = f"{u2} 님의 온기와 헌신이 {u1} 선비님의 앞길을 든든하게 지탱해 주는 복된 배필"
+        numeric_score = 96
         harmony_score = "96점 (천록귀인의 연분)"
     elif elem_kill.get(e1) == e2:
         rel_type = f"{m1['name']}이 {m2['name']}을 통제하고 이끄는 정복과 훈도의 상극"
         compat_summary = f"강렬한 긴장감과 이끌림이 공존하는 사이로, 서로의 경계를 존중할 때 비로소 거대한 결실을 맺는 연분"
+        numeric_score = 82
         harmony_score = "82점 (연마와 성장의 연분)"
     elif elem_kill.get(e2) == e1:
         rel_type = f"{m2['name']}이 {u1} 선비님의 {m1['name']}을 담금질하는 쇠와 불의 상극"
         compat_summary = f"처음에는 주도권 다툼이 치열할 수 있으나, 서로를 다듬어 보석으로 빚어내는 단련의 연분"
+        numeric_score = 80
         harmony_score = "80점 (담금질의 연분)"
     else:
         rel_type = f"서로 같은 {e1} 기운을 공유하여 뜻과 보폭이 한결같은 비화(比和)의 연분"
         compat_summary = f"거울을 보듯 서로의 생각과 이상을 손바닥 보듯 꿰뚫어 보는 도원결의의 연분"
+        numeric_score = 88
         harmony_score = "88점 (영혼의 동반자)"
 
     # 주도권 판별
@@ -814,7 +821,7 @@ def build_personalized_gunghap_report(u1_name: str, u1_saju: dict, u2_name: str,
 
 {u1} 선비님({m1['name']}, {m1['metaphor']})과 {u2} 님({m2['name']}, {m2['metaphor']})의 명식을 맞대어 보니, **{rel_type}**의 기운이 두 사람의 운명을 붉은 실로 동여매고 있사옵니다.
 
-두 분의 궁합 점수는 **{harmony_score}**에 달하며, {compat_summary}이옵니다. 서로의 사주에서 넘치는 기운은 덜어내고 부족한 기운은 채워줄 수 있는 상호보완의 혈맥이 흐르고 있으니, 만남 자체가 서로에게 크나큰 인생의 전환점이 되었을 것이옵니다.
+두 분의 궁합 점수는 **{harmony_score}** [궁합점수: {numeric_score}점]에 달하며, {compat_summary}이옵니다. 서로의 사주에서 넘치는 기운은 덜어내고 부족한 기운은 채워줄 수 있는 상호보완의 혈맥이 흐르고 있으니, 만남 자체가 서로에게 크나큰 인생의 전환점이 되었을 것이옵니다.
 
 ### 🔮 일간(日干)과 오행의 조화 및 관계의 주도권(기운의 우위)
 
