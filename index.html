@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>조선 점술가의 방 | 심층 사주명리</title>
+    <title>명리학연구소 | 조선 심층 사주명리</title>
     
     <!-- 고풍스러운 명조 폰트 (Gowun Batang, Nanum Myeongjo, Noto Serif KR) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -300,17 +300,38 @@
             box-shadow: 0 14px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(223, 183, 56, 0.35);
         }
 
-        /* 카드 상단 이미지 영역 (워터마크 완벽 크롭) */
+        /* 카드 상단 이미지 영역 (피사체와 텍스트가 잘리지 않도록 높이와 스케일 최적화) */
         .cat-img-box {
             width: 100%;
-            height: 180px;
+            height: 230px;
             background: #110e0b;
             border-bottom: 1px solid var(--border-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .cat-img-box .wm-crop-img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            object-position: center center !important;
+            /* 위아래 텍스트와 그림이 잘리지 않도록 절제된 스케일과 좌상단 미세 이동 */
+            transform: scale(1.05) translate(-1%, -1%) !important;
+            transform-origin: center center !important;
+            transition: transform 0.4s ease;
         }
 
         .cat-card:hover .wm-crop-img {
-            transform: scale(1.22) !important;
-            transition: transform 0.5s ease;
+            transform: scale(1.10) translate(-1%, -1%) !important;
+        }
+
+        @media (max-width: 640px) {
+            .cat-img-box {
+                height: 200px;
+            }
         }
 
         /* 카드 하단 텍스트 */
@@ -503,9 +524,22 @@
             -webkit-appearance: none;
         }
 
+        /* 숫자 입력 스핀 버튼(위아래 스크롤 화살표) 완전 제거 */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="tel"]::-webkit-inner-spin-button,
+        input[type="tel"]::-webkit-outer-spin-button {
+            -webkit-appearance: none !important;
+            margin: 0 !important;
+        }
+
+        input[type="number"], input[type="tel"] {
+            -moz-appearance: textfield !important;
+        }
+
         .date-inputs input {
             text-align: center;
-            padding: 0 22px 0 8px;
+            padding: 0 20px 0 8px;
             font-weight: 700;
             letter-spacing: 0.5px;
         }
@@ -1769,14 +1803,14 @@
 </head>
 <body>
 
-<!-- 🌟 [신규] 최상단 브랜드 네비게이션 헤더 바 -->
+<!-- 🌟 최상단 브랜드 네비게이션 헤더 바 -->
 <header class="top-gnb-bar">
     <div class="gnb-inner">
         <div class="gnb-brand" onclick="goBackToCategories()">
-            <span class="gnb-stamp">秘傳</span>
+            <span class="gnb-stamp">硏究所</span>
             <div class="gnb-title-wrap">
-                <span class="gnb-title">천기비전 · 심층사주 (天氣秘傳)</span>
-                <span class="gnb-sub">조선 왕실 비전 명리학연구소</span>
+                <span class="gnb-title">명리학연구소</span>
+                <span class="gnb-sub">조선 왕실 비전 심층 사주명리</span>
             </div>
         </div>
         <div class="gnb-badge-right">
@@ -1888,15 +1922,15 @@
                 </label>
                 <div class="date-inputs">
                     <div class="date-input-wrap">
-                        <input type="number" id="year" class="input-field" placeholder="1995" min="1900" inputmode="numeric">
+                        <input type="tel" id="year" class="input-field" placeholder="1995" maxlength="4" inputmode="numeric" autocomplete="off">
                         <span class="unit">년</span>
                     </div>
                     <div class="date-input-wrap">
-                        <input type="number" id="month" class="input-field" placeholder="08" min="1" max="12">
+                        <input type="tel" id="month" class="input-field" placeholder="08" maxlength="2" inputmode="numeric" autocomplete="off">
                         <span class="unit">월</span>
                     </div>
                     <div class="date-input-wrap">
-                        <input type="number" id="day" class="input-field" placeholder="20" min="1" max="31">
+                        <input type="tel" id="day" class="input-field" placeholder="20" maxlength="2" inputmode="numeric" autocomplete="off">
                         <span class="unit">일</span>
                     </div>
                 </div>
@@ -2162,47 +2196,54 @@
                     <h3 class="lock-banner-title">무료 사주에서는 여기까지 확인할 수 있습니다.</h3>
                     <p class="lock-banner-desc">다가오는 10년 대운 속에서 타고난 기운을 어떻게 무기로 활용할지, 재물과 액운 방지 비책의 모든 풀이를 열어보려 합니다.</p>
                     
-                    <!-- 🌟 [신규] 결제 전 심층 운명서 수록 비전 목차 -->
+                    <!-- 🌟 결제 전 심층 운명서 수록 비전 목차 (제 1장 ~ 제 6장) -->
                     <div class="paywall-toc-card">
                         <div class="toc-header">
-                            <span class="toc-header-hanja">目 錄</span>
-                            <h4 class="toc-header-title">심층 운명서 전편(全篇) 수록 비전</h4>
-                            <span class="toc-header-sub">결제 즉시 열람 가능한 5대 핵심 비책 권차</span>
+                            <span class="toc-header-hanja" style="letter-spacing: 1px;">목차</span>
+                            <h4 class="toc-header-title">심층 운명서 전편(全篇) 수록 목차</h4>
+                            <span class="toc-header-sub">결제 즉시 열람 가능한 전 6장 심층 비전</span>
                         </div>
                         <div class="toc-grid">
                             <div class="toc-item">
-                                <span class="toc-num">第 1 卷</span>
+                                <span class="toc-num">제 1장</span>
                                 <div class="toc-content">
-                                    <strong class="toc-title">평생의 재물운과 부(富)의 그릇</strong>
-                                    <p class="toc-desc">정재와 편재의 배합, 재물이 새는 구멍 방지 및 <strong>맞춤형 3대 재테크 처방</strong></p>
+                                    <strong class="toc-title">본연의 성향과 잠재력 (일간 + 월지 중심)</strong>
+                                    <p class="toc-desc">오행 중 나를 상징하는 본원과 숨은 잠재력, 내면을 다스리는 <strong>마음 개운법</strong></p>
                                 </div>
                             </div>
                             <div class="toc-item">
-                                <span class="toc-num">第 2 卷</span>
+                                <span class="toc-num">제 2장</span>
                                 <div class="toc-content">
-                                    <strong class="toc-title">적성과 직업운, 사회적 성공의 길</strong>
-                                    <p class="toc-desc">내 역량이 200% 폭발하는 <strong>추천 현대 직업 3가지</strong>와 직장 생존 전략</p>
+                                    <strong class="toc-title">재물과 자산의 흐름 (재성, 식상 중심)</strong>
+                                    <p class="toc-desc">평생 동안 들어올 부의 크기, 재물 누수 방지 및 <strong>맞춤형 3대 재테크 솔루션</strong></p>
                                 </div>
                             </div>
                             <div class="toc-item">
-                                <span class="toc-num">第 3 卷</span>
+                                <span class="toc-num">제 3장</span>
                                 <div class="toc-content">
-                                    <strong class="toc-title">평생의 인연과 애정·배우자 복</strong>
-                                    <p class="toc-desc">나를 일으켜 세울 평생의 귀인(貴人)과 피해야 할 악연, 부부 연의 깊이</p>
+                                    <strong class="toc-title">직업과 사회생활 (관성, 인성 중심)</strong>
+                                    <p class="toc-desc">내 역량이 200% 폭발하는 <strong>추천 현대 직업군 3가지</strong>와 직장생활 처세 비책</p>
                                 </div>
                             </div>
                             <div class="toc-item">
-                                <span class="toc-num">第 4 卷</span>
+                                <span class="toc-num">제 4장</span>
                                 <div class="toc-content">
-                                    <strong class="toc-title">인생 10년 대운(大運)과 황금기의 전환점</strong>
-                                    <p class="toc-desc">다가오는 3~5년 중 인생의 판도를 바꿀 <strong>대운 승부수 타이밍</strong></p>
+                                    <strong class="toc-title">연애와 인간관계</strong>
+                                    <p class="toc-desc">나를 일으켜 세울 평생의 귀인(貴人)과 피해야 할 인연, 배우자 복과 애정운</p>
                                 </div>
                             </div>
                             <div class="toc-item">
-                                <span class="toc-num">第 5 卷</span>
+                                <span class="toc-num">제 5장</span>
                                 <div class="toc-content">
-                                    <strong class="toc-title">나만을 위한 액운 방지 및 종합 개운법</strong>
-                                    <p class="toc-desc">부족한 기운을 채우고 길운을 당기는 색상·방위·행동 실천 처방전</p>
+                                    <strong class="toc-title">현재의 대운 흐름 (10년 대운 분석)</strong>
+                                    <p class="toc-desc">인생의 황금기 도래 시점과 기회를 포착해 도약하는 <strong>대운 승부수 타이밍</strong></p>
+                                </div>
+                            </div>
+                            <div class="toc-item">
+                                <span class="toc-num">제 6장</span>
+                                <div class="toc-content">
+                                    <strong class="toc-title">종합 카운슬링 및 삶의 나침반</strong>
+                                    <p class="toc-desc">운명을 내 편으로 만드는 맞춤형 조언과 인생 전환점 개운 가이드</p>
                                 </div>
                             </div>
                         </div>
@@ -2288,10 +2329,76 @@
             setTimeout(() => {
                 formScreen.style.opacity = '1';
                 formScreen.style.transform = 'translateY(0)';
+                const yearInput = document.getElementById('year');
+                if (yearInput) yearInput.focus();
             }, 30);
         }, 220);
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /**
+     * [UX 요구사항] 생년월일 꽉 차면 자동으로 다음 칸 이동 & 엄격한 자릿수 제어
+     */
+    function initDateInputs() {
+        const yearInput = document.getElementById('year');
+        const monthInput = document.getElementById('month');
+        const dayInput = document.getElementById('day');
+
+        if (!yearInput || !monthInput || !dayInput) return;
+
+        // 1. 년도 (4자리)
+        yearInput.addEventListener('input', (e) => {
+            let val = e.target.value.replace(/[^0-9]/g, '');
+            if (val.length > 4) val = val.slice(0, 4);
+            e.target.value = val;
+            if (val.length === 4) {
+                monthInput.focus();
+                monthInput.select();
+            }
+        });
+
+        // 2. 월 (2자리, 최대 12)
+        monthInput.addEventListener('input', (e) => {
+            let val = e.target.value.replace(/[^0-9]/g, '');
+            if (val.length > 2) val = val.slice(0, 2);
+            e.target.value = val;
+
+            if (val.length === 2) {
+                dayInput.focus();
+                dayInput.select();
+            }
+        });
+
+        monthInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && monthInput.value === '') {
+                yearInput.focus();
+            }
+        });
+
+        // 3. 일 (2자리, 최대 31)
+        dayInput.addEventListener('input', (e) => {
+            let val = e.target.value.replace(/[^0-9]/g, '');
+            if (val.length > 2) val = val.slice(0, 2);
+            e.target.value = val;
+
+            if (val.length === 2) {
+                const nameInput = document.getElementById('name');
+                if (nameInput) nameInput.focus();
+            }
+        });
+
+        dayInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && dayInput.value === '') {
+                monthInput.focus();
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initDateInputs);
+    } else {
+        initDateInputs();
     }
 
     /**
@@ -2720,7 +2827,7 @@
             return `
                 <article class="deep-chapter-card">
                     <div class="deep-card-header">
-                        <span class="deep-chapter-badge">CHAPTER ${partNum}</span>
+                        <span class="deep-chapter-badge">제 ${idx + 1}장</span>
                         <h3 class="deep-card-title">
                             <span class="card-icon">${icon}</span>
                             <span class="card-title-text">${title}</span>
@@ -3008,44 +3115,51 @@
                 
                 <div class="paywall-toc-card">
                     <div class="toc-header">
-                        <span class="toc-header-hanja">目 錄</span>
-                        <h4 class="toc-header-title">심층 운명서 전편(全篇) 수록 비전</h4>
-                        <span class="toc-header-sub">결제 즉시 열람 가능한 5대 핵심 비책 권차</span>
+                        <span class="toc-header-hanja" style="letter-spacing: 1px;">목차</span>
+                        <h4 class="toc-header-title">심층 운명서 전편(全篇) 수록 목차</h4>
+                        <span class="toc-header-sub">결제 즉시 열람 가능한 전 6장 심층 비전</span>
                     </div>
                     <div class="toc-grid">
                         <div class="toc-item">
-                            <span class="toc-num">第 1 卷</span>
+                            <span class="toc-num">제 1장</span>
                             <div class="toc-content">
-                                <strong class="toc-title">평생의 재물운과 부(富)의 그릇</strong>
-                                <p class="toc-desc">정재와 편재의 배합, 재물이 새는 구멍 방지 및 <strong>맞춤형 3대 재테크 처방</strong></p>
+                                <strong class="toc-title">본연의 성향과 잠재력 (일간 + 월지 중심)</strong>
+                                <p class="toc-desc">오행 중 나를 상징하는 본원과 숨은 잠재력, 내면을 다스리는 <strong>마음 개운법</strong></p>
                             </div>
                         </div>
                         <div class="toc-item">
-                            <span class="toc-num">第 2 卷</span>
+                            <span class="toc-num">제 2장</span>
                             <div class="toc-content">
-                                <strong class="toc-title">적성과 직업운, 사회적 성공의 길</strong>
-                                <p class="toc-desc">내 역량이 200% 폭발하는 <strong>추천 현대 직업 3가지</strong>와 직장 생존 전략</p>
+                                <strong class="toc-title">재물과 자산의 흐름 (재성, 식상 중심)</strong>
+                                <p class="toc-desc">평생 동안 들어올 부의 크기, 재물 누수 방지 및 <strong>맞춤형 3대 재테크 솔루션</strong></p>
                             </div>
                         </div>
                         <div class="toc-item">
-                            <span class="toc-num">第 3 卷</span>
+                            <span class="toc-num">제 3장</span>
                             <div class="toc-content">
-                                <strong class="toc-title">평생의 인연과 애정·배우자 복</strong>
-                                <p class="toc-desc">나를 일으켜 세울 평생의 귀인(貴人)과 피해야 할 악연, 부부 연의 깊이</p>
+                                <strong class="toc-title">직업과 사회생활 (관성, 인성 중심)</strong>
+                                <p class="toc-desc">내 역량이 200% 폭발하는 <strong>추천 현대 직업군 3가지</strong>와 직장생활 처세 비책</p>
                             </div>
                         </div>
                         <div class="toc-item">
-                            <span class="toc-num">第 4 卷</span>
+                            <span class="toc-num">제 4장</span>
                             <div class="toc-content">
-                                <strong class="toc-title">인생 10년 대운(大運)과 황금기의 전환점</strong>
-                                <p class="toc-desc">다가오는 3~5년 중 인생의 판도를 바꿀 <strong>대운 승부수 타이밍</strong></p>
+                                <strong class="toc-title">연애와 인간관계</strong>
+                                <p class="toc-desc">나를 일으켜 세울 평생의 귀인(貴人)과 피해야 할 인연, 배우자 복과 애정운</p>
                             </div>
                         </div>
                         <div class="toc-item">
-                            <span class="toc-num">第 5 卷</span>
+                            <span class="toc-num">제 5장</span>
                             <div class="toc-content">
-                                <strong class="toc-title">나만을 위한 액운 방지 및 종합 개운법</strong>
-                                <p class="toc-desc">부족한 기운을 채우고 길운을 당기는 색상·방위·행동 실천 처방전</p>
+                                <strong class="toc-title">현재의 대운 흐름 (10년 대운 분석)</strong>
+                                <p class="toc-desc">인생의 황금기 도래 시점과 기회를 포착해 도약하는 <strong>대운 승부수 타이밍</strong></p>
+                            </div>
+                        </div>
+                        <div class="toc-item">
+                            <span class="toc-num">제 6장</span>
+                            <div class="toc-content">
+                                <strong class="toc-title">종합 카운슬링 및 삶의 나침반</strong>
+                                <p class="toc-desc">운명을 내 편으로 만드는 맞춤형 조언과 인생 전환점 개운 가이드</p>
                             </div>
                         </div>
                     </div>
