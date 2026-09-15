@@ -1900,6 +1900,8 @@
          2단계: 폼 화면 - "이곳에 사주 단자를 적어 올리시오" (#form-screen)
          ==================================================================== -->
     <section id="form-screen">
+        <!-- 선택된 카테고리 (saju, gunghap, today, tojeong) hidden input -->
+        <input type="hidden" id="selected_category" name="category" value="saju">
         <div class="form-card">
             <!-- 뒤로 가기 네비게이션 -->
             <div class="form-top-nav">
@@ -2300,7 +2302,7 @@
                     <p class="lock-banner-desc">다가오는 10년 대운 속에서 타고난 기운을 어떻게 무기로 활용할지, 재물과 액운 방지 비책의 모든 풀이를 열어보려 합니다.</p>
                     
                     <!-- 🌟 결제 전 심층 운명서 수록 비전 목차 (제 1장 ~ 제 6장) -->
-                    <div class="paywall-toc-card">
+                    <div class="paywall-toc-card" id="paywall-toc-card">
                         <div class="toc-header">
                             <span class="toc-header-hanja" style="letter-spacing: 1px;">목차</span>
                             <h4 class="toc-header-title">심층 운명서 전편(全篇) 수록 목차</h4>
@@ -2415,6 +2417,8 @@
      */
     function openSajuForm(categoryKey, categoryName, categoryDesc) {
         currentCategory = categoryKey || 'saju';
+        const catInput = document.getElementById('selected_category');
+        if (catInput) catInput.value = currentCategory;
 
         const catScreen = document.getElementById('category-screen');
         const formScreen = document.getElementById('form-screen');
@@ -2645,7 +2649,8 @@
         const elementsCount = apiData.elements_count || {};
         const dayMaster = apiData.day_master || "甲";
 
-        const activeCat = apiData.category || currentCategory;
+        const catInput = document.getElementById('selected_category');
+        const activeCat = apiData.category || (catInput && catInput.value) || currentCategory || 'saju';
         const heroTitle = document.querySelector('.result-hero-title');
         const heroSub = document.querySelector('.result-hero-sub');
         if (activeCat === 'gunghap') {
@@ -2672,12 +2677,50 @@
         if (timeEl) timeEl.textContent = formatSajuTimeLabel(userInfo.birth_time || "10:30");
         if (genderEl) genderEl.textContent = (userInfo.gender === 'F') ? "여성 (坤命)" : "남성 (乾命)";
 
-        renderChapterOne(dayMaster, interpretation, userInfo.name);
+        // 카테고리별 맞춤 UI 분기: 평생 사주 전용 챕터(1장 한마디, 2장 성향, 현실 길, 사주 목차)는 사주일 때만 표시
+        const ch1Area = document.getElementById('chapter-one-area');
+        const chNature = document.querySelector('.chapter-nature');
+        const chReality = document.querySelector('.chapter-reality');
+        const paywallToc = document.getElementById('paywall-toc-card');
+        const lockBannerTitle = document.querySelector('.lock-banner-title');
+        const lockBannerDesc = document.querySelector('.lock-banner-desc');
+        const boundaryText = document.querySelector('.boundary-text');
+
+        if (activeCat === 'saju') {
+            if (ch1Area) ch1Area.style.display = '';
+            if (chNature) chNature.style.display = '';
+            if (chReality) chReality.style.display = '';
+            if (paywallToc) paywallToc.style.display = '';
+            if (boundaryText) boundaryText.textContent = "― 대운(大運)의 황금기와 개운의 비책 ―";
+            if (lockBannerTitle) lockBannerTitle.textContent = "무료 사주에서는 여기까지 확인할 수 있습니다.";
+            if (lockBannerDesc) lockBannerDesc.textContent = "다가오는 10년 대운 속에서 타고난 기운을 어떻게 무기로 활용할지, 재물과 액운 방지 비책의 모든 풀이를 열어보려 합니다.";
+            renderChapterOne(dayMaster, interpretation, userInfo.name);
+            renderNatureCards(elementsCount, dayMaster);
+            renderRealityCards(elementsCount, dayMaster);
+        } else {
+            if (ch1Area) ch1Area.style.display = 'none';
+            if (chNature) chNature.style.display = 'none';
+            if (chReality) chReality.style.display = 'none';
+            if (paywallToc) paywallToc.style.display = 'none';
+
+            if (activeCat === 'gunghap') {
+                if (boundaryText) boundaryText.textContent = "― 인연의 깊이와 백년해로 개운 비책 ―";
+                if (lockBannerTitle) lockBannerTitle.textContent = "무료 궁합 감정에서는 여기까지 확인할 수 있습니다.";
+                if (lockBannerDesc) lockBannerDesc.textContent = "두 사람의 오행 상생상극과 전생 인연, 백년해로를 위한 3대 관계 개운 비책의 모든 풀이를 열람하실 수 있습니다.";
+            } else if (activeCat === 'today') {
+                if (boundaryText) boundaryText.textContent = "― 금일(今日) 일진과 하루 승부 비책 ―";
+                if (lockBannerTitle) lockBannerTitle.textContent = "무료 오늘의 운세에서는 여기까지 확인할 수 있습니다.";
+                if (lockBannerDesc) lockBannerDesc.textContent = "금일 일진과 천을귀인 방위, 액운 방지 및 하루를 승리로 이끄는 금일 비책의 모든 풀이를 열람하실 수 있습니다.";
+            } else if (activeCat === 'tojeong') {
+                if (boundaryText) boundaryText.textContent = "― 올 한 해 상·하반기 신수와 개운 비책 ―";
+                if (lockBannerTitle) lockBannerTitle.textContent = "무료 토정비결에서는 여기까지 확인할 수 있습니다.";
+                if (lockBannerDesc) lockBannerDesc.textContent = "올 한 해 상·하반기 12달의 운기 흐름과 삼재팔난 경고, 토정 선생의 개운 비책 모든 풀이를 열람하실 수 있습니다.";
+            }
+        }
+
         renderPillarsTable(pillarsDetail, dayMaster);
         renderElementsDonut(elementsCount);
-        renderNatureCards(elementsCount, dayMaster);
-        renderRealityCards(elementsCount, dayMaster);
-        renderDeepReportContent(interpretation);
+        renderDeepReportContent(interpretation, activeCat);
 
         const stickyBar = document.getElementById('sticky-paywall-bar');
         if (stickyBar) {
@@ -2934,13 +2977,16 @@
         `).join('');
     }
 
-    function formatDeepReportHtml(rawMarkdown) {
+    function formatDeepReportHtml(rawMarkdown, activeCat) {
         if (!rawMarkdown || typeof rawMarkdown !== 'string') return '';
 
-        let md = rawMarkdown.trim()
-            .replace(/## 📜[\s\S]*?(?=(?:## 🔮|### 💡|### 👤|$))/i, '')
-            .replace(/## 🔮[\s\S]*?(?=(?:### 💡|### 👤|### 💰|$))/i, '')
-            .replace(/### 💡[\s\S]*?(?=(?:### 👤|### 💰|### 💼|$))/i, '');
+        let md = rawMarkdown.trim();
+        if (activeCat === 'saju') {
+            md = md
+                .replace(/## 📜[\s\S]*?(?=(?:## 🔮|### 💡|### 👤|$))/i, '')
+                .replace(/## 🔮[\s\S]*?(?=(?:### 💡|### 👤|### 💰|$))/i, '')
+                .replace(/### 💡[\s\S]*?(?=(?:### 👤|### 💰|### 💼|$))/i, '');
+        }
 
         const rawSections = md.split(/(?=###\s+)/).filter(s => s.trim().length > 0 && s.trim().startsWith('###'));
 
@@ -3046,11 +3092,11 @@
         return cardsHtml.join('\n');
     }
 
-    function renderDeepReportContent(rawMarkdown) {
+    function renderDeepReportContent(rawMarkdown, activeCat) {
         const aiContent = document.getElementById('ai-content');
         if (!aiContent) return;
 
-        const formattedHtml = formatDeepReportHtml(rawMarkdown);
+        const formattedHtml = formatDeepReportHtml(rawMarkdown, activeCat);
         aiContent.innerHTML = formattedHtml;
         aiContent.classList.add('teaser-mode');
     }
@@ -3163,9 +3209,13 @@
         const pBar = document.getElementById('p-bar');
         const stepTitle = document.getElementById('step-title');
 
+        // [카테고리 추출] input#selected_category 또는 currentCategory 변수에서 정확히 추출
+        const catInput = document.getElementById('selected_category');
+        const activeCategory = (catInput && catInput.value) ? catInput.value : (currentCategory || 'saju');
+
         // [인연과 궁합] 선택 시 상대방 사주 단자 유효성 검사 및 데이터 추출
         let partnerData = null;
-        if (currentCategory === 'gunghap') {
+        if (activeCategory === 'gunghap') {
             const pYVal = document.getElementById('partner_year').value.trim();
             const pMVal = document.getElementById('partner_month').value.trim();
             const pDVal = document.getElementById('partner_day').value.trim();
@@ -3226,7 +3276,7 @@
 
         // 카테고리별 맞춤 점술방 秘傳 로그 시퀀스
         let logSequence = [];
-        if (currentCategory === 'gunghap') {
+        if (activeCategory === 'gunghap') {
             const pName = partnerData ? partnerData.name : "인연";
             logSequence = [
                 "▸ 두 분의 사주 단자를 정성껏 봉심(奉審)하는 중...",
@@ -3236,7 +3286,7 @@
                 "▸ 조선시대풍 3대 관계 개운법 정리 중...",
                 "▸ 최종 궁합 감정서 편찬 완료!"
             ];
-        } else if (currentCategory === 'today') {
+        } else if (activeCategory === 'today') {
             logSequence = [
                 "▸ 오늘의 일진(日辰)과 천기를 봉심(奉審)하는 중...",
                 "▸ 선비님의 일간과 오늘의 천간/지지 대조 완료",
@@ -3244,7 +3294,7 @@
                 "▸ 오늘 반드시 피해야 할 액운과 경계 요인 분석 중...",
                 "▸ 하루를 승리로 이끄는 금일 비책(秘策) 정리 완료!"
             ];
-        } else if (currentCategory === 'tojeong') {
+        } else if (activeCategory === 'tojeong') {
             logSequence = [
                 "▸ 토정 이지함 선생의 신수 비결서를 펼치는 중...",
                 "▸ 올해 세운(歲運)과 선비님의 사주 원국 대조 완료",
@@ -3313,11 +3363,12 @@
             birth_time: birthTime,
             birth_type: calendar,
             is_leap_month: isLeapMonth,
-            category: currentCategory,
+            category: activeCategory,
             partner: partnerData
         };
 
         try {
+            console.log("[Deep Saju] Submitting request with category:", activeCategory, requestData);
             const response = await fetch('/api/v1/analyze-saju', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

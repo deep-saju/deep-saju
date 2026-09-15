@@ -414,9 +414,9 @@ def health_check():
     return {"status": "ok", "service": "Deep Saju API"}
 
 CANDIDATE_MODELS = [
-    "gemini-1.5-flash",
-    "gemini-2.0-flash",
-    "gemini-1.5-pro"
+    "gemini-3.6-flash",
+    "gemini-3.8-flash",
+    "gemini-flash-latest"
 ]
 
 @app.post("/api/v1/analyze-saju")
@@ -432,12 +432,16 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
         saju_json_data["user_info"]["name"] = final_name
 
         category = (user_input.category or "saju").strip().lower()
+        if category not in ("saju", "gunghap", "today", "tojeong"):
+            category = "saju"
+
+        print(f"[CATEGORY ROUTE] User: '{final_name}', Category parsed: '{category}'")
 
         # -------------------------------------------------------------
         # [카테고리별 조건부 라우팅 및 LLM 프롬프트 분기]
         # -------------------------------------------------------------
         if category == "gunghap":
-            # A. 인연과 궁합 (gunghap)
+            print(f"[CATEGORY ROUTE] -> Selected GUNGHAP prompt & system prompt")
             partner = user_input.partner or PartnerInput()
             partner_name = (partner.name or "인연").strip() or "인연"
             partner.name = partner_name
@@ -449,7 +453,7 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
             fallback_fn = lambda: build_personalized_gunghap_report(final_name, saju_json_data, partner_name, partner_saju_data)
 
         elif category == "today":
-            # B. 오늘의 운세 (today)
+            print(f"[CATEGORY ROUTE] -> Selected TODAY prompt & system prompt")
             now = datetime.now()
             solar_today = Solar.fromYmdHms(now.year, now.month, now.day, 12, 0, 0)
             lunar_today = solar_today.getLunar()
@@ -472,7 +476,7 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
             fallback_fn = lambda: build_personalized_today_report(final_name, saju_json_data, today_info)
 
         elif category == "tojeong":
-            # C. 토정비결 (tojeong)
+            print(f"[CATEGORY ROUTE] -> Selected TOJEONG prompt & system prompt")
             now = datetime.now()
             solar_now = Solar.fromYmdHms(now.year, 6, 1, 12, 0, 0)
             bazi_year = solar_now.getLunar().getEightChar()
@@ -487,7 +491,7 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
             fallback_fn = lambda: build_personalized_tojeong_report(final_name, saju_json_data, year_info)
 
         else:
-            # 기본: 평생 사주 (saju) - 기존 로직 및 마스터 프롬프트 완벽 유지
+            print(f"[CATEGORY ROUTE] -> Selected SAJU prompt & system prompt")
             prompt = build_dynamic_gemini_prompt(final_name, saju_json_data)
             current_sys_prompt = SYSTEM_MASTER_PROMPT
             fallback_fn = lambda: generate_emergency_saju_report(final_name, saju_json_data)
@@ -499,6 +503,7 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
         if GEMINI_API_KEY and len(GEMINI_API_KEY.strip()) > 10:
             for model_name in CANDIDATE_MODELS:
                 try:
+                    print(f"[CATEGORY ROUTE] Calling Gemini model '{model_name}' for category '{category}'...")
                     model = genai.GenerativeModel(
                         model_name=model_name, 
                         system_instruction=current_sys_prompt
@@ -506,17 +511,19 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
                     response = model.generate_content(prompt)
                     if response and response.text and len(response.text.strip()) > 50:
                         interpretation_text = response.text
+                        print(f"[CATEGORY ROUTE] Gemini model '{model_name}' SUCCESS for category '{category}' (chars={len(interpretation_text)})")
                         break
                 except Exception as model_err:
                     last_error = model_err
                     err_str = str(model_err)
-                    # 인증 실패 시 불필요한 재시도 방지하고 즉시 고품질 맞춤 엔진으로 직행
+                    print(f"[CATEGORY ROUTE] Gemini model '{model_name}' failed: {err_str[:120]}")
                     if any(x in err_str for x in ["API_KEY_INVALID", "API key not valid", "PERMISSION_DENIED", "403"]):
                         break
                     continue
 
         # 🌟 2단계: 모든 AI 모델이 Quota 소진 등으로 응답 불가할 때 고품질 안전 폴백 가동
         if not interpretation_text:
+            print(f"[CATEGORY ROUTE] Using fallback report generator for category '{category}'")
             interpretation_text = fallback_fn()
         
         # 🌟 [DB 영구 저장] 분석 결과 및 입력 데이터를 SQLite에 Insert (서버리스 오류 방어)
