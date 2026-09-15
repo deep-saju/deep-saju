@@ -1799,6 +1799,304 @@
         .sticky-cta-btn:hover {
             box-shadow: 0 0 16px rgba(223, 183, 56, 0.5);
         }
+
+        /* ==========================================================================
+           [궁합 전용] 맛보기 두 사람 명식 비교 및 심층 목차 스타일
+           ========================================================================== */
+        .gunghap-preview-section {
+            margin-bottom: 24px;
+        }
+
+        .gunghap-pair-banner {
+            background: linear-gradient(135deg, rgba(35, 26, 18, 0.95) 0%, rgba(20, 16, 12, 0.98) 100%);
+            border: 1.5px solid var(--border-gold);
+            border-radius: 6px;
+            padding: 20px 22px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(223, 183, 56, 0.12);
+        }
+
+        .pair-badge {
+            display: inline-block;
+            font-size: 11.5px;
+            font-weight: 800;
+            color: var(--text-gold);
+            background: rgba(223, 183, 56, 0.15);
+            border: 1px solid var(--border-gold);
+            padding: 2px 10px;
+            border-radius: 2px;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .pair-title {
+            font-size: 21px;
+            font-weight: 800;
+            color: var(--text-gold-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+        }
+
+        .pair-vs {
+            font-size: 15px;
+            color: var(--point-seal);
+            font-weight: 900;
+        }
+
+        .pair-desc {
+            font-size: 13.5px;
+            color: var(--text-sub);
+        }
+
+        .gunghap-bazi-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .gunghap-bazi-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .gunghap-card {
+            background: var(--card-bg-dark);
+            border: 1px solid var(--border-gold);
+            border-radius: 6px;
+            padding: 22px 18px;
+            position: relative;
+        }
+
+        .gunghap-user-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-gold);
+            background: rgba(223, 183, 56, 0.15);
+            border: 1px solid var(--border-gold);
+            padding: 2px 8px;
+            border-radius: 2px;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .gunghap-partner-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 800;
+            color: #FFA5A5;
+            background: rgba(168, 43, 43, 0.25);
+            border: 1px solid var(--border-seal);
+            padding: 2px 8px;
+            border-radius: 2px;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .gunghap-toc-card {
+            background: linear-gradient(180deg, rgba(28, 22, 16, 0.95) 0%, rgba(18, 14, 11, 0.98) 100%);
+            border: 1.5px solid var(--border-gold);
+            border-radius: 6px;
+            padding: 26px 22px;
+            margin: 0 auto 26px auto;
+            max-width: 680px;
+            text-align: left;
+            box-shadow: 0 0 25px rgba(223, 183, 56, 0.15), inset 0 0 20px rgba(0, 0, 0, 0.6);
+        }
+
+        /* ==========================================================================
+           [오늘의 운세 전용] 조선 왕실 관상감 일일 운세 대시보드
+           ========================================================================== */
+        .today-dashboard-section {
+            margin-bottom: 26px;
+        }
+
+        .today-dashboard-card {
+            background: linear-gradient(180deg, rgba(28, 22, 16, 0.95) 0%, rgba(18, 14, 11, 0.98) 100%);
+            border: 1.5px solid var(--border-gold);
+            border-radius: 6px;
+            padding: 26px 22px;
+            box-shadow: 0 0 25px rgba(223, 183, 56, 0.12);
+        }
+
+        .today-top-badge-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .today-solar-badge {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-gold);
+            background: rgba(223, 183, 56, 0.12);
+            border: 1px solid var(--border-gold);
+            padding: 2px 10px;
+            border-radius: 3px;
+        }
+
+        .today-ganzhi-badge {
+            font-size: 12px;
+            font-weight: 800;
+            color: #FFFFFF;
+            background: var(--point-seal);
+            border: 1px solid var(--border-seal);
+            padding: 2px 10px;
+            border-radius: 3px;
+        }
+
+        .today-headline-box {
+            text-align: center;
+            margin-bottom: 22px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-ink);
+        }
+
+        .today-headline {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-gold-light);
+            line-height: 1.5;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+
+        .today-subtext {
+            font-size: 13px;
+            color: var(--text-sub);
+        }
+
+        .today-compass-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        @media (max-width: 600px) {
+            .today-compass-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .compass-card {
+            background: rgba(22, 18, 14, 0.7);
+            border: 1px solid var(--border-ink);
+            border-radius: 4px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: var(--transition-smooth);
+        }
+
+        .compass-card:hover {
+            border-color: var(--border-gold);
+            background: rgba(30, 24, 18, 0.85);
+        }
+
+        .compass-card.caution {
+            border-color: rgba(229, 62, 62, 0.4);
+            background: rgba(35, 15, 15, 0.5);
+        }
+
+        .compass-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .compass-body {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .compass-lbl {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .compass-val {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-gold);
+        }
+
+        .compass-card.caution .compass-val {
+            color: #FFA5A5;
+        }
+
+        .today-dual-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        @media (max-width: 600px) {
+            .today-dual-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .today-info-box {
+            background: rgba(25, 20, 15, 0.6);
+            border: 1px solid var(--border-ink);
+            border-radius: 4px;
+            padding: 14px 16px;
+        }
+
+        .today-info-head {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: var(--text-gold-light);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .today-info-desc {
+            font-size: 13px;
+            color: var(--text-beige);
+            line-height: 1.6;
+        }
+
+        .today-secret-callout {
+            background: rgba(168, 43, 43, 0.12);
+            border: 1px dashed var(--border-seal);
+            border-radius: 4px;
+            padding: 16px 20px;
+            text-align: center;
+        }
+
+        .today-secret-tag {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--point-seal);
+            background: rgba(168, 43, 43, 0.25);
+            padding: 1px 8px;
+            border-radius: 2px;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+
+        .today-secret-text {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--text-gold-light);
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
@@ -2213,8 +2511,139 @@
             </div>
         </section>
 
+        <!-- [오늘의 운세 전용] 조선 관상감 일일 운세 대시보드 -->
+        <section id="today-dashboard-section" class="section-chapter today-dashboard-section" style="display: none;">
+            <div class="today-dashboard-card">
+                <div class="today-top-badge-row">
+                    <span class="today-solar-badge" id="today-badge-date">2026년 09월 15일</span>
+                    <span class="today-ganzhi-badge" id="today-badge-ganzhi">壬辰(임진)일</span>
+                </div>
+                <div class="today-headline-box">
+                    <h2 class="today-headline" id="today-summary-headline">“단비가 대지를 적시듯 직관이 번뜩이고 귀인이 은밀히 손을 내미는 날”</h2>
+                    <p class="today-subtext">오늘 하늘의 천기(天氣)와 선비님의 본원을 대조하여 하루의 길흉화복을 내렸소이다.</p>
+                </div>
+
+                <!-- 4대 나침반 그리드 -->
+                <div class="today-compass-grid">
+                    <div class="compass-card">
+                        <span class="compass-icon">🧭</span>
+                        <div class="compass-body">
+                            <span class="compass-lbl">귀인이 오는 방위</span>
+                            <strong class="compass-val" id="today-noble-dir">동방 (東方)</strong>
+                        </div>
+                    </div>
+                    <div class="compass-card">
+                        <span class="compass-icon">🎨</span>
+                        <div class="compass-body">
+                            <span class="compass-lbl">오늘의 행운 색상</span>
+                            <strong class="compass-val" id="today-lucky-color">청색 / 초록색</strong>
+                        </div>
+                    </div>
+                    <div class="compass-card">
+                        <span class="compass-icon">⏰</span>
+                        <div class="compass-body">
+                            <span class="compass-lbl">최고의 승부 시간</span>
+                            <strong class="compass-val" id="today-lucky-time">밤 23시 ~ 01시</strong>
+                        </div>
+                    </div>
+                    <div class="compass-card caution">
+                        <span class="compass-icon">⚠️</span>
+                        <div class="compass-body">
+                            <span class="compass-lbl">오늘 주의할 점</span>
+                            <strong class="compass-val" id="today-caution">구설수 및 방심 주의</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 오늘의 금전/재물 & 만남/인연 듀얼 행 -->
+                <div class="today-dual-row">
+                    <div class="today-info-box">
+                        <div class="today-info-head">
+                            <span>💰</span>
+                            <span>오늘의 금전과 재물</span>
+                        </div>
+                        <p class="today-info-desc" id="today-wealth-desc">예상치 못한 소소한 횡재수와 귀인의 조력이 따르는 날이오니 자산 관리에 힘쓰시오.</p>
+                    </div>
+                    <div class="today-info-box">
+                        <div class="today-info-head">
+                            <span>❤️</span>
+                            <span>오늘의 만남과 인연</span>
+                        </div>
+                        <p class="today-info-desc" id="today-love-desc">말하지 않아도 마음이 통하는 날이오니 따스한 눈빛으로 신뢰를 건네시오.</p>
+                    </div>
+                </div>
+
+                <!-- 금일 비책 -->
+                <div class="today-secret-callout">
+                    <span class="today-secret-tag">今日 秘策</span>
+                    <p class="today-secret-text" id="today-secret-quote">“칼을 뽑되 칼집의 온기를 잊지 말고, 뜻을 세우되 남의 체면을 먼저 세워주라.”</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- [궁합 전용] 두 사람의 사주 명식 및 오행 분포 side-by-side 비교 프리뷰 -->
+        <section id="gunghap-preview-section" class="section-chapter gunghap-preview-section" style="display: none;">
+            <div class="gunghap-pair-banner">
+                <span class="pair-badge">천생연분 궁합 감정</span>
+                <h2 class="pair-title">
+                    <span id="gh-u1-title">선비 (본인)</span>
+                    <span class="pair-vs">✕</span>
+                    <span id="gh-u2-title">인연 (상대방)</span>
+                </h2>
+                <p class="pair-desc" id="gh-pair-relation-desc">두 분의 사주 명식을 맞대어 음양오행의 상생상극과 백년해로의 기운을 풀이하였소이다.</p>
+            </div>
+
+            <div class="gunghap-bazi-grid">
+                <!-- 본인 (나) 명식 카드 -->
+                <div class="chapter-card gunghap-card">
+                    <div class="card-inner-header">
+                        <span class="gunghap-user-badge">본인 (第一人)</span>
+                        <h3 class="bazi-card-title"><span id="gh-u1-name-display">선비</span>의 사주 명식</h3>
+                        <p class="bazi-card-sub">타고난 본원: <strong id="gh-u1-daymaster" style="color: var(--text-gold);">갑목(甲木)</strong></p>
+                    </div>
+                    <div class="pillars-table-wrapper">
+                        <table class="pillars-table">
+                            <thead>
+                                <tr>
+                                    <th>년주</th><th>월주</th><th class="day-pillar-th">일주</th><th>시주</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gh-u1-pillars-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-ink);">
+                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-weight: 700;">오행 분포 (五行)</div>
+                        <div class="elements-stat-row" id="gh-u1-elements-row"></div>
+                    </div>
+                </div>
+
+                <!-- 상대방 (배필) 명식 카드 -->
+                <div class="chapter-card gunghap-card">
+                    <div class="card-inner-header">
+                        <span class="gunghap-partner-badge">상대방 (第二人)</span>
+                        <h3 class="bazi-card-title"><span id="gh-u2-name-display">배필</span>의 사주 명식</h3>
+                        <p class="bazi-card-sub">타고난 본원: <strong id="gh-u2-daymaster" style="color: #FFA5A5;">기토(己土)</strong></p>
+                    </div>
+                    <div class="pillars-table-wrapper">
+                        <table class="pillars-table">
+                            <thead>
+                                <tr>
+                                    <th>년주</th><th>월주</th><th class="day-pillar-th">일주</th><th>시주</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gh-u2-pillars-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-ink);">
+                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-weight: 700;">오행 분포 (五行)</div>
+                        <div class="elements-stat-row" id="gh-u2-elements-row"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- 4. 사주 명식 & 오행 분포 -->
-        <section class="section-chapter chapter-bazi-grid">
+        <section class="section-chapter chapter-bazi-grid" id="single-bazi-section">
             <div class="chapter-card bazi-card">
                 <div class="card-inner-header">
                     <h3 class="bazi-card-title">사주 명식 <span class="hanja">(四柱)</span></h3>
@@ -2293,6 +2722,45 @@
         <section class="section-chapter chapter-paywall-report">
             <div class="paywall-boundary-line">
                 <span class="boundary-text">― 대운(大運)의 황금기와 개운의 비책 ―</span>
+            </div>
+
+            <!-- 🌟 [궁합 전용] 결제창 직전 심층 운명서 목차 (조선 고서적 스타일) -->
+            <div class="gunghap-toc-card" id="gunghap-toc-card" style="display: none;">
+                <div class="toc-header">
+                    <span class="toc-header-hanja" style="letter-spacing: 2px;">宮合書 目次</span>
+                    <h4 class="toc-header-title">천생연분 심층 운명서(宮合書) 목차</h4>
+                    <span class="toc-header-sub">결제 즉시 열람 가능한 두 사람의 심층 비전</span>
+                </div>
+                <div class="toc-grid">
+                    <div class="toc-item">
+                        <span class="toc-num">제 1장</span>
+                        <div class="toc-content">
+                            <strong class="toc-title">음양오행 상생상극 분석</strong>
+                            <p class="toc-desc">두 사람의 기운이 빚어내는 조화</p>
+                        </div>
+                    </div>
+                    <div class="toc-item">
+                        <span class="toc-num">제 2장</span>
+                        <div class="toc-content">
+                            <strong class="toc-title">전생부터 얽힌 인연줄</strong>
+                            <p class="toc-desc">우리는 어떤 연으로 만났는가</p>
+                        </div>
+                    </div>
+                    <div class="toc-item">
+                        <span class="toc-num">제 3장</span>
+                        <div class="toc-content">
+                            <strong class="toc-title">백년해로 개운 비책</strong>
+                            <p class="toc-desc">갈등을 피하고 사랑을 지키는 법</p>
+                        </div>
+                    </div>
+                    <div class="toc-item">
+                        <span class="toc-num">제 4장</span>
+                        <div class="toc-content">
+                            <strong class="toc-title">대운으로 보는 두 사람의 미래</strong>
+                            <p class="toc-desc">함께할 때 펼쳐질 재물과 관운</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="paywall-teaser-container" id="paywall-teaser-container">
@@ -2677,49 +3145,147 @@
         if (timeEl) timeEl.textContent = formatSajuTimeLabel(userInfo.birth_time || "10:30");
         if (genderEl) genderEl.textContent = (userInfo.gender === 'F') ? "여성 (坤命)" : "남성 (乾命)";
 
-        // 카테고리별 맞춤 UI 분기: 평생 사주 전용 챕터(1장 한마디, 2장 성향, 현실 길, 사주 목차)는 사주일 때만 표시
+        // 카테고리별 맞춤 UI 분기: 평생 사주, 궁합, 오늘의 운세, 토정비결
         const ch1Area = document.getElementById('chapter-one-area');
         const chNature = document.querySelector('.chapter-nature');
         const chReality = document.querySelector('.chapter-reality');
         const paywallToc = document.getElementById('paywall-toc-card');
+        const gunghapToc = document.getElementById('gunghap-toc-card');
+        const singleBaziSection = document.getElementById('single-bazi-section');
+        const gunghapPreviewSection = document.getElementById('gunghap-preview-section');
+        const todayDashboardSection = document.getElementById('today-dashboard-section');
         const lockBannerTitle = document.querySelector('.lock-banner-title');
         const lockBannerDesc = document.querySelector('.lock-banner-desc');
         const boundaryText = document.querySelector('.boundary-text');
 
-        if (activeCat === 'saju') {
-            if (ch1Area) ch1Area.style.display = '';
-            if (chNature) chNature.style.display = '';
-            if (chReality) chReality.style.display = '';
-            if (paywallToc) paywallToc.style.display = '';
-            if (boundaryText) boundaryText.textContent = "― 대운(大運)의 황금기와 개운의 비책 ―";
-            if (lockBannerTitle) lockBannerTitle.textContent = "무료 사주에서는 여기까지 확인할 수 있습니다.";
-            if (lockBannerDesc) lockBannerDesc.textContent = "다가오는 10년 대운 속에서 타고난 기운을 어떻게 무기로 활용할지, 재물과 액운 방지 비책의 모든 풀이를 열어보려 합니다.";
-            renderChapterOne(dayMaster, interpretation, userInfo.name);
-            renderNatureCards(elementsCount, dayMaster);
-            renderRealityCards(elementsCount, dayMaster);
-        } else {
+        if (activeCat === 'gunghap') {
+            // 1. [궁합 전용] 두 사람의 명식 나란히 비교 프리뷰 및 전용 목차
+            if (singleBaziSection) singleBaziSection.style.display = 'none';
+            if (todayDashboardSection) todayDashboardSection.style.display = 'none';
+            if (gunghapPreviewSection) gunghapPreviewSection.style.display = 'block';
+
+            // 평생사주 전용 챕터 숨김
             if (ch1Area) ch1Area.style.display = 'none';
             if (chNature) chNature.style.display = 'none';
             if (chReality) chReality.style.display = 'none';
             if (paywallToc) paywallToc.style.display = 'none';
 
-            if (activeCat === 'gunghap') {
-                if (boundaryText) boundaryText.textContent = "― 인연의 깊이와 백년해로 개운 비책 ―";
-                if (lockBannerTitle) lockBannerTitle.textContent = "무료 궁합 감정에서는 여기까지 확인할 수 있습니다.";
-                if (lockBannerDesc) lockBannerDesc.textContent = "두 사람의 오행 상생상극과 전생 인연, 백년해로를 위한 3대 관계 개운 비책의 모든 풀이를 열람하실 수 있습니다.";
-            } else if (activeCat === 'today') {
-                if (boundaryText) boundaryText.textContent = "― 금일(今日) 일진과 하루 승부 비책 ―";
-                if (lockBannerTitle) lockBannerTitle.textContent = "무료 오늘의 운세에서는 여기까지 확인할 수 있습니다.";
-                if (lockBannerDesc) lockBannerDesc.textContent = "금일 일진과 천을귀인 방위, 액운 방지 및 하루를 승리로 이끄는 금일 비책의 모든 풀이를 열람하실 수 있습니다.";
-            } else if (activeCat === 'tojeong') {
-                if (boundaryText) boundaryText.textContent = "― 올 한 해 상·하반기 신수와 개운 비책 ―";
-                if (lockBannerTitle) lockBannerTitle.textContent = "무료 토정비결에서는 여기까지 확인할 수 있습니다.";
-                if (lockBannerDesc) lockBannerDesc.textContent = "올 한 해 상·하반기 12달의 운기 흐름과 삼재팔난 경고, 토정 선생의 개운 비책 모든 풀이를 열람하실 수 있습니다.";
-            }
+            // 🌟 결제창 직전 심층 운명서 목차 (궁합 전용 고서적 목차)
+            if (gunghapToc) gunghapToc.style.display = 'block';
+
+            if (boundaryText) boundaryText.textContent = "― 인연의 깊이와 백년해로 개운 비책 ―";
+            if (lockBannerTitle) lockBannerTitle.textContent = "무료 궁합 감정에서는 여기까지 확인할 수 있습니다.";
+            if (lockBannerDesc) lockBannerDesc.textContent = "두 사람의 오행 상생상극과 전생 인연, 백년해로를 위한 3대 관계 개운 비책의 모든 풀이를 열람하실 수 있습니다.";
+
+            // 두 사람 데이터 바인딩
+            const partnerInfo = apiData.partner_info || {};
+            const partnerPillarsDetail = apiData.partner_pillars_detail || {};
+            const partnerElementsCount = apiData.partner_elements_count || {};
+            const partnerDayMaster = apiData.partner_day_master || "己";
+
+            const u1Name = userInfo.name || "선비";
+            const u2GenderWord = (partnerInfo.gender === 'M') ? "선비" : "낭자";
+            const u2Name = partnerInfo.name ? `${partnerInfo.name}` : u2GenderWord;
+
+            const ghU1Title = document.getElementById('gh-u1-title');
+            const ghU2Title = document.getElementById('gh-u2-title');
+            const ghU1NameDisp = document.getElementById('gh-u1-name-display');
+            const ghU2NameDisp = document.getElementById('gh-u2-name-display');
+            const ghU1Dm = document.getElementById('gh-u1-daymaster');
+            const ghU2Dm = document.getElementById('gh-u2-daymaster');
+
+            if (ghU1Title) ghU1Title.textContent = `${u1Name}(나)`;
+            if (ghU2Title) ghU2Title.textContent = `${u2Name}(상대방)`;
+            if (ghU1NameDisp) ghU1NameDisp.textContent = `${u1Name}(나)`;
+            if (ghU2NameDisp) ghU2NameDisp.textContent = `${u2Name}(상대방)`;
+            if (ghU1Dm) ghU1Dm.textContent = getDayMasterLabel(dayMaster);
+            if (ghU2Dm) ghU2Dm.textContent = getDayMasterLabel(partnerDayMaster);
+
+            renderPillarsTable(pillarsDetail, dayMaster, 'gh-u1-pillars-tbody');
+            renderMiniElementsRow(elementsCount, 'gh-u1-elements-row');
+
+            renderPillarsTable(partnerPillarsDetail, partnerDayMaster, 'gh-u2-pillars-tbody');
+            renderMiniElementsRow(partnerElementsCount, 'gh-u2-elements-row');
+
+        } else if (activeCat === 'today') {
+            // 2. [오늘의 운세 전용] 일진 및 운세 대시보드
+            if (singleBaziSection) singleBaziSection.style.display = 'none';
+            if (gunghapPreviewSection) gunghapPreviewSection.style.display = 'none';
+            if (gunghapToc) gunghapToc.style.display = 'none';
+            if (paywallToc) paywallToc.style.display = 'none';
+            if (ch1Area) ch1Area.style.display = 'none';
+            if (chNature) chNature.style.display = 'none';
+            if (chReality) chReality.style.display = 'none';
+            if (todayDashboardSection) todayDashboardSection.style.display = 'block';
+
+            if (boundaryText) boundaryText.textContent = "― 금일(今日) 일진과 하루 승부 비책 ―";
+            if (lockBannerTitle) lockBannerTitle.textContent = "무료 오늘의 운세에서는 여기까지 확인할 수 있습니다.";
+            if (lockBannerDesc) lockBannerDesc.textContent = "금일 일진과 천을귀인 방위, 액운 방지 및 하루를 승리로 이끄는 금일 비책의 모든 풀이를 열람하실 수 있습니다.";
+
+            const td = apiData.today_data || {};
+            const dateEl = document.getElementById('today-badge-date');
+            const ganzhiEl = document.getElementById('today-badge-ganzhi');
+            const headlineEl = document.getElementById('today-summary-headline');
+            const dirEl = document.getElementById('today-noble-dir');
+            const colorEl = document.getElementById('today-lucky-color');
+            const timeEl = document.getElementById('today-lucky-time');
+            const cautionEl = document.getElementById('today-caution');
+            const wealthEl = document.getElementById('today-wealth-desc');
+            const loveEl = document.getElementById('today-love-desc');
+            const quoteEl = document.getElementById('today-secret-quote');
+
+            if (dateEl) dateEl.textContent = td.solar_str || td.solar_date || td.date_str || new Date().toISOString().slice(0, 10);
+            if (ganzhiEl) ganzhiEl.textContent = td.today_ganzhi || (td.day_ganzhi ? `${td.day_ganzhi}일` : "오늘의 일진");
+            if (headlineEl) headlineEl.textContent = td.today_summary || "오늘 하루는 스스로의 본원을 지키며 지혜롭게 처신할 때 큰 복이 깃듭니다.";
+            if (dirEl) dirEl.textContent = td.lucky_direction || "동남방 (東南方)";
+            if (colorEl) colorEl.textContent = td.lucky_color || "청색 / 옥색";
+            if (timeEl) timeEl.textContent = td.lucky_time || "사시 (巳時: 09:30~11:30)";
+            if (cautionEl) cautionEl.textContent = td.caution_warning || "성급한 결정이나 언쟁을 피하고 내실을 다지십시오.";
+            if (wealthEl) wealthEl.textContent = td.today_wealth || "신중한 지출과 계약 검토가 길합니다.";
+            if (loveEl) loveEl.textContent = td.today_love || "따스한 경청과 배려가 화합을 이끕니다.";
+            if (quoteEl) quoteEl.textContent = td.today_secret || td.lucky_action || "“말을 아끼고 신중히 살피면 위기가 변하여 귀인이 돕는 복이 될 것이다.”";
+
+        } else if (activeCat === 'tojeong') {
+            // 3. [토정비결]
+            if (gunghapPreviewSection) gunghapPreviewSection.style.display = 'none';
+            if (todayDashboardSection) todayDashboardSection.style.display = 'none';
+            if (gunghapToc) gunghapToc.style.display = 'none';
+            if (singleBaziSection) singleBaziSection.style.display = '';
+            if (ch1Area) ch1Area.style.display = 'none';
+            if (chNature) chNature.style.display = 'none';
+            if (chReality) chReality.style.display = 'none';
+            if (paywallToc) paywallToc.style.display = 'none';
+
+            if (boundaryText) boundaryText.textContent = "― 올 한 해 상·하반기 신수와 개운 비책 ―";
+            if (lockBannerTitle) lockBannerTitle.textContent = "무료 토정비결에서는 여기까지 확인할 수 있습니다.";
+            if (lockBannerDesc) lockBannerDesc.textContent = "올 한 해 상·하반기 12달의 운기 흐름과 삼재팔난 경고, 토정 선생의 개운 비책 모든 풀이를 열람하실 수 있습니다.";
+
+            renderPillarsTable(pillarsDetail, dayMaster, 'pillars-tbody');
+            renderElementsDonut(elementsCount);
+
+        } else {
+            // 4. [평생 사주]
+            if (gunghapPreviewSection) gunghapPreviewSection.style.display = 'none';
+            if (todayDashboardSection) todayDashboardSection.style.display = 'none';
+            if (gunghapToc) gunghapToc.style.display = 'none';
+            if (singleBaziSection) singleBaziSection.style.display = '';
+
+            if (ch1Area) ch1Area.style.display = '';
+            if (chNature) chNature.style.display = '';
+            if (chReality) chReality.style.display = '';
+            if (paywallToc) paywallToc.style.display = '';
+
+            if (boundaryText) boundaryText.textContent = "― 대운(大運)의 황금기와 개운의 비책 ―";
+            if (lockBannerTitle) lockBannerTitle.textContent = "무료 사주에서는 여기까지 확인할 수 있습니다.";
+            if (lockBannerDesc) lockBannerDesc.textContent = "다가오는 10년 대운 속에서 타고난 기운을 어떻게 무기로 활용할지, 재물과 액운 방지 비책의 모든 풀이를 열어보려 합니다.";
+
+            renderChapterOne(dayMaster, interpretation, userInfo.name);
+            renderNatureCards(elementsCount, dayMaster);
+            renderRealityCards(elementsCount, dayMaster);
+            renderPillarsTable(pillarsDetail, dayMaster, 'pillars-tbody');
+            renderElementsDonut(elementsCount);
         }
 
-        renderPillarsTable(pillarsDetail, dayMaster);
-        renderElementsDonut(elementsCount);
         renderDeepReportContent(interpretation, activeCat);
 
         const stickyBar = document.getElementById('sticky-paywall-bar');
@@ -2728,6 +3294,52 @@
             const stickyBtn = stickyBar.querySelector('.sticky-cta-btn');
             if (stickyBtn) stickyBtn.innerHTML = '<span>심층 운명서 열기 🔒</span>';
         }
+    }
+
+    function getDayMasterLabel(dm) {
+        const map = {
+            '甲': '갑목(甲木)', '乙': '을목(乙木)',
+            '丙': '병화(丙火)', '丁': '정화(丁火)',
+            '戊': '무토(戊土)', '己': '기토(己土)',
+            '庚': '경금(庚金)', '辛': '신금(辛金)',
+            '壬': '임수(壬水)', '癸': '계수(癸水)'
+        };
+        return map[dm] || `${dm || '일간'}`;
+    }
+
+    function renderMiniElementsRow(elementsCount, targetRowId) {
+        const statRow = document.getElementById(targetRowId);
+        if (!statRow) return;
+
+        const counts = {
+            '목': (elementsCount && typeof elementsCount['목'] === 'number') ? elementsCount['목'] : 0,
+            '화': (elementsCount && typeof elementsCount['화'] === 'number') ? elementsCount['화'] : 0,
+            '토': (elementsCount && typeof elementsCount['토'] === 'number') ? elementsCount['토'] : 0,
+            '금': (elementsCount && typeof elementsCount['금'] === 'number') ? elementsCount['금'] : 0,
+            '수': (elementsCount && typeof elementsCount['수'] === 'number') ? elementsCount['수'] : 0
+        };
+        const total = counts['목'] + counts['화'] + counts['토'] + counts['금'] + counts['수'] || 8;
+
+        const meta = [
+            { key: '목', class: 'wood', count: counts['목'] },
+            { key: '화', class: 'fire', count: counts['화'] },
+            { key: '토', class: 'earth', count: counts['토'] },
+            { key: '금', class: 'metal', count: counts['금'] },
+            { key: '수', class: 'water', count: counts['수'] }
+        ];
+
+        let statHtml = '';
+        meta.forEach(item => {
+            const pct = Math.round((item.count / total) * 100);
+            statHtml += `
+                <div class="stat-col-item ${item.class}" style="padding: 6px 4px;">
+                    <span class="stat-name" style="font-size: 11px;">${item.key}</span>
+                    <span class="stat-pct" style="font-size: 13px;">${pct}%</span>
+                    <span class="stat-cnt" style="font-size: 10px;">${item.count}개</span>
+                </div>
+            `;
+        });
+        statRow.innerHTML = statHtml;
     }
 
     function formatSajuTimeLabel(timeStr) {
@@ -2770,8 +3382,8 @@
         }
     }
 
-    function renderPillarsTable(pillarsDetail, dayMaster) {
-        const tbody = document.getElementById('pillars-tbody');
+    function renderPillarsTable(pillarsDetail, dayMaster, targetTbodyId = 'pillars-tbody') {
+        const tbody = document.getElementById(targetTbodyId);
         if (!tbody) return;
 
         const cols = [
@@ -3430,6 +4042,15 @@
         
         const stickyBar = document.getElementById('sticky-paywall-bar');
         if (stickyBar) stickyBar.classList.remove('visible');
+
+        const ghPreview = document.getElementById('gunghap-preview-section');
+        if (ghPreview) ghPreview.style.display = 'none';
+        const todayDash = document.getElementById('today-dashboard-section');
+        if (todayDash) todayDash.style.display = 'none';
+        const ghToc = document.getElementById('gunghap-toc-card');
+        if (ghToc) ghToc.style.display = 'none';
+        const singleBazi = document.getElementById('single-bazi-section');
+        if (singleBazi) singleBazi.style.display = '';
 
         const aiContent = document.getElementById('ai-content');
         if (aiContent) {

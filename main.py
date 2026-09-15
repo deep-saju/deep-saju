@@ -22,6 +22,7 @@ from saju_counseling_engine import (
     SYSTEM_TODAY_PROMPT,
     build_today_gemini_prompt,
     build_personalized_today_report,
+    extract_today_fortune_data,
     SYSTEM_TOJEONG_PROMPT,
     build_tojeong_gemini_prompt,
     build_personalized_tojeong_report
@@ -437,6 +438,12 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
 
         print(f"[CATEGORY ROUTE] User: '{final_name}', Category parsed: '{category}'")
 
+        partner_resp_info = None
+        partner_pillars_detail = None
+        partner_elements_count = None
+        partner_day_master = None
+        today_fortune_data = None
+
         # -------------------------------------------------------------
         # [카테고리별 조건부 라우팅 및 LLM 프롬프트 분기]
         # -------------------------------------------------------------
@@ -447,6 +454,17 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
             partner.name = partner_name
             partner_saju_data = calculate_saju_engine(partner)
             partner_saju_data["user_info"]["name"] = partner_name
+
+            partner_resp_info = {
+                "name": partner_name,
+                "gender": partner.gender,
+                "birth_date": partner.birth_date,
+                "birth_time": partner.birth_time,
+                "birth_type": partner.birth_type
+            }
+            partner_pillars_detail = partner_saju_data.get("pillars_detail", {})
+            partner_elements_count = partner_saju_data.get("elements_count", {})
+            partner_day_master = partner_saju_data.get("day_master", "己")
 
             prompt = build_gunghap_gemini_prompt(final_name, saju_json_data, partner_name, partner_saju_data)
             current_sys_prompt = SYSTEM_GUNGHAP_PROMPT
@@ -470,6 +488,8 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
                 "day_ganzhi": today_ganzhi,
                 "year_ganzhi": year_ganzhi
             }
+
+            today_fortune_data = extract_today_fortune_data(saju_json_data.get("day_master", "甲"), today_info)
 
             prompt = build_today_gemini_prompt(final_name, saju_json_data, today_info)
             current_sys_prompt = SYSTEM_TODAY_PROMPT
@@ -560,6 +580,11 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
                 "birth_time": user_input.birth_time,
                 "birth_type": user_input.birth_type
             },
+            "partner_info": partner_resp_info,
+            "partner_pillars_detail": partner_pillars_detail,
+            "partner_elements_count": partner_elements_count,
+            "partner_day_master": partner_day_master,
+            "today_data": today_fortune_data,
             "history_id": history_id
         }
     except Exception as e:
