@@ -109,11 +109,96 @@
         }
 
         /* ==========================================================================
-           3. 메인 레이아웃 및 헤더
+           3. 상단 브랜드 헤더 (GNB) & 메인 레이아웃
            ========================================================================== */
+        .top-gnb-bar {
+            width: 100%;
+            background: rgba(12, 10, 8, 0.92);
+            border-bottom: 1.5px solid var(--border-gold);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-sizing: border-box;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+        }
+
+        .gnb-inner {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .gnb-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: var(--transition-smooth);
+        }
+
+        .gnb-brand:hover {
+            opacity: 0.92;
+        }
+
+        .gnb-stamp {
+            background: var(--point-seal);
+            color: #FFFFFF;
+            font-size: 11.5px;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 2px;
+            border: 1px solid var(--border-gold);
+            letter-spacing: 1.5px;
+            box-shadow: 0 0 10px rgba(168, 43, 43, 0.6);
+        }
+
+        .gnb-title-wrap {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .gnb-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--text-gold-light);
+            letter-spacing: 0.5px;
+            line-height: 1.25;
+            text-shadow: 0 0 12px rgba(223, 183, 56, 0.35);
+        }
+
+        .gnb-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .gnb-badge-right {
+            font-size: 12px;
+            color: var(--text-gold);
+            border: 1px solid var(--border-ink);
+            padding: 4px 12px;
+            border-radius: 3px;
+            background: rgba(223, 183, 56, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        @media (max-width: 540px) {
+            .gnb-sub { display: none; }
+            .gnb-badge-right { font-size: 11px; padding: 3px 8px; }
+            .gnb-title { font-size: 15px; }
+        }
+
         .layout-wrapper {
             width: 100%;
-            min-height: 100vh;
+            min-height: calc(100vh - 60px);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -684,6 +769,16 @@
             font-size: 12.5px;
             line-height: 1.75;
             color: var(--text-sub);
+            /* 스크롤바 완전 숨김 (Firefox, IE/Edge) */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        /* 크롬, 사파리, 엣지용 스크롤바 숨김 */
+        .loading-logs::-webkit-scrollbar {
+            display: none !important;
+            width: 0px !important;
+            height: 0px !important;
         }
 
         .log-line.active {
@@ -1279,7 +1374,113 @@
             color: var(--text-sub);
             line-height: 1.75;
             max-width: 580px;
-            margin: 0 auto 18px auto;
+            margin: 0 auto 20px auto;
+        }
+
+        /* 🌟 [신규] 결제 전 심층 운명서 전편 수록 목차 카드 */
+        .paywall-toc-card {
+            background: rgba(14, 11, 8, 0.82);
+            border: 1.5px solid var(--border-gold);
+            border-radius: 6px;
+            padding: 24px 22px;
+            margin: 0 auto 26px auto;
+            max-width: 680px;
+            text-align: left;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
+        }
+
+        .toc-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-ink);
+        }
+
+        .toc-header-hanja {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--point-seal);
+            background: rgba(168, 43, 43, 0.25);
+            border: 1px solid var(--border-seal);
+            padding: 1px 8px;
+            border-radius: 2px;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+
+        .toc-header-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-gold-light);
+            letter-spacing: -0.3px;
+        }
+
+        .toc-header-sub {
+            font-size: 12.5px;
+            color: var(--text-sub);
+            display: block;
+            margin-top: 4px;
+        }
+
+        .toc-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .toc-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            background: rgba(25, 21, 17, 0.6);
+            border: 1px solid var(--border-ink);
+            border-radius: 4px;
+            padding: 12px 16px;
+            transition: var(--transition-smooth);
+        }
+
+        .toc-item:hover {
+            background: rgba(35, 28, 20, 0.8);
+            border-color: var(--border-gold);
+        }
+
+        .toc-num {
+            font-size: 11.5px;
+            font-weight: 800;
+            color: var(--text-gold);
+            background: rgba(223, 183, 56, 0.12);
+            border: 1px solid var(--border-gold);
+            padding: 2px 7px;
+            border-radius: 2px;
+            white-space: nowrap;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+
+        .toc-content {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            flex: 1;
+        }
+
+        .toc-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-gold-light);
+            letter-spacing: -0.2px;
+        }
+
+        .toc-desc {
+            font-size: 12.5px;
+            color: var(--text-sub);
+            line-height: 1.55;
+        }
+
+        .toc-desc strong {
+            color: var(--text-gold);
+            font-weight: 700;
         }
 
         .btn-unlock-inline {
@@ -1567,6 +1768,22 @@
     </style>
 </head>
 <body>
+
+<!-- 🌟 [신규] 최상단 브랜드 네비게이션 헤더 바 -->
+<header class="top-gnb-bar">
+    <div class="gnb-inner">
+        <div class="gnb-brand" onclick="goBackToCategories()">
+            <span class="gnb-stamp">秘傳</span>
+            <div class="gnb-title-wrap">
+                <span class="gnb-title">천기비전 · 심층사주 (天氣秘傳)</span>
+                <span class="gnb-sub">조선 왕실 비전 명리학연구소</span>
+            </div>
+        </div>
+        <div class="gnb-badge-right">
+            <span>✦ 100% 비공개 감정</span>
+        </div>
+    </div>
+</header>
 
 <div class="layout-wrapper">
     <!-- 상단 조선 점술가의 방 헤더 -->
@@ -1944,6 +2161,53 @@
                     <div class="lock-icon-wrap">🔒</div>
                     <h3 class="lock-banner-title">무료 사주에서는 여기까지 확인할 수 있습니다.</h3>
                     <p class="lock-banner-desc">다가오는 10년 대운 속에서 타고난 기운을 어떻게 무기로 활용할지, 재물과 액운 방지 비책의 모든 풀이를 열어보려 합니다.</p>
+                    
+                    <!-- 🌟 [신규] 결제 전 심층 운명서 수록 비전 목차 -->
+                    <div class="paywall-toc-card">
+                        <div class="toc-header">
+                            <span class="toc-header-hanja">目 錄</span>
+                            <h4 class="toc-header-title">심층 운명서 전편(全篇) 수록 비전</h4>
+                            <span class="toc-header-sub">결제 즉시 열람 가능한 5대 핵심 비책 권차</span>
+                        </div>
+                        <div class="toc-grid">
+                            <div class="toc-item">
+                                <span class="toc-num">第 1 卷</span>
+                                <div class="toc-content">
+                                    <strong class="toc-title">평생의 재물운과 부(富)의 그릇</strong>
+                                    <p class="toc-desc">정재와 편재의 배합, 재물이 새는 구멍 방지 및 <strong>맞춤형 3대 재테크 처방</strong></p>
+                                </div>
+                            </div>
+                            <div class="toc-item">
+                                <span class="toc-num">第 2 卷</span>
+                                <div class="toc-content">
+                                    <strong class="toc-title">적성과 직업운, 사회적 성공의 길</strong>
+                                    <p class="toc-desc">내 역량이 200% 폭발하는 <strong>추천 현대 직업 3가지</strong>와 직장 생존 전략</p>
+                                </div>
+                            </div>
+                            <div class="toc-item">
+                                <span class="toc-num">第 3 卷</span>
+                                <div class="toc-content">
+                                    <strong class="toc-title">평생의 인연과 애정·배우자 복</strong>
+                                    <p class="toc-desc">나를 일으켜 세울 평생의 귀인(貴人)과 피해야 할 악연, 부부 연의 깊이</p>
+                                </div>
+                            </div>
+                            <div class="toc-item">
+                                <span class="toc-num">第 4 卷</span>
+                                <div class="toc-content">
+                                    <strong class="toc-title">인생 10년 대운(大運)과 황금기의 전환점</strong>
+                                    <p class="toc-desc">다가오는 3~5년 중 인생의 판도를 바꿀 <strong>대운 승부수 타이밍</strong></p>
+                                </div>
+                            </div>
+                            <div class="toc-item">
+                                <span class="toc-num">第 5 卷</span>
+                                <div class="toc-content">
+                                    <strong class="toc-title">나만을 위한 액운 방지 및 종합 개운법</strong>
+                                    <p class="toc-desc">부족한 기운을 채우고 길운을 당기는 색상·방위·행동 실천 처방전</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <button type="button" class="btn-unlock-inline" onclick="handlePaywallClick()">
                         <span>심층 운명서 열기 🔒</span>
                     </button>
@@ -2741,6 +3005,52 @@
                 <div class="lock-icon-wrap">🔒</div>
                 <h3 class="lock-banner-title">무료 사주에서는 여기까지 확인할 수 있습니다.</h3>
                 <p class="lock-banner-desc">다가오는 10년 대운 속에서 타고난 기운을 어떻게 무기로 활용할지, 재물과 액운 방지 비책의 모든 풀이를 열어보려 합니다.</p>
+                
+                <div class="paywall-toc-card">
+                    <div class="toc-header">
+                        <span class="toc-header-hanja">目 錄</span>
+                        <h4 class="toc-header-title">심층 운명서 전편(全篇) 수록 비전</h4>
+                        <span class="toc-header-sub">결제 즉시 열람 가능한 5대 핵심 비책 권차</span>
+                    </div>
+                    <div class="toc-grid">
+                        <div class="toc-item">
+                            <span class="toc-num">第 1 卷</span>
+                            <div class="toc-content">
+                                <strong class="toc-title">평생의 재물운과 부(富)의 그릇</strong>
+                                <p class="toc-desc">정재와 편재의 배합, 재물이 새는 구멍 방지 및 <strong>맞춤형 3대 재테크 처방</strong></p>
+                            </div>
+                        </div>
+                        <div class="toc-item">
+                            <span class="toc-num">第 2 卷</span>
+                            <div class="toc-content">
+                                <strong class="toc-title">적성과 직업운, 사회적 성공의 길</strong>
+                                <p class="toc-desc">내 역량이 200% 폭발하는 <strong>추천 현대 직업 3가지</strong>와 직장 생존 전략</p>
+                            </div>
+                        </div>
+                        <div class="toc-item">
+                            <span class="toc-num">第 3 卷</span>
+                            <div class="toc-content">
+                                <strong class="toc-title">평생의 인연과 애정·배우자 복</strong>
+                                <p class="toc-desc">나를 일으켜 세울 평생의 귀인(貴人)과 피해야 할 악연, 부부 연의 깊이</p>
+                            </div>
+                        </div>
+                        <div class="toc-item">
+                            <span class="toc-num">第 4 卷</span>
+                            <div class="toc-content">
+                                <strong class="toc-title">인생 10년 대운(大運)과 황금기의 전환점</strong>
+                                <p class="toc-desc">다가오는 3~5년 중 인생의 판도를 바꿀 <strong>대운 승부수 타이밍</strong></p>
+                            </div>
+                        </div>
+                        <div class="toc-item">
+                            <span class="toc-num">第 5 卷</span>
+                            <div class="toc-content">
+                                <strong class="toc-title">나만을 위한 액운 방지 및 종합 개운법</strong>
+                                <p class="toc-desc">부족한 기운을 채우고 길운을 당기는 색상·방위·행동 실천 처방전</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <button type="button" class="btn-unlock-inline" onclick="handlePaywallClick()">
                     <span>심층 운명서 열기 🔒</span>
                 </button>
