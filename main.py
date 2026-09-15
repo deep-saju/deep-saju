@@ -260,7 +260,11 @@ def calculate_saju_engine(user_input: UserInput) -> dict:
     hh, mm = map(int, user_input.birth_time.split(':'))
     
     if user_input.birth_type == "음력":
-        lunar = Lunar.fromYmdHms(y, m, d, hh, mm, 0, user_input.is_leap_month)
+        lunar_month = -abs(m) if user_input.is_leap_month else m
+        try:
+            lunar = Lunar.fromYmdHms(y, lunar_month, d, hh, mm, 0)
+        except Exception:
+            lunar = Lunar.fromYmdHms(y, m, d, hh, mm, 0)
     else:
         solar = Solar.fromYmdHms(y, m, d, hh, mm, 0)
         lunar = solar.getLunar()
