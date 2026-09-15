@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>심층 운명서 | 모던 조선 서재 명리학 사주</title>
+    <title>조선 점술가의 방 | 심층 사주명리</title>
     
-    <!-- 구글 폰트: 고풍스럽고 정갈한 Noto Serif KR (명조체 전면 적용) -->
+    <!-- 고풍스러운 명조 폰트 (Gowun Batang, Nanum Myeongjo, Noto Serif KR) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Serif+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <!-- Marked.js 최신 라이브러리 -->
     <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
@@ -17,66 +17,43 @@
 
     <style>
         /* ==========================================================================
-           1. 디자인 시스템 & CSS 글로벌 토큰 (모던 조선 서재 & 오리엔탈 한지 테마)
+           1. 디자인 시스템: 조선시대 점술가의 방 & 다크 오리엔탈 테마
            ========================================================================== */
         :root {
-            /* 한지 & 서재 베이스 톤 (밝고 따뜻한 한지색) */
-            --hanji-bg: #F9F6F0;           /* 따뜻하고 은은한 미색 한지 */
-            --hanji-surface: #FFFFFF;      /* 정갈한 백지 */
-            --hanji-card: #FFFFFF;         /* 카드 기본 배경 */
-            --hanji-subtle: #F3EEE5;       /* 음영 한지 / 톤다운 영역 */
-            --hanji-border: #E5DDD0;       /* 연한 한지 먹선 테두리 */
-            --hanji-border-strong: #CFC5B4;/* 강조 먹선 테두리 */
-            --hanji-border-dark: #3A352F;  /* 짙은 먹선 테두리 */
+            /* 컬러 팔레트 */
+            --text-beige: #F5F5DC;          /* 밝은 베이지 / 한지색 */
+            --text-gold: #DFB738;           /* 금박 골드 */
+            --text-gold-light: #FFF0BD;     /* 밝은 황금빛 */
+            --text-sub: #D3C9B8;            /* 보조 설명 베이지 */
+            --text-muted: #9E9584;          /* 흐린 먹색 베이지 */
+            
+            --bg-dark-overlay: rgba(10, 8, 6, 0.65);
+            --card-bg-dark: rgba(20, 17, 14, 0.85);
+            --card-bg-subtle: rgba(30, 26, 21, 0.75);
+            --input-bg-dark: rgba(14, 12, 10, 0.72);
+            
+            --border-gold: rgba(223, 183, 56, 0.45);
+            --border-gold-strong: rgba(223, 183, 56, 0.85);
+            --border-ink: rgba(180, 160, 130, 0.22);
+            --border-seal: rgba(185, 45, 45, 0.7);
 
-            /* 먹물 텍스트 컬러 (자연스러운 농담의 먹색) */
-            --ink-black: #1F1D1B;          /* 짙은 흑묵 (제목, 헤더) */
-            --ink-dark: #33302B;           /* 본문 먹색 */
-            --ink-mid: #5E584F;            /* 보조 설명 먹색 */
-            --ink-muted: #8E8679;          /* 흐린 먹색 */
-            --ink-faint: #B8B0A2;          /* 아주 연한 먹색 */
+            --point-seal: #A82B2B;          /* 전통 낙관 인장 적색 */
+            --point-seal-hover: #C93636;
+            --point-jade: #2B7A6D;          /* 비취 옥색 */
+            --point-jade-light: #68C7B8;
 
-            /* 한국 전통 강조 색상 (낙관 주홍 & 비취 옥색 & 놋쇠 황동) */
-            --point-seal: #A83232;         /* 전통 낙관 주홍색 (버튼, 핵심 액션) */
-            --point-seal-hover: #8F2626;   /* 짙은 낙관색 */
-            --point-seal-bg: #FDF4F4;      /* 은은한 낙관 틴트 */
-            --point-seal-border: #E8B6B6;  /* 낙관 테두리 */
+            /* 오행 오방색 (점술가의 방 다크 모드) */
+            --elem-wood: #38A169;
+            --elem-fire: #E53E3E;
+            --elem-earth: #D69E2E;
+            --elem-metal: #CBD5E0;
+            --elem-water: #3182CE;
 
-            --point-jade: #27675D;         /* 은은한 비취 옥색 (포인트, 안정감) */
-            --point-jade-hover: #1E534A;   /* 짙은 옥색 */
-            --point-jade-bg: #EFF7F5;      /* 은은한 옥빛 배경 */
-            --point-jade-border: #BCD9D3;  /* 옥색 테두리 */
-
-            --point-brass: #9E8148;        /* 놋쇠/황동 전통 포인트 */
-            --point-brass-bg: #FBF8F0;     /* 미색 황동 배경 */
-
-            /* 오방색 오행 컬러 (전통 천연염료 느낌의 차분한 톤) */
-            --elem-wood: #2B7262;          /* 목 (청자 / 비취록) */
-            --elem-wood-bg: #EDF6F3;
-            --elem-fire: #B23D33;          /* 화 (연지 / 주홍) */
-            --elem-fire-bg: #FDF2F0;
-            --elem-earth: #A67C2E;         /* 토 (황토 / 고서금) */
-            --elem-earth-bg: #FAF5EA;
-            --elem-metal: #6E685F;         /* 금 (백은 / 흑단금속) */
-            --elem-metal-bg: #F4F2EF;
-            --elem-water: #284D6E;         /* 수 (쪽빛 / 먹수) */
-            --elem-water-bg: #EFF4FA;
-
-            /* 선 & 간격 시스템 (현대적 그림자 배제, 단정한 단선) */
-            --line-thin: 1px solid var(--hanji-border);
-            --line-strong: 1px solid var(--hanji-border-strong);
-            --line-ink: 1px solid var(--hanji-border-dark);
-            --radius-none: 0px;
-            --radius-xs: 2px;
-            --radius-sm: 4px;
-            --radius-md: 6px;
-
-            /* 타이포그래피 */
-            --font-serif: 'Noto Serif KR', 'Batang', 'Song Myung', Georgia, serif;
-            --transition-gentle: all 0.22s ease-in-out;
+            /* 폰트 */
+            --font-joseon: 'Gowun Batang', 'Nanum Myeongjo', 'Noto Serif KR', serif;
+            --transition-smooth: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        /* 리셋 & 기본 속성 */
         *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
@@ -87,29 +64,52 @@
         html, body {
             width: 100%;
             min-height: 100%;
-            font-family: var(--font-serif);
-            background-color: var(--hanji-bg);
-            color: var(--ink-dark);
+            font-family: var(--font-joseon);
+            background-color: #0d0b09;
+            color: var(--text-beige);
             line-height: 1.85;
             text-rendering: optimizeLegibility;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            word-break: keep-all;
             overflow-x: hidden;
         }
 
-        /* 은은한 한지 결 느낌의 백그라운드 텍스처 오버레이 */
+        /* 전체 배경: bg.png + 0.6 검은색 오버레이로 감싸인 신비로운 점술가의 방 */
         body {
-            background-color: var(--hanji-bg);
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(230, 220, 205, 0.35) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(225, 215, 195, 0.4) 0%, transparent 45%),
-                linear-gradient(to bottom, rgba(255, 255, 255, 0.6), rgba(249, 246, 240, 0.95));
-            background-attachment: fixed;
+            background: linear-gradient(rgba(12, 10, 8, 0.62), rgba(8, 6, 5, 0.68)),
+                        url('bg.png') center center / cover no-repeat fixed;
+            background-color: #0c0a08;
+            min-height: 100vh;
         }
 
         /* ==========================================================================
-           2. 레이아웃 구조 (여백의 미 & 정돈된 서재 뷰)
+           2. 워터마크 완벽 크롭(Cropping) 시스템 (AI 워터마크 100% 제거)
+           ========================================================================== */
+        /*
+           모든 AI 생성 이미지(icon_*, loading_brush_new.png)의 우측 하단 10~15% 영역을
+           overflow: hidden 과 스케일/좌상단 기준점(transform-origin: 30% 30%)으로 완벽 차단!
+        */
+        .wm-crop-container {
+            overflow: hidden !important;
+            position: relative !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wm-crop-img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            /* 중심을 살짝 좌상단으로 잡고 16% 확대하여 우측 하단 워터마크 영역을 완전히 프레임 밖으로 밀어냄 */
+            transform: scale(1.16) !important;
+            transform-origin: 32% 32% !important;
+            pointer-events: none;
+            user-select: none;
+            display: block;
+        }
+
+        /* ==========================================================================
+           3. 메인 레이아웃 및 헤더
            ========================================================================== */
         .layout-wrapper {
             width: 100%;
@@ -117,169 +117,249 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 36px 16px 80px 16px;
+            box-sizing: border-box;
             position: relative;
-            padding: 0 16px;
         }
 
-        /* 상단 인트로 헤더 영역 (조선 서재 현판 & 시제 느낌) */
-        .left-visual {
-            width: 100%;
-            max-width: 680px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        /* 상단 현판 헤더 */
+        .room-header {
             text-align: center;
-            padding: 56px 20px 24px 20px;
-            margin: 0 auto;
-            box-sizing: border-box;
+            margin-bottom: 36px;
+            max-width: 680px;
+            animation: fadeInDown 0.6s ease;
         }
 
-        /* 서재 현판/낙관 형태의 미니 배지 */
-        .visual-badge {
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .seal-badge {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            background: var(--point-seal-bg);
-            border: 1px solid var(--point-seal-border);
-            padding: 5px 16px;
-            border-radius: var(--radius-xs);
+            gap: 6px;
+            background: rgba(168, 43, 43, 0.28);
+            border: 1px solid var(--border-seal);
+            color: #FF9B9B;
             font-size: 13px;
-            color: var(--point-seal);
-            font-weight: 600;
-            letter-spacing: 2.5px;
-            margin-bottom: 18px;
+            padding: 4px 16px;
+            border-radius: 2px;
+            letter-spacing: 3px;
+            margin-bottom: 14px;
+            text-shadow: 0 0 10px rgba(255, 100, 100, 0.4);
         }
 
-        .visual-badge span {
-            font-size: 11px;
-            opacity: 0.85;
+        .room-title {
+            font-size: clamp(26px, 4.2vw, 38px);
+            font-weight: 800;
+            color: var(--text-gold-light);
+            letter-spacing: -0.5px;
+            line-height: 1.4;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 14px rgba(0, 0, 0, 0.9), 0 0 24px rgba(223, 183, 56, 0.35);
         }
 
-        .visual-center {
-            width: 100%;
+        .room-title span {
+            color: var(--text-gold);
         }
 
-        .visual-center h1 {
-            font-family: var(--font-serif);
-            font-size: clamp(25px, 4.2vw, 36px);
-            font-weight: 700;
-            line-height: 1.5;
-            color: var(--ink-black);
-            margin-bottom: 16px;
-            letter-spacing: -0.6px;
-        }
-
-        .visual-center h1 span {
-            color: var(--point-seal);
-            position: relative;
-            display: inline-block;
-        }
-
-        .visual-center p {
+        .room-desc {
             font-size: 15px;
-            color: var(--ink-mid);
-            line-height: 1.8;
-            font-weight: 400;
-            max-width: 540px;
-            margin: 0 auto;
-        }
-
-        .visual-footer {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 14px 22px;
-            font-size: 13px;
-            color: var(--ink-muted);
-            margin-top: 22px;
-            padding-top: 14px;
-            border-top: 1px dashed var(--hanji-border);
-            width: 100%;
-            max-width: 500px;
-        }
-
-        .visual-footer span {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        /* 인터랙션 본문 영역 */
-        .right-area {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 8px 0 80px 0;
-            box-sizing: border-box;
-        }
-
-        /* 폼 컨테이너 */
-        .form-container {
-            width: 100%;
-            max-width: 580px;
-            margin: 0 auto;
+            color: var(--text-sub);
+            line-height: 1.75;
+            text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
         }
 
         /* ==========================================================================
-           3. 입력 폼 컴포넌트 (운세위키/꿀점 스타일의 담백한 세로형 단선 배치)
+           4. 초기 화면: 4개 대형 카테고리 선택 그리드 (#category-screen)
            ========================================================================== */
-        .paper-card {
-            background: var(--hanji-surface);
-            border: 1px solid var(--hanji-border-strong);
-            border-radius: var(--radius-sm);
-            padding: 42px 36px;
-            box-shadow: none; /* 그림자 완전 배제 */
+        #category-screen {
+            width: 100%;
+            max-width: 880px;
+            margin: 0 auto;
+            transition: var(--transition-smooth);
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            width: 100%;
+        }
+
+        @media (max-width: 640px) {
+            .category-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        /* 카테고리 카드 (조선 서책/괘패 느낌) */
+        .cat-card {
+            background: var(--card-bg-dark);
+            border: 1.5px solid var(--border-gold);
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
             position: relative;
-            margin-bottom: 24px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
         }
 
-        /* 상단 한지 액자 장식 실선 */
-        .paper-card::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--point-jade);
+        .cat-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--text-gold);
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(223, 183, 56, 0.35);
         }
 
-        .form-header {
-            text-align: center;
-            margin-bottom: 34px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--hanji-border);
+        /* 카드 상단 이미지 영역 (워터마크 완벽 크롭) */
+        .cat-img-box {
+            width: 100%;
+            height: 180px;
+            background: #110e0b;
+            border-bottom: 1px solid var(--border-gold);
         }
 
-        .form-subtitle {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--point-jade);
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-            display: block;
+        .cat-card:hover .wm-crop-img {
+            transform: scale(1.22) !important;
+            transition: transform 0.5s ease;
         }
 
-        .form-header h2 {
-            font-size: 24px;
+        /* 카드 하단 텍스트 */
+        .cat-info {
+            padding: 22px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: linear-gradient(180deg, rgba(25, 21, 17, 0.95) 0%, rgba(16, 13, 10, 0.98) 100%);
+        }
+
+        .cat-tag-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .cat-hanja {
+            font-size: 13px;
+            color: var(--text-gold);
+            letter-spacing: 2px;
             font-weight: 700;
-            color: var(--ink-black);
-            line-height: 1.35;
-            letter-spacing: -0.4px;
         }
 
-        .form-header p.sub-desc {
+        .cat-arrow {
+            font-size: 13px;
+            color: var(--text-gold);
+            opacity: 0.8;
+            transition: transform 0.2s ease;
+        }
+
+        .cat-card:hover .cat-arrow {
+            transform: translateX(4px);
+        }
+
+        .cat-title {
+            font-size: 21px;
+            font-weight: 800;
+            color: var(--text-gold-light);
+            letter-spacing: -0.3px;
+        }
+
+        .cat-desc {
             font-size: 13.5px;
-            color: var(--ink-mid);
-            margin-top: 8px;
+            color: var(--text-sub);
+            line-height: 1.6;
         }
 
-        /* 폼 입력 그룹 */
+        /* ==========================================================================
+           5. 폼 화면: "이곳에 사주 단자를 적어 올리시오" (#form-screen)
+           ========================================================================== */
+        #form-screen {
+            display: none; /* 초기에는 숨김 */
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            animation: fadeIn 0.45s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-card {
+            background: var(--card-bg-dark);
+            border: 1.5px solid var(--border-gold);
+            border-radius: 6px;
+            padding: 38px 32px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85);
+            position: relative;
+        }
+
+        /* 상단 뒤로가기 바 & 사주단자 문구 */
+        .form-top-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-ink);
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid var(--border-gold);
+            color: var(--text-gold);
+            padding: 6px 14px;
+            font-family: var(--font-joseon);
+            font-size: 13px;
+            border-radius: 3px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition-smooth);
+        }
+
+        .btn-back:hover {
+            background: rgba(223, 183, 56, 0.15);
+            border-color: var(--text-gold-light);
+            color: #FFFFFF;
+        }
+
+        .chosen-cat-badge {
+            font-size: 13px;
+            color: var(--text-gold);
+            font-weight: 700;
+            letter-spacing: 1.5px;
+        }
+
+        .form-danja-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        /* 필수 요구 문구 */
+        .form-danja-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-gold-light);
+            letter-spacing: -0.4px;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .form-danja-sub {
+            font-size: 14px;
+            color: var(--text-sub);
+        }
+
+        /* 폼 입력창 스타일 (반투명한 검은색 & 고풍스러운 테두리) */
         .input-group {
-            margin-bottom: 26px;
+            margin-bottom: 22px;
             width: 100%;
         }
 
@@ -288,29 +368,27 @@
             align-items: center;
             justify-content: space-between;
             font-size: 14px;
-            color: var(--ink-dark);
-            margin-bottom: 9px;
-            font-weight: 600;
+            color: var(--text-gold-light);
+            margin-bottom: 8px;
+            font-weight: 700;
         }
 
         .input-group label .badge {
-            font-size: 11.5px;
-            font-weight: 400;
+            font-size: 11px;
+            font-weight: 500;
             padding: 1px 7px;
-            border-radius: var(--radius-xs);
-            background: var(--hanji-subtle);
-            color: var(--ink-mid);
-            border: 1px solid var(--hanji-border);
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-sub);
+            border: 1px solid var(--border-ink);
         }
 
         .input-group label .badge.req {
-            background: var(--point-seal-bg);
-            color: var(--point-seal);
-            border-color: var(--point-seal-border);
-            font-weight: 500;
+            background: rgba(168, 43, 43, 0.35);
+            color: #FFA5A5;
+            border-color: var(--border-seal);
         }
 
-        /* 단선 인풋 박스 스타일 (Shadow 제거, 1px 먹선) */
         .date-inputs {
             display: flex;
             gap: 10px;
@@ -323,27 +401,27 @@
             min-width: 0;
         }
 
+        /* 반투명 검은색 입력 필드 */
         .input-field, select.input-field {
             width: 100%;
             height: 50px;
             padding: 0 16px;
-            border: 1px solid var(--hanji-border-strong);
-            background: #FFFFFF;
-            border-radius: var(--radius-xs);
-            font-family: var(--font-serif);
+            background: var(--input-bg-dark);
+            border: 1px solid var(--border-gold);
+            border-radius: 3px;
+            font-family: var(--font-joseon);
             font-size: 15px;
-            color: var(--ink-black);
+            color: var(--text-beige);
             outline: none;
-            transition: var(--transition-gentle);
+            transition: var(--transition-smooth);
             appearance: none;
             -webkit-appearance: none;
-            box-shadow: none;
         }
 
         .date-inputs input {
             text-align: center;
-            padding: 0 24px 0 10px;
-            font-weight: 500;
+            padding: 0 22px 0 8px;
+            font-weight: 700;
             letter-spacing: 0.5px;
         }
 
@@ -352,24 +430,23 @@
             right: 10px;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 12.5px;
-            color: var(--ink-muted);
+            font-size: 12px;
+            color: var(--text-muted);
             pointer-events: none;
         }
 
-        /* 인풋 포커스 시: 은은한 옥색 단선 */
         .input-field:focus, select.input-field:focus {
-            border-color: var(--point-jade);
-            background-color: #FFFFFF;
-            box-shadow: 0 0 0 1px var(--point-jade);
+            border-color: var(--text-gold);
+            background: rgba(20, 16, 12, 0.88);
+            box-shadow: 0 0 12px rgba(223, 183, 56, 0.35);
         }
 
         .input-field::placeholder {
-            color: var(--ink-faint);
-            font-weight: 300;
+            color: rgba(245, 245, 220, 0.3);
+            font-weight: 400;
         }
 
-        /* 단정한 전통 스타일 셀렉트 */
+        /* 커스텀 셀렉트 화살표 */
         .select-wrapper {
             position: relative;
             width: 100%;
@@ -382,26 +459,29 @@
             top: 50%;
             width: 7px;
             height: 7px;
-            border-right: 1.5px solid var(--ink-mid);
-            border-bottom: 1.5px solid var(--ink-mid);
+            border-right: 2px solid var(--text-gold);
+            border-bottom: 2px solid var(--text-gold);
             transform: translateY(-65%) rotate(45deg);
             pointer-events: none;
-            transition: var(--transition-gentle);
+            transition: var(--transition-smooth);
         }
 
         .select-wrapper:focus-within::after {
-            border-color: var(--point-jade);
             transform: translateY(-35%) rotate(-135deg);
         }
 
-        /* 탭 토글 그룹 (성별 / 달력) - 단정한 선과 여백 */
+        select.input-field option {
+            background: #191512;
+            color: var(--text-beige);
+        }
+
+        /* 성별 / 달력 토글 버튼 */
         .toggle-group {
             display: flex;
-            gap: 0;
-            background: var(--hanji-subtle);
-            padding: 2px;
-            border-radius: var(--radius-xs);
-            border: 1px solid var(--hanji-border-strong);
+            background: rgba(10, 8, 6, 0.7);
+            padding: 3px;
+            border-radius: 3px;
+            border: 1px solid var(--border-gold);
         }
 
         .toggle-radio {
@@ -410,36 +490,35 @@
 
         .toggle-label {
             flex: 1;
-            height: 44px;
+            height: 42px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: transparent;
-            border-radius: var(--radius-xs);
+            border-radius: 2px;
             cursor: pointer;
             font-size: 14px;
-            font-weight: 500;
-            color: var(--ink-mid);
-            transition: var(--transition-gentle);
+            font-weight: 600;
+            color: var(--text-sub);
+            transition: var(--transition-smooth);
             user-select: none;
-            border: 1px solid transparent;
         }
 
         .toggle-radio:checked + .toggle-label {
-            background-color: #FFFFFF;
-            color: var(--point-seal);
+            background: rgba(223, 183, 56, 0.22);
+            color: var(--text-gold-light);
+            border: 1px solid var(--border-gold-strong);
             font-weight: 700;
-            border: 1px solid var(--hanji-border);
         }
 
-        /* 약관 동의 체크박스 */
+        /* 약관 동의 */
         .checkbox-group {
             display: flex;
             align-items: flex-start;
             gap: 10px;
             font-size: 13px;
-            color: var(--ink-mid);
-            margin: 24px 0 28px 0;
+            color: var(--text-sub);
+            margin: 22px 0 26px 0;
             line-height: 1.55;
             cursor: pointer;
         }
@@ -452,38 +531,35 @@
             cursor: pointer;
         }
 
-        /* 전통 낙관 인장 스타일의 제출 버튼 (단선 & 인장 주홍색) */
+        /* 사주 단자 올리기 버튼 (전통 낙관 + 금빛 테두리) */
         .submit-btn {
             width: 100%;
             height: 56px;
-            background: var(--point-seal);
+            background: linear-gradient(135deg, #8A2222 0%, var(--point-seal) 50%, #681717 100%);
             color: #FFFFFF;
-            border: 1px solid var(--point-seal-hover);
-            border-radius: var(--radius-xs);
-            font-family: var(--font-serif);
-            font-size: 16.5px;
-            font-weight: 600;
-            letter-spacing: 1px;
+            border: 1.5px solid var(--border-gold);
+            border-radius: 3px;
+            font-family: var(--font-joseon);
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
             cursor: pointer;
-            box-shadow: none;
-            transition: var(--transition-gentle);
+            box-shadow: 0 6px 20px rgba(168, 43, 43, 0.45);
+            transition: var(--transition-smooth);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            position: relative;
         }
 
         .submit-btn:hover {
-            background: var(--point-seal-hover);
-        }
-
-        .submit-btn:active {
-            background: #791F1F;
+            background: linear-gradient(135deg, #A82B2B 0%, #BA3232 50%, #7E1E1E 100%);
+            box-shadow: 0 8px 28px rgba(168, 43, 43, 0.65), 0 0 16px rgba(223, 183, 56, 0.4);
+            transform: translateY(-2px);
         }
 
         /* ==========================================================================
-           4. 로딩 화면 (밝고 따뜻한 조선 서재 테마 - 등잔불 & 한지 서책 뷰)
+           6. 붓글씨 로딩 애니메이션 (핵심 요구사항! #loading-screen)
            ========================================================================== */
         #loading-screen {
             position: fixed !important;
@@ -493,268 +569,85 @@
             width: 100% !important;
             height: 100vh !important;
             height: 100% !important;
-            background: rgba(249, 246, 240, 0.98) !important;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            color: var(--ink-black);
+            background: rgba(8, 6, 5, 0.92) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: var(--text-beige);
             z-index: 9999;
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 30px 20px;
+            padding: 24px 20px;
             text-align: center;
             box-sizing: border-box;
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.4s ease;
             overflow-y: auto;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to   { opacity: 1; }
-        }
-
-        .loading-scene-wrap {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 30px;
-            margin-bottom: 24px;
-        }
-
-        /* 서재 호롱불 / 등잔 촛불 */
-        .candle-flame-wrap {
-            position: relative;
-            width: 28px;
-            height: 85px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
-        }
-
-        .candle-flame {
-            width: 13px;
-            height: 26px;
-            background: radial-gradient(ellipse at bottom, #FFF7D6 0%, #FFA834 60%, #D84315 95%);
-            border-radius: 50% 50% 20% 20%;
-            filter: drop-shadow(0 0 8px rgba(255, 168, 52, 0.6));
-            animation: candleFlicker 1.8s ease-in-out infinite alternate;
-            transform-origin: bottom center;
-            margin-bottom: 3px;
-        }
-
-        @keyframes candleFlicker {
-            0%   { transform: scale(1) rotate(-1deg); opacity: 0.95; }
-            30%  { transform: scale(1.04, 0.95) rotate(1.5deg); opacity: 1; }
-            60%  { transform: scale(0.96, 1.04) rotate(-1.5deg); opacity: 0.92; }
-            100% { transform: scale(1.03, 0.98) rotate(1deg); opacity: 1; }
-        }
-
-        .candle-wick {
-            width: 2px;
-            height: 7px;
-            background: #3A2E2B;
-        }
-
-        .candle-body {
-            width: 20px;
-            height: 48px;
-            background: linear-gradient(90deg, #8B2C24 0%, #B23D33 50%, #792019 100%);
-            border-radius: 2px;
-            border: 1px solid #6E1B15;
-        }
-
-        /* 3D 고서(한지 서책) 애니메이션 - 밝은 고서지 톤 */
-        .ancient-book-stage {
-            perspective: 1000px;
-            width: 220px;
-            height: 145px;
-            position: relative;
-            transform-style: preserve-3d;
-            margin: 0 auto;
-        }
-
-        .book-base {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transform: rotateX(10deg);
-            transform-style: preserve-3d;
-        }
-
-        .book-cover {
-            width: 106px;
-            height: 138px;
-            background: #EDE6D8;
-            border: 1px solid var(--hanji-border-strong);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            padding: 5px;
-            box-sizing: border-box;
-        }
-
-        .book-cover.left {
-            border-radius: 3px 0 0 3px;
-        }
-
-        .book-cover.right {
-            border-radius: 0 3px 3px 0;
-        }
-
-        .book-inner-parchment {
-            width: 100%;
-            height: 100%;
-            background: #FAF7F0;
-            border: 1px solid #DFD7C7;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-around;
-            padding: 8px 6px;
-            box-sizing: border-box;
-        }
-
-        .parchment-symbol {
-            font-family: var(--font-serif);
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--point-seal);
-        }
-
-        .parchment-lines {
-            width: 75%;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .pline {
-            height: 1.5px;
-            background: #D8CEBD;
-        }
-
-        .pline.short {
-            width: 55%;
-        }
-
-        .book-spine-gold {
-            width: 8px;
-            height: 138px;
-            background: #C4B291;
-            border-top: 1px solid #A89574;
-            border-bottom: 1px solid #A89574;
-            z-index: 10;
-        }
-
-        .turning-leaf {
-            position: absolute;
-            top: 4px;
-            left: calc(50% + 1px);
-            width: 98px;
-            height: 136px;
-            transform-origin: left center;
-            transform-style: preserve-3d;
-            animation: bookPageFlip 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-            pointer-events: none;
-            z-index: 20;
-        }
-
-        .turning-leaf.leaf-1 { animation-delay: 0s; }
-        .turning-leaf.leaf-2 { animation-delay: 1.5s; }
-
-        @keyframes bookPageFlip {
-            0%   { transform: rotateY(0deg); opacity: 0; }
-            8%   { transform: rotateY(0deg); opacity: 1; }
-            50%  { transform: rotateY(-90deg); opacity: 1; }
-            90%  { transform: rotateY(-180deg); opacity: 1; }
-            100% { transform: rotateY(-180deg); opacity: 0; }
-        }
-
-        .leaf-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            background: #FAF7F0;
-            border: 1px solid #DFD7C7;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-            align-items: center;
-            padding: 10px 8px;
-            box-sizing: border-box;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-        }
-
-        .leaf-face.leaf-back {
-            transform: rotateY(180deg);
-        }
-
-        .leaf-symbol {
-            font-family: var(--font-serif);
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--point-seal);
-        }
-
-        .leaf-lines {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            width: 75%;
-        }
-
-        .leaf-line {
-            height: 1.5px;
-            background: #D8CEBD;
-        }
-
-        .leaf-line.short {
-            width: 50%;
-        }
-
-        /* 로딩 텍스트 서사 */
-        .loading-narrative {
-            margin-top: 14px;
+        /* 붓글씨 이미지 프레임 (워터마크 완전 차단 + 숨쉬는 Breathing 애니메이션) */
+        .brush-loading-box {
+            width: 90%;
+            max-width: 440px;
+            height: 240px;
+            border: 2px solid var(--border-gold);
+            border-radius: 8px;
+            box-shadow: 0 0 35px rgba(223, 183, 56, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.8);
             margin-bottom: 22px;
+            /* 점술을 준비하는 듯한 은은한 숨쉬기(Breathing) 애니메이션 */
+            animation: brushBreathing 2.4s ease-in-out infinite alternate;
+        }
+
+        @keyframes brushBreathing {
+            0% {
+                opacity: 0.8;
+                transform: scale(0.985);
+                border-color: rgba(223, 183, 56, 0.35);
+                box-shadow: 0 0 20px rgba(223, 183, 56, 0.2);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.02);
+                border-color: rgba(223, 183, 56, 0.85);
+                box-shadow: 0 0 40px rgba(223, 183, 56, 0.55), 0 0 10px rgba(255, 240, 189, 0.4);
+            }
+            100% {
+                opacity: 0.8;
+                transform: scale(0.985);
+                border-color: rgba(223, 183, 56, 0.35);
+                box-shadow: 0 0 20px rgba(223, 183, 56, 0.2);
+            }
+        }
+
+        .loading-narrative {
+            margin-bottom: 20px;
         }
 
         .loading-story-title {
-            font-family: var(--font-serif);
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--ink-black);
-            margin-bottom: 8px;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-gold-light);
             letter-spacing: -0.4px;
+            margin-bottom: 8px;
+            text-shadow: 0 0 16px rgba(223, 183, 56, 0.4);
         }
 
         .loading-story-subtitle {
-            font-size: 14px;
-            color: var(--ink-mid);
-            font-weight: 400;
+            font-size: 14.5px;
+            color: var(--text-sub);
             transition: opacity 0.25s ease;
         }
 
-        /* 로딩 실시간 분석 로그 (먹물 서첩 스타일) */
+        /* 실시간 분석 엔진 터미널 */
         .loading-logs-wrapper {
-            max-width: 520px !important;
+            max-width: 480px !important;
             width: 90% !important;
-            height: 170px !important;
-            background: #FFFFFF !important;
-            border: 1px solid var(--hanji-border-strong) !important;
-            border-radius: var(--radius-xs) !important;
+            height: 145px !important;
+            background: rgba(14, 12, 10, 0.9) !important;
+            border: 1px solid var(--border-gold) !important;
+            border-radius: 4px !important;
             padding: 12px 16px !important;
-            margin: 0 auto 18px auto !important;
-            position: relative !important;
+            margin: 0 auto 16px auto !important;
             box-sizing: border-box !important;
             display: flex !important;
             flex-direction: column !important;
@@ -765,123 +658,115 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             padding-bottom: 6px;
-            border-bottom: 1px solid var(--hanji-border);
+            border-bottom: 1px solid var(--border-ink);
         }
 
         .log-indicator {
             width: 7px;
             height: 7px;
             border-radius: 50%;
-            background-color: var(--point-jade);
+            background-color: var(--text-gold);
+            box-shadow: 0 0 8px var(--text-gold);
         }
 
         .log-header-text {
             font-size: 11px;
             font-weight: 700;
             letter-spacing: 1.5px;
-            color: var(--point-jade);
+            color: var(--text-gold);
         }
 
         .loading-logs {
             flex: 1;
             overflow-y: auto;
             font-size: 12.5px;
-            line-height: 1.8;
-            color: var(--ink-mid);
-        }
-
-        .log-line {
-            transition: opacity 0.2s ease;
+            line-height: 1.75;
+            color: var(--text-sub);
         }
 
         .log-line.active {
-            color: var(--point-seal);
-            font-weight: 600;
+            color: var(--text-gold-light);
+            font-weight: 700;
         }
 
-        /* 로딩 진행 바 (옥색 단선 바) */
         .progress-container {
             width: 90%;
-            max-width: 520px;
+            max-width: 480px;
             height: 3px;
-            background: var(--hanji-border);
-            border-radius: 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
             overflow: hidden;
-            margin-top: 6px;
         }
 
         .progress-bar {
             width: 0%;
             height: 100%;
-            background: var(--point-jade);
+            background: linear-gradient(90deg, var(--point-seal), var(--text-gold));
             transition: width 0.4s ease;
         }
 
         /* ==========================================================================
-           5. 사주 결과 화면 (Result Screen - 정갈한 한지 서첩 / 교지 스타일)
+           7. 사주 결과 화면 (#result-screen)
            ========================================================================== */
         #result-screen {
             display: none;
             width: 100%;
-            max-width: 840px;
+            max-width: 860px;
             margin: 0 auto;
             animation: fadeIn 0.4s ease;
         }
 
-        /* 1) 결과 상단 헤더 & 명언 */
         .result-hero-header {
             text-align: center;
-            margin-bottom: 30px;
-            padding: 36px 20px 24px 20px;
-            border-bottom: 1px solid var(--hanji-border-strong);
+            margin-bottom: 28px;
+            padding: 30px 20px 22px 20px;
+            border-bottom: 1.5px solid var(--border-gold);
+            background: var(--card-bg-dark);
+            border-radius: 6px;
         }
 
         .result-hero-title {
-            font-size: clamp(26px, 3.5vw, 34px);
-            font-weight: 700;
-            color: var(--ink-black);
-            margin-bottom: 10px;
-            letter-spacing: -0.5px;
+            font-size: clamp(26px, 3.8vw, 34px);
+            font-weight: 800;
+            color: var(--text-gold-light);
+            margin-bottom: 8px;
         }
 
         .result-hero-sub {
             font-size: 14.5px;
-            color: var(--ink-mid);
-            line-height: 1.7;
-            max-width: 520px;
-            margin: 0 auto 18px auto;
+            color: var(--text-sub);
+            margin-bottom: 16px;
         }
 
         .result-hero-quote {
             display: inline-flex;
             flex-direction: column;
-            gap: 4px;
-            background: var(--hanji-subtle);
-            padding: 10px 22px;
-            border: 1px solid var(--hanji-border);
-            border-radius: var(--radius-xs);
+            gap: 2px;
+            background: rgba(10, 8, 6, 0.6);
+            padding: 10px 24px;
+            border: 1px solid var(--border-gold);
+            border-radius: 3px;
         }
 
         .quote-text {
-            font-size: 13.5px;
-            color: var(--ink-dark);
+            font-size: 14px;
+            color: var(--text-gold);
             font-style: italic;
         }
 
         .quote-author {
-            font-size: 11.5px;
-            color: var(--ink-muted);
-            letter-spacing: 0.5px;
+            font-size: 11px;
+            color: var(--text-muted);
         }
 
-        /* 2) 유저 정보 4개 칩 바 (전통 명첩 서식) */
+        /* 유저 메타 4개 칩 */
         .user-meta-chips-bar {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
-            margin-bottom: 32px;
+            margin-bottom: 28px;
         }
 
         @media (max-width: 640px) {
@@ -891,9 +776,9 @@
         }
 
         .meta-chip {
-            background: #FFFFFF;
-            border: 1px solid var(--hanji-border-strong);
-            border-radius: var(--radius-xs);
+            background: var(--card-bg-dark);
+            border: 1px solid var(--border-gold);
+            border-radius: 4px;
             padding: 12px 14px;
             display: flex;
             align-items: center;
@@ -913,70 +798,57 @@
 
         .chip-label {
             font-size: 11px;
-            color: var(--ink-muted);
-            font-weight: 500;
+            color: var(--text-muted);
         }
 
         .chip-val {
             font-size: 13.5px;
-            color: var(--ink-black);
-            font-weight: 600;
+            color: var(--text-gold-light);
+            font-weight: 700;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        /* 챕터 공통 섹션 */
+        /* 챕터 공통 */
         .section-chapter {
-            margin-bottom: 38px;
+            margin-bottom: 34px;
         }
 
         .chapter-title-bar {
-            margin-bottom: 18px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--hanji-border);
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-gold);
             display: flex;
             flex-direction: column;
             gap: 4px;
         }
 
         .chapter-badge {
-            display: inline-block;
             font-size: 11.5px;
             font-weight: 700;
-            color: var(--point-seal);
+            color: var(--text-gold);
             letter-spacing: 2px;
         }
 
         .chapter-main-title {
             font-size: 22px;
-            font-weight: 700;
-            color: var(--ink-black);
-            letter-spacing: -0.4px;
+            font-weight: 800;
+            color: var(--text-gold-light);
         }
 
         .chapter-sub-desc {
             font-size: 13.5px;
-            color: var(--ink-mid);
+            color: var(--text-sub);
         }
 
-        /* 3) 第一章: 사주 한마디 (서화 액자 느낌의 와이드 카드) */
+        /* 第一章 한마디 */
         .verdict-card {
-            background: #FFFFFF;
-            border: 1px solid var(--hanji-border-strong);
-            border-radius: var(--radius-xs);
-            padding: 36px 32px;
+            background: var(--card-bg-dark);
+            border: 1.5px solid var(--border-gold);
+            border-radius: 6px;
+            padding: 34px 28px;
             position: relative;
-        }
-
-        .verdict-card::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--point-seal);
         }
 
         .chapter-tag-wrap {
@@ -987,52 +859,47 @@
         }
 
         .chapter-tag {
-            background: var(--point-seal-bg);
-            color: var(--point-seal);
-            border: 1px solid var(--point-seal-border);
+            background: rgba(168, 43, 43, 0.3);
+            color: #FFA5A5;
+            border: 1px solid var(--border-seal);
             font-size: 11.5px;
             font-weight: 700;
             padding: 2px 8px;
-            border-radius: var(--radius-xs);
+            border-radius: 2px;
         }
 
         .chapter-tag-title {
             font-size: 13px;
-            color: var(--ink-mid);
+            color: var(--text-gold);
             font-weight: 600;
         }
 
         .verdict-headline {
-            font-size: clamp(21px, 3vw, 26px);
-            font-weight: 700;
-            color: var(--ink-black);
+            font-size: clamp(20px, 2.8vw, 25px);
+            font-weight: 800;
+            color: var(--text-gold-light);
             line-height: 1.45;
             margin-bottom: 12px;
-            letter-spacing: -0.4px;
         }
 
         .verdict-lead {
             font-size: 15px;
-            color: var(--point-jade);
+            color: var(--text-gold);
             font-weight: 600;
             line-height: 1.7;
             margin-bottom: 16px;
-            padding-bottom: 16px;
-            border-bottom: 1px dashed var(--hanji-border);
+            padding-bottom: 14px;
+            border-bottom: 1px dashed var(--border-ink);
         }
 
         .verdict-desc-box p {
             font-size: 14.5px;
-            color: var(--ink-mid);
+            color: var(--text-sub);
             line-height: 1.8;
             margin-bottom: 8px;
         }
 
-        .verdict-desc-box p:last-child {
-            margin-bottom: 0;
-        }
-
-        /* 4) 사주 명식 & 오행 분포 (좌우 2열 그리드) */
+        /* 사주 명식 & 오행 분포 */
         .chapter-bazi-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1046,22 +913,22 @@
         }
 
         .chapter-card {
-            background: #FFFFFF;
-            border: 1px solid var(--hanji-border-strong);
-            border-radius: var(--radius-xs);
-            padding: 28px 24px;
+            background: var(--card-bg-dark);
+            border: 1.5px solid var(--border-gold);
+            border-radius: 6px;
+            padding: 26px 22px;
         }
 
         .card-inner-header {
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--hanji-border);
+            margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-ink);
         }
 
         .bazi-card-title {
             font-size: 18px;
-            font-weight: 700;
-            color: var(--ink-black);
+            font-weight: 800;
+            color: var(--text-gold-light);
             display: flex;
             align-items: center;
             gap: 6px;
@@ -1069,21 +936,20 @@
 
         .bazi-card-title .hanja {
             font-size: 14px;
-            color: var(--ink-muted);
-            font-weight: 400;
+            color: var(--text-muted);
         }
 
         .bazi-card-sub {
             font-size: 12.5px;
-            color: var(--ink-mid);
+            color: var(--text-sub);
             margin-top: 4px;
         }
 
-        /* 사주 4기둥 표 (전통 만세력 고문서 스타일 먹선 테이블) */
+        /* 4기둥 표 */
         .pillars-table-wrapper {
             width: 100%;
             overflow-x: auto;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
         .pillars-table {
@@ -1093,120 +959,97 @@
         }
 
         .pillars-table th {
-            background: var(--hanji-subtle);
-            border: 1px solid var(--hanji-border-strong);
+            background: rgba(30, 25, 20, 0.85);
+            border: 1px solid var(--border-gold);
             padding: 8px 4px;
             font-size: 13px;
             font-weight: 700;
-            color: var(--ink-black);
+            color: var(--text-gold-light);
             line-height: 1.35;
         }
 
         .pillars-table th .p-sub {
             font-size: 10px;
-            color: var(--ink-muted);
-            font-weight: 400;
+            color: var(--text-muted);
         }
 
         .pillars-table th.day-pillar-th {
-            background: var(--point-seal-bg);
-            color: var(--point-seal);
-            border-color: var(--point-seal-border);
+            background: rgba(168, 43, 43, 0.35);
+            color: #FFA5A5;
+            border-color: var(--border-seal);
         }
 
         .pillars-table td {
-            border: 1px solid var(--hanji-border);
+            border: 1px solid var(--border-ink);
             padding: 10px 4px;
             vertical-align: middle;
-            background: #FFFFFF;
+            background: rgba(14, 12, 10, 0.6);
         }
 
         .pillars-table td.day-pillar-td {
-            background: #FCFAF8;
+            background: rgba(223, 183, 56, 0.08);
         }
 
         .hanja-main {
             font-size: 24px;
-            font-weight: 700;
-            color: var(--ink-black);
-            font-family: var(--font-serif);
+            font-weight: 800;
+            color: var(--text-beige);
             display: block;
             line-height: 1.2;
         }
 
         .hanja-main.gold-active {
-            color: var(--point-seal);
+            color: var(--text-gold-light);
+            text-shadow: 0 0 10px rgba(223, 183, 56, 0.5);
         }
 
         .element-mini-tag {
             display: inline-block;
             font-size: 10.5px;
             padding: 1px 5px;
-            border-radius: var(--radius-xs);
+            border-radius: 2px;
             margin-top: 4px;
-            font-weight: 600;
-            border: 1px solid transparent;
+            font-weight: 700;
         }
 
-        .element-mini-tag.wood {
-            background: var(--elem-wood-bg);
-            color: var(--elem-wood);
-            border-color: #BCD5CD;
-        }
-        .element-mini-tag.fire {
-            background: var(--elem-fire-bg);
-            color: var(--elem-fire);
-            border-color: #E8BFBA;
-        }
-        .element-mini-tag.earth {
-            background: var(--elem-earth-bg);
-            color: var(--elem-earth);
-            border-color: #E2D3B8;
-        }
-        .element-mini-tag.metal {
-            background: var(--elem-metal-bg);
-            color: var(--elem-metal);
-            border-color: #D2CEC8;
-        }
-        .element-mini-tag.water {
-            background: var(--elem-water-bg);
-            color: var(--elem-water);
-            border-color: #B8CDE0;
-        }
+        .element-mini-tag.wood { background: rgba(56, 161, 105, 0.25); color: #68D391; }
+        .element-mini-tag.fire { background: rgba(229, 62, 62, 0.25); color: #FC8181; }
+        .element-mini-tag.earth { background: rgba(214, 158, 46, 0.25); color: #F6E05E; }
+        .element-mini-tag.metal { background: rgba(203, 213, 224, 0.25); color: #E2E8F0; }
+        .element-mini-tag.water { background: rgba(49, 130, 206, 0.25); color: #63B3ED; }
 
         .pillar-ganji-name {
             font-size: 12px;
-            color: var(--ink-mid);
-            font-weight: 600;
+            color: var(--text-gold);
+            font-weight: 700;
         }
 
         .pillars-footer-notice {
             font-size: 12px;
-            color: var(--ink-mid);
+            color: var(--text-sub);
             display: flex;
             align-items: center;
             gap: 6px;
             padding-top: 8px;
-            border-top: 1px dashed var(--hanji-border);
+            border-top: 1px dashed var(--border-ink);
         }
 
         .notice-icon {
-            color: var(--point-seal);
-            font-size: 14px;
+            color: var(--text-gold);
         }
 
-        /* 오행 원형 도넛 휠 & 스탯 */
+        /* 오행 도넛 */
         .elements-donut-wrap {
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 14px 0 20px 0;
+            margin: 12px 0 18px 0;
         }
 
         .donut-chart-box {
             position: relative;
-            width: 140px;
-            height: 140px;
+            width: 135px;
+            height: 135px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1216,16 +1059,15 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            border: 1px solid var(--hanji-border-strong);
-            box-sizing: border-box;
+            border: 1px solid var(--border-gold);
         }
 
         .donut-center-info {
             position: absolute;
-            width: 76px;
-            height: 76px;
-            background: #FFFFFF;
-            border: 1px solid var(--hanji-border);
+            width: 72px;
+            height: 72px;
+            background: #15120F;
+            border: 1px solid var(--border-gold);
             border-radius: 50%;
             display: flex;
             flex-direction: column;
@@ -1236,31 +1078,29 @@
 
         .donut-hanja {
             font-size: 16px;
-            font-weight: 700;
-            color: var(--point-seal);
+            font-weight: 800;
+            color: var(--text-gold);
             line-height: 1.1;
         }
 
         .donut-label {
-            font-size: 9.5px;
-            color: var(--ink-muted);
-            line-height: 1.2;
+            font-size: 9px;
+            color: var(--text-muted);
         }
 
-        /* 5개 기운 스탯 행 */
         .elements-stat-row {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 6px;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
         .stat-col-item {
-            border: 1px solid var(--hanji-border);
-            border-radius: var(--radius-xs);
-            padding: 8px 4px;
+            border: 1px solid var(--border-ink);
+            border-radius: 2px;
+            padding: 6px 2px;
             text-align: center;
-            background: #FFFFFF;
+            background: rgba(14, 12, 10, 0.6);
             display: flex;
             flex-direction: column;
             gap: 2px;
@@ -1272,34 +1112,20 @@
         .stat-col-item.metal { border-top: 2px solid var(--elem-metal); }
         .stat-col-item.water { border-top: 2px solid var(--elem-water); }
 
-        .stat-name {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--ink-dark);
-        }
-
-        .stat-pct {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--ink-black);
-        }
-
-        .stat-cnt {
-            font-size: 10px;
-            color: var(--ink-muted);
-        }
+        .stat-name { font-size: 11.5px; font-weight: 600; color: var(--text-beige); }
+        .stat-pct { font-size: 12.5px; font-weight: 700; color: var(--text-gold); }
+        .stat-cnt { font-size: 9.5px; color: var(--text-muted); }
 
         .elements-summary-text {
             font-size: 12.5px;
-            color: var(--ink-mid);
-            line-height: 1.65;
-            background: var(--hanji-subtle);
-            padding: 10px 14px;
-            border-radius: var(--radius-xs);
-            border: 1px solid var(--hanji-border);
+            color: var(--text-sub);
+            background: rgba(10, 8, 6, 0.6);
+            padding: 8px 12px;
+            border-radius: 2px;
+            border: 1px solid var(--border-ink);
         }
 
-        /* 5) 第二章 타고난 성향 (2x2 그리드) */
+        /* 第二章 타고난 성향 */
         .nature-grid-2x2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1313,13 +1139,13 @@
         }
 
         .nature-card {
-            background: #FFFFFF;
-            border: 1px solid var(--hanji-border-strong);
-            border-radius: var(--radius-xs);
-            padding: 22px 20px;
+            background: var(--card-bg-dark);
+            border: 1px solid var(--border-gold);
+            border-radius: 4px;
+            padding: 20px 18px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
 
         .nature-card-header {
@@ -1331,26 +1157,26 @@
         .nature-num-badge {
             font-size: 11px;
             font-weight: 700;
-            color: var(--point-seal);
-            border: 1px solid var(--point-seal-border);
-            background: var(--point-seal-bg);
+            color: var(--text-gold);
+            border: 1px solid var(--border-gold);
+            background: rgba(223, 183, 56, 0.1);
             padding: 1px 6px;
-            border-radius: var(--radius-xs);
+            border-radius: 2px;
         }
 
         .nature-card-title {
             font-size: 16px;
-            font-weight: 700;
-            color: var(--ink-black);
+            font-weight: 800;
+            color: var(--text-gold-light);
         }
 
         .nature-card-desc {
             font-size: 13.5px;
-            color: var(--ink-mid);
-            line-height: 1.75;
+            color: var(--text-sub);
+            line-height: 1.7;
         }
 
-        /* 6) 돈은 어디로 새고, 인연은 왜 반복될까 (4열 실전 카드) */
+        /* 4열 실전 카드 */
         .reality-grid-4 {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -1369,10 +1195,10 @@
         }
 
         .reality-card {
-            background: #FFFFFF;
-            border: 1px solid var(--hanji-border-strong);
-            border-radius: var(--radius-xs);
-            padding: 20px 16px;
+            background: var(--card-bg-dark);
+            border: 1px solid var(--border-gold);
+            border-radius: 4px;
+            padding: 18px 16px;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -1384,108 +1210,94 @@
             justify-content: space-between;
         }
 
-        .reality-icon-circle {
-            font-size: 18px;
-        }
+        .reality-icon-circle { font-size: 18px; }
 
         .reality-cat-badge {
             font-size: 11px;
-            color: var(--point-jade);
-            background: var(--point-jade-bg);
-            border: 1px solid var(--point-jade-border);
+            color: var(--text-gold);
+            background: rgba(223, 183, 56, 0.12);
+            border: 1px solid var(--border-gold);
             padding: 1px 6px;
-            border-radius: var(--radius-xs);
-            font-weight: 600;
+            border-radius: 2px;
+            font-weight: 700;
         }
 
         .reality-card-h4 {
             font-size: 15.5px;
-            font-weight: 700;
-            color: var(--ink-black);
+            font-weight: 800;
+            color: var(--text-gold-light);
         }
 
         .reality-card-p {
             font-size: 13px;
-            color: var(--ink-mid);
+            color: var(--text-sub);
             line-height: 1.7;
         }
 
-        /* 7) 심층 운명서 페이월 및 전문 섹션 */
+        /* 심층 운명서 페이월 */
         .chapter-paywall-report {
-            margin-top: 48px;
+            margin-top: 42px;
         }
 
         .paywall-boundary-line {
             text-align: center;
-            margin-bottom: 24px;
-            position: relative;
+            margin-bottom: 22px;
         }
 
         .boundary-text {
             display: inline-block;
-            background: var(--hanji-bg);
-            padding: 0 16px;
+            background: rgba(14, 11, 9, 0.85);
+            border: 1px solid var(--border-gold);
+            padding: 4px 18px;
             font-size: 13.5px;
-            color: var(--point-seal);
-            font-weight: 600;
+            color: var(--text-gold-light);
+            font-weight: 700;
             letter-spacing: 1px;
+            border-radius: 2px;
         }
 
-        .paywall-teaser-container {
-            position: relative;
-        }
-
-        /* 락 배너 (봉인된 서첩 스타일) */
         .paywall-lock-banner {
-            background: #FFFFFF;
-            border: 1px solid var(--point-seal-border);
-            border-radius: var(--radius-xs);
-            padding: 32px 28px;
+            background: var(--card-bg-dark);
+            border: 1.5px solid var(--border-gold);
+            border-radius: 6px;
+            padding: 30px 24px;
             text-align: center;
-            margin-bottom: 24px;
-            position: relative;
+            margin-bottom: 22px;
         }
 
-        .lock-icon-wrap {
-            font-size: 26px;
-            margin-bottom: 8px;
-        }
+        .lock-icon-wrap { font-size: 26px; margin-bottom: 8px; }
 
         .lock-banner-title {
             font-size: 19px;
-            font-weight: 700;
-            color: var(--ink-black);
-            margin-bottom: 10px;
+            font-weight: 800;
+            color: var(--text-gold-light);
+            margin-bottom: 8px;
         }
 
         .lock-banner-desc {
             font-size: 14px;
-            color: var(--ink-mid);
+            color: var(--text-sub);
             line-height: 1.75;
             max-width: 580px;
-            margin: 0 auto 20px auto;
+            margin: 0 auto 18px auto;
         }
 
         .btn-unlock-inline {
-            background: var(--point-seal);
+            background: linear-gradient(135deg, #8A2222 0%, var(--point-seal) 50%, #681717 100%);
             color: #FFFFFF;
-            border: 1px solid var(--point-seal-hover);
-            border-radius: var(--radius-xs);
-            padding: 13px 32px;
-            font-family: var(--font-serif);
+            border: 1px solid var(--border-gold);
+            border-radius: 3px;
+            padding: 12px 30px;
+            font-family: var(--font-joseon);
             font-size: 15px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: var(--transition-gentle);
+            transition: var(--transition-smooth);
         }
 
         .btn-unlock-inline:hover {
-            background: var(--point-seal-hover);
-        }
-
-        /* 블러 티저 본문 */
-        .result-deep-report {
-            transition: var(--transition-gentle);
+            box-shadow: 0 0 16px rgba(223, 183, 56, 0.5);
+            transform: translateY(-1px);
         }
 
         .result-deep-report.teaser-mode {
@@ -1499,25 +1311,24 @@
             -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent 100%);
         }
 
-        /* 심층 리포트 챕터 카드 */
         .deep-chapter-card {
-            background: #FFFFFF;
-            border: 1px solid var(--hanji-border-strong);
-            border-radius: var(--radius-xs);
-            padding: 32px 28px;
-            margin-bottom: 22px;
+            background: var(--card-bg-dark);
+            border: 1px solid var(--border-gold);
+            border-radius: 6px;
+            padding: 30px 26px;
+            margin-bottom: 20px;
         }
 
         .deep-card-header {
-            margin-bottom: 18px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--hanji-border);
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-ink);
         }
 
         .deep-chapter-badge {
             font-size: 11px;
             font-weight: 700;
-            color: var(--point-seal);
+            color: var(--text-gold);
             letter-spacing: 2px;
             display: block;
             margin-bottom: 4px;
@@ -1525,8 +1336,8 @@
 
         .deep-card-title {
             font-size: 19px;
-            font-weight: 700;
-            color: var(--ink-black);
+            font-weight: 800;
+            color: var(--text-gold-light);
             display: flex;
             align-items: center;
             gap: 8px;
@@ -1536,133 +1347,112 @@
         .card-tag {
             font-size: 12px;
             font-weight: 400;
-            color: var(--ink-muted);
-            background: var(--hanji-subtle);
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.06);
             padding: 1px 6px;
-            border-radius: var(--radius-xs);
-            border: 1px solid var(--hanji-border);
+            border-radius: 2px;
+            border: 1px solid var(--border-ink);
         }
 
         .deep-card-body {
             font-size: 14.5px;
             line-height: 1.9;
-            color: var(--ink-dark);
+            color: var(--text-beige);
         }
 
-        .deep-card-body p {
-            margin-bottom: 14px;
-        }
+        .deep-card-body p { margin-bottom: 12px; }
 
-        .deep-card-body p:last-child {
-            margin-bottom: 0;
-        }
-
-        /* 은유 명언 박스 */
         .lead-quote-box {
-            background: var(--hanji-subtle);
-            border-left: 3px solid var(--point-seal);
-            padding: 14px 18px;
-            margin: 18px 0;
+            background: rgba(14, 11, 9, 0.7);
+            border-left: 3px solid var(--text-gold);
+            padding: 12px 16px;
+            margin: 16px 0;
             font-size: 15px;
-            font-weight: 600;
-            color: var(--ink-black);
+            font-weight: 700;
+            color: var(--text-gold-light);
             font-style: italic;
         }
 
-        .quote-mark {
-            color: var(--point-seal);
-            font-weight: 700;
-            margin: 0 4px;
-        }
-
-        /* 솔루션 / 개운 처방전 콜아웃 박스 */
         .solution-callout-box {
-            background: var(--point-jade-bg);
-            border: 1px solid var(--point-jade-border);
-            border-radius: var(--radius-xs);
-            padding: 18px 20px;
-            margin: 20px 0;
+            background: rgba(43, 122, 109, 0.18);
+            border: 1px solid rgba(104, 199, 184, 0.4);
+            border-radius: 3px;
+            padding: 16px 18px;
+            margin: 18px 0;
         }
 
         .callout-header {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .callout-title {
             font-size: 15px;
-            font-weight: 700;
-            color: var(--point-jade);
+            font-weight: 800;
+            color: var(--point-jade-light);
         }
 
         .callout-body {
             font-size: 13.5px;
-            color: var(--ink-dark);
+            color: var(--text-beige);
             line-height: 1.75;
         }
 
         .callout-sub-list ul {
             padding-left: 20px;
-            margin-top: 8px;
+            margin-top: 6px;
         }
 
-        .callout-sub-list li {
-            margin-bottom: 4px;
-            font-size: 13px;
-        }
-
-        /* 추천 리스트 넘버링 카드 */
         .recommend-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin: 16px 0;
+            gap: 8px;
+            margin: 14px 0;
         }
 
         .recommend-item {
             display: flex;
-            gap: 12px;
-            background: var(--hanji-subtle);
-            border: 1px solid var(--hanji-border);
-            border-radius: var(--radius-xs);
-            padding: 12px 14px;
+            gap: 10px;
+            background: rgba(14, 11, 9, 0.6);
+            border: 1px solid var(--border-ink);
+            border-radius: 3px;
+            padding: 10px 12px;
         }
 
         .item-num {
             font-size: 13px;
-            font-weight: 700;
-            color: var(--point-seal);
+            font-weight: 800;
+            color: var(--text-gold);
         }
 
         .item-content {
             font-size: 13.5px;
-            color: var(--ink-dark);
+            color: var(--text-beige);
             line-height: 1.6;
         }
 
         .hl-keyword {
-            color: var(--point-seal);
+            color: var(--text-gold-light);
             font-weight: 700;
         }
 
-        /* 하단 액션 버튼 */
         .result-footer-actions {
             display: flex;
             gap: 12px;
-            margin-top: 36px;
+            margin-top: 32px;
         }
 
         .action-btn {
             flex: 1;
             height: 52px;
-            border-radius: var(--radius-xs);
-            font-family: var(--font-serif);
+            border-radius: 3px;
+            font-family: var(--font-joseon);
             font-size: 15px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: var(--transition-gentle);
+            transition: var(--transition-smooth);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1670,39 +1460,38 @@
         }
 
         .action-btn.primary {
-            background: var(--point-seal);
+            background: linear-gradient(135deg, #8A2222 0%, var(--point-seal) 50%, #681717 100%);
             color: #FFFFFF;
-            border: 1px solid var(--point-seal-hover);
+            border: 1px solid var(--border-gold);
         }
 
         .action-btn.primary:hover {
-            background: var(--point-seal-hover);
+            box-shadow: 0 0 16px rgba(223, 183, 56, 0.4);
         }
 
         .action-btn.secondary {
-            background: #FFFFFF;
-            color: var(--ink-dark);
-            border: 1px solid var(--hanji-border-strong);
+            background: rgba(20, 16, 12, 0.85);
+            color: var(--text-gold-light);
+            border: 1px solid var(--border-gold);
         }
 
         .action-btn.secondary:hover {
-            background: var(--hanji-subtle);
+            background: rgba(35, 28, 20, 0.95);
         }
 
-        /* ==========================================================================
-           6. 하단 스티키 결제 바 (조선 서재 모던 한지 바)
-           ========================================================================== */
+        /* 하단 스티키 결제 바 */
         .sticky-paywall-bar {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(255, 255, 255, 0.98);
-            border-top: 1px solid var(--hanji-border-strong);
+            background: rgba(14, 11, 8, 0.96);
+            border-top: 1.5px solid var(--border-gold);
             padding: 12px 20px;
             z-index: 1000;
             display: none;
             box-sizing: border-box;
+            box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.8);
         }
 
         .sticky-paywall-bar.visible {
@@ -1716,7 +1505,7 @@
         }
 
         .sticky-bar-inner {
-            max-width: 840px;
+            max-width: 860px;
             margin: 0 auto;
             display: flex;
             align-items: center;
@@ -1726,8 +1515,8 @@
 
         .sticky-product-title {
             font-size: 14px;
-            font-weight: 700;
-            color: var(--ink-black);
+            font-weight: 800;
+            color: var(--text-gold-light);
         }
 
         .sticky-price-group {
@@ -1739,492 +1528,468 @@
 
         .price-origin {
             font-size: 12px;
-            color: var(--ink-muted);
+            color: var(--text-muted);
             text-decoration: line-through;
         }
 
         .price-discount {
             font-size: 12px;
-            color: var(--point-seal);
+            color: #FFA5A5;
             font-weight: 700;
         }
 
         .price-final {
             font-size: 17px;
-            font-weight: 700;
-            color: var(--point-seal);
+            font-weight: 800;
+            color: var(--text-gold);
         }
 
-        .price-unit {
-            font-size: 13px;
-        }
-
-        .price-sub {
-            font-size: 11px;
-            color: var(--ink-muted);
-        }
+        .price-unit { font-size: 13px; }
+        .price-sub { font-size: 11px; color: var(--text-muted); }
 
         .sticky-cta-btn {
-            background: var(--point-seal);
+            background: linear-gradient(135deg, #8A2222 0%, var(--point-seal) 50%, #681717 100%);
             color: #FFFFFF;
-            border: 1px solid var(--point-seal-hover);
-            border-radius: var(--radius-xs);
-            padding: 12px 26px;
-            font-family: var(--font-serif);
+            border: 1px solid var(--border-gold);
+            border-radius: 3px;
+            padding: 12px 24px;
+            font-family: var(--font-joseon);
             font-size: 15px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             white-space: nowrap;
-            transition: var(--transition-gentle);
+            transition: var(--transition-smooth);
         }
 
         .sticky-cta-btn:hover {
-            background: var(--point-seal-hover);
+            box-shadow: 0 0 16px rgba(223, 183, 56, 0.5);
         }
     </style>
 </head>
 <body>
 
 <div class="layout-wrapper">
-    <!-- 상단 비주얼 영역 (모던 조선 서재) -->
-    <aside class="left-visual">
-        <div class="visual-badge">
-            <span>✦</span> 天氣漏洩 (천기누설)
+    <!-- 상단 조선 점술가의 방 헤더 -->
+    <header class="room-header">
+        <div class="seal-badge">
+            <span>✦</span> 占術房 (점술가의 방)
+        </div>
+        <h1 class="room-title">운명의 길을 묻거든,<br><span>마음에 닿는 문</span>을 먼저 여시오</h1>
+        <p class="room-desc">네 기둥(四柱)에 아로새겨진 오행의 조화와 기운을 살펴, 숨겨진 재물과 다가올 인생의 나아갈 길을 일러드리리다.</p>
+    </header>
+
+    <!-- ====================================================================
+         1단계: 초기 화면 - 4대 카테고리 선택 카드 (워터마크 완벽 크롭)
+         ==================================================================== -->
+    <section id="category-screen">
+        <div class="category-grid">
+            <!-- 1. 사주 -->
+            <div class="cat-card" onclick="openSajuForm('사주', '평생의 명식과 사주팔자, 10년 대운과 부귀의 흐름')">
+                <div class="cat-img-box wm-crop-container">
+                    <img src="icon_saju_new.png" alt="사주" class="wm-crop-img">
+                </div>
+                <div class="cat-info">
+                    <div class="cat-tag-row">
+                        <span class="cat-hanja">四柱 · 平生</span>
+                        <span class="cat-arrow">문 열기 ➔</span>
+                    </div>
+                    <h2 class="cat-title">평생 사주 (四柱)</h2>
+                    <p class="cat-desc">타고난 본원과 십신, 인생 10년 대운과 부귀영화의 흐름을 심층 해독합니다.</p>
+                </div>
+            </div>
+
+            <!-- 2. 오늘의 운세 -->
+            <div class="cat-card" onclick="openSajuForm('오늘의 운세', '오늘 하루 하늘이 내리는 기운과 피해야 할 액운')">
+                <div class="cat-img-box wm-crop-container">
+                    <img src="icon_today_new.png" alt="오늘의 운세" class="wm-crop-img">
+                </div>
+                <div class="cat-info">
+                    <div class="cat-tag-row">
+                        <span class="cat-hanja">日運 · 今日</span>
+                        <span class="cat-arrow">문 열기 ➔</span>
+                    </div>
+                    <h2 class="cat-title">오늘의 운세 (日運)</h2>
+                    <p class="cat-desc">오늘 하루 귀인의 도움과 뜻밖의 횡재수, 마주칠 액운을 미리 살핍니다.</p>
+                </div>
+            </div>
+
+            <!-- 3. 궁합 -->
+            <div class="cat-card" onclick="openSajuForm('궁합', '나와 상대의 오행 조화, 천생연분의 붉은 실')">
+                <div class="cat-img-box wm-crop-container">
+                    <img src="icon_gunghap.png" alt="궁합" class="wm-crop-img">
+                </div>
+                <div class="cat-info">
+                    <div class="cat-tag-row">
+                        <span class="cat-hanja">宮合 · 因緣</span>
+                        <span class="cat-arrow">문 열기 ➔</span>
+                    </div>
+                    <h2 class="cat-title">인연과 궁합 (宮合)</h2>
+                    <p class="cat-desc">두 사람의 기운이 빚어내는 궁합의 깊이와 평생을 함께할 인연의 끈을 봅니다.</p>
+                </div>
+            </div>
+
+            <!-- 4. 토정비결 -->
+            <div class="cat-card" onclick="openSajuForm('토정비결', '한 해 열두 달의 신수와 길흉화복의 비책')">
+                <div class="cat-img-box wm-crop-container">
+                    <img src="icon_tojeong.png" alt="토정비결" class="wm-crop-img">
+                </div>
+                <div class="cat-info">
+                    <div class="cat-tag-row">
+                        <span class="cat-hanja">土亭 · 秘訣</span>
+                        <span class="cat-arrow">문 열기 ➔</span>
+                    </div>
+                    <h2 class="cat-title">토정비결 (土亭秘訣)</h2>
+                    <p class="cat-desc">토정 이지함 선생의 비결서에 의거하여 한 해 열두 달의 길흉을 짚어냅니다.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================================================
+         2단계: 폼 화면 - "이곳에 사주 단자를 적어 올리시오" (#form-screen)
+         ==================================================================== -->
+    <section id="form-screen">
+        <div class="form-card">
+            <!-- 뒤로 가기 네비게이션 -->
+            <div class="form-top-nav">
+                <button type="button" class="btn-back" onclick="goBackToCategories()">
+                    <span>← 다른 문 열어보기</span>
+                </button>
+                <span class="chosen-cat-badge" id="chosen-cat-badge">평생 사주</span>
+            </div>
+
+            <div class="form-danja-header">
+                <h2 class="form-danja-title">이곳에 사주 단자를 적어 올리시오</h2>
+                <p class="form-danja-sub" id="form-danja-desc">정성껏 올린 생년월일시를 바탕으로 점술가가 명식을 펼치오이다.</p>
+            </div>
+
+            <!-- 1. 생년월일 -->
+            <div class="input-group">
+                <label>
+                    <span>생년월일 (生年月日)</span>
+                    <span class="badge req">필수</span>
+                </label>
+                <div class="date-inputs">
+                    <div class="date-input-wrap">
+                        <input type="number" id="year" class="input-field" placeholder="1995" min="1900" inputmode="numeric">
+                        <span class="unit">년</span>
+                    </div>
+                    <div class="date-input-wrap">
+                        <input type="number" id="month" class="input-field" placeholder="08" min="1" max="12">
+                        <span class="unit">월</span>
+                    </div>
+                    <div class="date-input-wrap">
+                        <input type="number" id="day" class="input-field" placeholder="20" min="1" max="31">
+                        <span class="unit">일</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. 성별 & 달력 구분 -->
+            <div style="display: flex; gap: 12px; margin-bottom: 22px;">
+                <div style="flex: 1;">
+                    <label style="display: block; font-size: 14px; color: var(--text-gold-light); margin-bottom: 8px; font-weight: 700;">성별</label>
+                    <div class="toggle-group">
+                        <input type="radio" id="gender-m" name="gender" value="M" class="toggle-radio" checked>
+                        <label for="gender-m" class="toggle-label">남성 (乾命)</label>
+                        <input type="radio" id="gender-f" name="gender" value="F" class="toggle-radio">
+                        <label for="gender-f" class="toggle-label">여성 (坤命)</label>
+                    </div>
+                </div>
+                <div style="flex: 1;">
+                    <label style="display: block; font-size: 14px; color: var(--text-gold-light); margin-bottom: 8px; font-weight: 700;">달력 구분</label>
+                    <div class="toggle-group">
+                        <input type="radio" id="cal-solar" name="calendar" value="양력" class="toggle-radio" checked>
+                        <label for="cal-solar" class="toggle-label">양력</label>
+                        <input type="radio" id="cal-lunar" name="calendar" value="음력" class="toggle-radio">
+                        <label for="cal-lunar" class="toggle-label">음력</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. 태어난 시간 -->
+            <div class="input-group">
+                <label>
+                    <span>태어난 시간 (時柱)</span>
+                    <span class="badge">시주 정밀 감정</span>
+                </label>
+                <div class="select-wrapper">
+                    <select id="birth_time" class="input-field">
+                        <option value="12:00">시간 모름 (삼주 기준 풀이)</option>
+                        <option value="00:30">자시 (子時) · 23:30 ~ 01:30</option>
+                        <option value="02:30">축시 (丑時) · 01:30 ~ 03:30</option>
+                        <option value="04:30">인시 (寅時) · 03:30 ~ 05:30</option>
+                        <option value="06:30">묘시 (卯時) · 05:30 ~ 07:30</option>
+                        <option value="08:30">진시 (辰時) · 07:30 ~ 09:30</option>
+                        <option value="10:30">사시 (巳時) · 09:30 ~ 11:30</option>
+                        <option value="12:30">오시 (午時) · 11:30 ~ 13:30</option>
+                        <option value="14:30">미시 (未時) · 13:30 ~ 15:30</option>
+                        <option value="16:30">신시 (申時) · 15:30 ~ 17:30</option>
+                        <option value="18:30">유시 (酉時) · 17:30 ~ 19:30</option>
+                        <option value="20:30">술시 (戌時) · 19:30 ~ 21:30</option>
+                        <option value="22:30">해시 (亥時) · 21:30 ~ 23:30</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 3-1. 음력 윤달 체크박스 -->
+            <div class="input-group" id="leap-month-group" style="display: none;">
+                <label>
+                    <span>윤달 여부</span>
+                    <span class="badge">음력 윤달</span>
+                </label>
+                <label class="checkbox-group" style="margin: 0;">
+                    <input type="checkbox" id="is_leap_month">
+                    <span>해당 월이 윤달에 속합니다.</span>
+                </label>
+            </div>
+
+            <!-- 4. 성함 -->
+            <div class="input-group">
+                <label>
+                    <span>성함 (姓名)</span>
+                    <span class="badge">선택</span>
+                </label>
+                <input type="text" id="name" class="input-field" placeholder="미입력 시 '선비'로 불리옵니다" maxlength="20">
+            </div>
+
+            <!-- 5. 약관 동의 -->
+            <label class="checkbox-group" for="agree">
+                <input type="checkbox" id="agree" checked>
+                <span>[필수] 사주 감정을 위한 명식 정보 처리에 동의하옵니다.</span>
+            </label>
+
+            <!-- 6. 제출 버튼 (결과 보기) -->
+            <button type="button" id="submit-btn" class="submit-btn" onclick="startReading()">
+                <span>사주 단자 올리기 ➔</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- ====================================================================
+         3단계: 붓글씨 로딩 화면 (loading_brush_new.png 숨쉬는 애니메이션)
+         ==================================================================== -->
+    <div id="loading-screen">
+        <!-- 붓글씨 이미지 프레임 (우측 하단 워터마크 100% 크롭 + Breathing 애니메이션) -->
+        <div class="brush-loading-box wm-crop-container">
+            <img src="loading_brush_new.png" alt="붓글씨 점술" class="wm-crop-img">
         </div>
 
-        <div class="visual-center">
-            <h1>당신의 사주팔자 속<br><span>아직 깨어나지 않은</span><br>운명의 흐름을 봅니다</h1>
-            <p>생년월일시 네 기둥(四柱)에 새겨진 오행의 조화와 기운을 풀이하여, 타고난 잠재력과 다가올 인생의 황금기를 밝혀드립니다.</p>
+        <div class="loading-narrative">
+            <h2 class="loading-story-title">점술가가 먹을 갈아 붓을 들고 있소이다</h2>
+            <p class="loading-story-subtitle" id="step-title">사주 단자의 기운을 해독하는 중이오니 잠시 기다리시오...</p>
         </div>
 
-        <div class="visual-footer">
-            <span>✦ 정통 명리학(만세력) 기반</span>
-            <span>✦ AI 심층 카운슬링</span>
-            <span>✦ 100% 비공개 보안</span>
+        <div class="loading-logs-wrapper">
+            <div class="loading-logs-header">
+                <span class="log-indicator"></span>
+                <span class="log-header-text">占術房 秘傳 ENGINE</span>
+            </div>
+            <div class="loading-logs" id="loading-logs">
+                <!-- 실시간 로그 JS 추가 -->
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="p-bar"></div>
+        </div>
+    </div>
+
+    <!-- ====================================================================
+         4단계: 사주 결과 화면 (#result-screen)
+         ==================================================================== -->
+    <main id="result-screen">
+        <!-- 1. 결과 헤더 -->
+        <header class="result-hero-header">
+            <h1 class="result-hero-title">사주 감정 결과지</h1>
+            <p class="result-hero-sub">올리신 사주 단자를 바탕으로 음양오행과 대운의 물줄기를 풀이하였소이다.</p>
+            <div class="result-hero-quote">
+                <span class="quote-text">“운명은 정해진 굴레가 아니요, 나아갈 길을 비추는 등불이니라.”</span>
+                <span class="quote-author">― 점술가의 방 비전서</span>
+            </div>
+        </header>
+
+        <!-- 2. 유저 정보 4개 칩 -->
+        <div class="user-meta-chips-bar" id="user-meta-chips-bar">
+            <div class="meta-chip">
+                <div class="chip-icon">👤</div>
+                <div class="chip-content">
+                    <span class="chip-label">성함</span>
+                    <span class="chip-val" id="res-user-name">홍길동</span>
+                </div>
+            </div>
+            <div class="meta-chip">
+                <div class="chip-icon">📅</div>
+                <div class="chip-content">
+                    <span class="chip-label">생년월일</span>
+                    <span class="chip-val" id="res-user-birth">1995.08.20 (양력)</span>
+                </div>
+            </div>
+            <div class="meta-chip">
+                <div class="chip-icon">🕒</div>
+                <div class="chip-content">
+                    <span class="chip-label">출생시간</span>
+                    <span class="chip-val" id="res-user-time">사시 (巳時)</span>
+                </div>
+            </div>
+            <div class="meta-chip">
+                <div class="chip-icon">⚥</div>
+                <div class="chip-content">
+                    <span class="chip-label">성별</span>
+                    <span class="chip-val" id="res-user-gender">남성</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 第一章: 사주 한마디 -->
+        <section class="section-chapter chapter-one" id="chapter-one-area">
+            <div class="verdict-card">
+                <div class="chapter-tag-wrap">
+                    <span class="chapter-tag">第 一 章</span>
+                    <span class="chapter-tag-title">당신의 사주 한마디</span>
+                </div>
+                <h2 class="verdict-headline" id="verdict-headline">“자신만의 세계를 빚어내는 신념의 탐구자”</h2>
+                <p class="verdict-lead" id="verdict-lead">속물적인 계산과 타협에 영혼을 팔지 않으며, 고독 속에서도 진정한 자아와 순수한 이상의 가치를 빚어내는 신념의 탐구자</p>
+                <div class="verdict-desc-box" id="verdict-desc-box">
+                    <p>세상의 속물적인 계산과 타협에 영혼을 쉽게 내어주지 않으며, 고독 속에서도 진정한 자아와 순수한 이상의 가치를 묵묵히 빚어내는 삶의 방식을 고수합니다.</p>
+                    <p>남들이 눈앞의 이익을 좇아 소신을 바꿀 때, 당신은 홀로 깊은 방에 앉아 세상에 전할 진실한 울림을 길어 올리고 있습니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 사주 명식 & 오행 분포 -->
+        <section class="section-chapter chapter-bazi-grid">
+            <div class="chapter-card bazi-card">
+                <div class="card-inner-header">
+                    <h3 class="bazi-card-title">사주 명식 <span class="hanja">(四柱)</span></h3>
+                    <p class="bazi-card-sub">태어난 순간 하늘에 새겨진 네 기둥입니다.</p>
+                </div>
+                <div class="pillars-table-wrapper">
+                    <table class="pillars-table" id="pillars-table">
+                        <thead>
+                            <tr>
+                                <th>년주<br><span class="p-sub">태어난 해</span></th>
+                                <th>월주<br><span class="p-sub">태어난 달</span></th>
+                                <th class="day-pillar-th">일주<br><span class="p-sub">나의 중심</span></th>
+                                <th>시주<br><span class="p-sub">태어난 시간</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="pillars-tbody">
+                            <!-- JS 렌더링 -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pillars-footer-notice">
+                    <span class="notice-icon">⚏</span>
+                    <span>일주의 위 글자가 나를 나타내는 <strong>'일간(日干)'</strong>이자 타고난 본원입니다.</span>
+                </div>
+            </div>
+
+            <div class="chapter-card elements-card">
+                <div class="card-inner-header">
+                    <h3 class="bazi-card-title">오행 분포</h3>
+                    <p class="bazi-card-sub">다섯 기운의 조화와 균형입니다.</p>
+                </div>
+                
+                <div class="elements-donut-wrap">
+                    <div class="donut-chart-box">
+                        <div class="donut-wheel" id="donut-wheel"></div>
+                        <div class="donut-center-info">
+                            <span class="donut-hanja">五行</span>
+                            <span class="donut-label">다섯 기운</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="elements-stat-row" id="elements-stat-row">
+                    <!-- 목, 화, 토, 금, 수 스탯 -->
+                </div>
+                <div class="elements-summary-text" id="elements-summary-text">
+                    오행의 기운이 조화롭게 자리잡아 깊은 통찰력과 남다른 저력을 품고 있습니다.
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. 第二章 타고난 성향 -->
+        <section class="section-chapter chapter-nature">
+            <div class="chapter-title-bar">
+                <span class="chapter-badge">第二章</span>
+                <h2 class="chapter-main-title">타고난 본연의 성향</h2>
+                <span class="chapter-sub-desc">사주에 나타난 고유의 기질과 내면의 결입니다.</span>
+            </div>
+            <div class="nature-grid-2x2" id="nature-grid-2x2">
+                <!-- 4개 성향 카드 -->
+            </div>
+        </section>
+
+        <!-- 6. 실전 4열 카드 -->
+        <section class="section-chapter chapter-reality">
+            <div class="chapter-title-bar">
+                <h2 class="chapter-main-title">재물과 인연, 그리고 현실의 길</h2>
+                <span class="chapter-sub-desc">당신의 사주 기운이 현실 삶에서 어떻게 펼쳐지는지 확인하시오.</span>
+            </div>
+            <div class="reality-grid-4" id="reality-grid-4">
+                <!-- 재물운, 인연운, 직업운, 생활과 균형 -->
+            </div>
+        </section>
+
+        <!-- 7. 심층 운명서 페이월 및 전문 -->
+        <section class="section-chapter chapter-paywall-report">
+            <div class="paywall-boundary-line">
+                <span class="boundary-text">― 대운(大運)의 황금기와 개운의 비책 ―</span>
+            </div>
+
+            <div class="paywall-teaser-container" id="paywall-teaser-container">
+                <div class="paywall-lock-banner" id="paywall-lock-banner">
+                    <div class="lock-icon-wrap">🔒</div>
+                    <h3 class="lock-banner-title">무료 사주에서는 여기까지 확인할 수 있습니다.</h3>
+                    <p class="lock-banner-desc">다가오는 10년 대운 속에서 타고난 기운을 어떻게 무기로 활용할지, 재물과 액운 방지 비책의 모든 풀이를 열어보려 합니다.</p>
+                    <button type="button" class="btn-unlock-inline" onclick="handlePaywallClick()">
+                        <span>심층 운명서 열기 🔒</span>
+                    </button>
+                </div>
+
+                <div id="ai-content" class="result-deep-report teaser-mode">
+                    <!-- AI 전체 본문 & 대운/개운법 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 하단 액션 버튼 -->
+        <div class="result-footer-actions">
+            <button type="button" class="action-btn secondary" onclick="copyResult()">
+                <span>📋 리포트 전문 복사</span>
+            </button>
+            <button type="button" class="action-btn primary" onclick="resetForm()">
+                <span>✨ 다른 사주 읽어보기</span>
+            </button>
+        </div>
+    </main>
+
+    <!-- 하단 스티키 결제 바 -->
+    <aside class="sticky-paywall-bar" id="sticky-paywall-bar">
+        <div class="sticky-bar-inner">
+            <div class="sticky-left-info">
+                <div class="sticky-product-title">나의 평생 심층 운명서</div>
+                <div class="sticky-price-group">
+                    <span class="price-origin">29,000원</span>
+                    <span class="price-discount">80% 할인</span>
+                    <span class="price-final">5,900<span class="price-unit">원</span></span>
+                    <span class="price-sub">· 1회 결제</span>
+                </div>
+            </div>
+            <button type="button" class="sticky-cta-btn" onclick="handlePaywallClick()">
+                <span>심층 운명서 열기 🔒</span>
+            </button>
         </div>
     </aside>
-
-    <!-- 인터랙션 메인 영역 -->
-    <main class="right-area">
-        
-        <div class="form-container">
-            
-            <!-- 입력 폼 화면 (담백한 세로형 단선 배치) -->
-            <div id="form-screen" class="paper-card">
-                <div class="form-header">
-                    <span class="form-subtitle">PERSONAL DESTINY READING</span>
-                    <h2>당신의 명식을 펼쳐보세요</h2>
-                    <p class="sub-desc">정확한 생년월일시를 입력하면 맞춤형 심층 운명서가 작성됩니다.</p>
-                </div>
-
-                <!-- 1. 생년월일 -->
-                <div class="input-group">
-                    <label>
-                        <span>생년월일</span>
-                        <span class="badge req">필수</span>
-                    </label>
-                    <div class="date-inputs">
-                        <div class="date-input-wrap">
-                            <input type="number" id="year" class="input-field" placeholder="1995" min="1900" inputmode="numeric">
-                            <span class="unit">년</span>
-                        </div>
-                        <div class="date-input-wrap">
-                            <input type="number" id="month" class="input-field" placeholder="08" min="1" max="12">
-                            <span class="unit">월</span>
-                        </div>
-                        <div class="date-input-wrap">
-                            <input type="number" id="day" class="input-field" placeholder="20" min="1" max="31">
-                            <span class="unit">일</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2. 성별 & 달력 구분 (토글 버튼) -->
-                <div style="display: flex; gap: 12px; margin-bottom: 24px;">
-                    <div style="flex: 1;">
-                        <label style="display: block; font-size: 14px; color: var(--ink-dark); margin-bottom: 9px; font-weight: 600;">성별</label>
-                        <div class="toggle-group">
-                            <input type="radio" id="gender-m" name="gender" value="M" class="toggle-radio" checked>
-                            <label for="gender-m" class="toggle-label">남성</label>
-                            <input type="radio" id="gender-f" name="gender" value="F" class="toggle-radio">
-                            <label for="gender-f" class="toggle-label">여성</label>
-                        </div>
-                    </div>
-                    <div style="flex: 1;">
-                        <label style="display: block; font-size: 14px; color: var(--ink-dark); margin-bottom: 9px; font-weight: 600;">달력 구분</label>
-                        <div class="toggle-group">
-                            <input type="radio" id="cal-solar" name="calendar" value="양력" class="toggle-radio" checked>
-                            <label for="cal-solar" class="toggle-label">양력</label>
-                            <input type="radio" id="cal-lunar" name="calendar" value="음력" class="toggle-radio">
-                            <label for="cal-lunar" class="toggle-label">음력</label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 3. 태어난 시간 -->
-                <div class="input-group">
-                    <label>
-                        <span>태어난 시간</span>
-                        <span class="badge">시주(時柱) 정밀 분석</span>
-                    </label>
-                    <div class="select-wrapper">
-                        <select id="birth_time" class="input-field">
-                            <option value="12:00">시간 모름 (삼주 기준 풀이)</option>
-                            <option value="00:30">자시 (子時) · 23:30 ~ 01:30</option>
-                            <option value="02:30">축시 (丑時) · 01:30 ~ 03:30</option>
-                            <option value="04:30">인시 (寅時) · 03:30 ~ 05:30</option>
-                            <option value="06:30">묘시 (卯時) · 05:30 ~ 07:30</option>
-                            <option value="08:30">진시 (辰時) · 07:30 ~ 09:30</option>
-                            <option value="10:30">사시 (巳時) · 09:30 ~ 11:30</option>
-                            <option value="12:30">오시 (午時) · 11:30 ~ 13:30</option>
-                            <option value="14:30">미시 (未時) · 13:30 ~ 15:30</option>
-                            <option value="16:30">신시 (申時) · 15:30 ~ 17:30</option>
-                            <option value="18:30">유시 (酉時) · 17:30 ~ 19:30</option>
-                            <option value="20:30">술시 (戌時) · 19:30 ~ 21:30</option>
-                            <option value="22:30">해시 (亥時) · 21:30 ~ 23:30</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- 3-1. 음력 윤달 체크박스 (음력 선택 시 표시) -->
-                <div class="input-group" id="leap-month-group" style="display: none;">
-                    <label>
-                        <span>윤달 여부</span>
-                        <span class="badge">음력 윤달에 태어나셨나요?</span>
-                    </label>
-                    <label class="checkbox-group" style="margin: 0;">
-                        <input type="checkbox" id="is_leap_month">
-                        <span>해당 월이 윤달입니다.</span>
-                    </label>
-                </div>
-
-                <!-- 4. 이름 (호칭) -->
-                <div class="input-group">
-                    <label>
-                        <span>사용자 성함</span>
-                        <span class="badge">선택</span>
-                    </label>
-                    <input type="text" id="name" class="input-field" placeholder="미입력 시 '사용자'로 작성됩니다" maxlength="20">
-                </div>
-
-                <!-- 5. 약관 동의 -->
-                <label class="checkbox-group" for="agree">
-                    <input type="checkbox" id="agree" checked>
-                    <span>[필수] 개인 맞춤형 사주 분석 생성을 위한 명식 정보 처리에 동의합니다.</span>
-                </label>
-
-                <!-- 6. 제출 버튼 (전통 낙관 주홍색 버튼) -->
-                <button type="button" id="submit-btn" class="submit-btn" onclick="startReading()">
-                    <span>나의 사주 무료로 펼치기</span>
-                </button>
-            </div>
-        </div> 
-
-        <!-- 사주 결과 화면 (독립 컨테이너, 정갈한 한지 서첩 뷰) -->
-        <div id="result-screen">
-            
-            <!-- 1. 결과 상단 헤더 & 명언 -->
-            <header class="result-hero-header">
-                <div class="result-hero-main">
-                    <h1 class="result-hero-title">무료 사주 결과</h1>
-                    <p class="result-hero-sub">당신의 사주를 바탕으로 분석한 결과입니다.<br>지금, 당신의 타고난 기질과 현재의 운 흐름을 확인해 보세요.</p>
-                </div>
-                <div class="result-hero-quote">
-                    <span class="quote-text">“운명을 정하는 것이 아니라, 더 나은 선택을 위한 지도입니다.”</span>
-                    <span class="quote-author">― 심층 운명 연구소</span>
-                </div>
-            </header>
-
-            <!-- 2. 유저 정보 4개 칩 바 (이름, 생년월일, 출생시간, 성별) -->
-            <div class="user-meta-chips-bar" id="user-meta-chips-bar">
-                <div class="meta-chip">
-                    <div class="chip-icon">👤</div>
-                    <div class="chip-content">
-                        <span class="chip-label">이름</span>
-                        <span class="chip-val" id="res-user-name">홍길동</span>
-                    </div>
-                </div>
-                <div class="meta-chip">
-                    <div class="chip-icon">📅</div>
-                    <div class="chip-content">
-                        <span class="chip-label">생년월일</span>
-                        <span class="chip-val" id="res-user-birth">1995.08.20 (양력)</span>
-                    </div>
-                </div>
-                <div class="meta-chip">
-                    <div class="chip-icon">🕒</div>
-                    <div class="chip-content">
-                        <span class="chip-label">출생시간</span>
-                        <span class="chip-val" id="res-user-time">사시 (巳時)</span>
-                    </div>
-                </div>
-                <div class="meta-chip">
-                    <div class="chip-icon">⚥</div>
-                    <div class="chip-content">
-                        <span class="chip-label">성별</span>
-                        <span class="chip-val" id="res-user-gender">남성</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 3. 第一章 당신의 사주 한마디 (와이드 서화풍 한지 카드) -->
-            <section class="section-chapter chapter-one" id="chapter-one-area">
-                <div class="verdict-card">
-                    <div class="chapter-tag-wrap">
-                        <span class="chapter-tag">第 一 章</span>
-                        <span class="chapter-tag-title">당신의 사주 한마디</span>
-                    </div>
-                    <h2 class="verdict-headline" id="verdict-headline">“자신만의 세계를 빚어내는 신념의 탐구자”</h2>
-                    <p class="verdict-lead" id="verdict-lead">속물적인 계산과 타협에 영혼을 팔지 않으며, 고독 속에서도 진정한 자아와 순수한 이상의 가치를 빚어내는 신념의 탐구자</p>
-                    <div class="verdict-desc-box" id="verdict-desc-box">
-                        <p>세상의 속물적인 계산과 타협에 영혼을 쉽게 내어주지 않으며, 고독 속에서도 진정한 자아와 순수한 이상의 가치를 묵묵히 빚어내는 삶의 방식을 고수합니다.</p>
-                        <p>남들이 눈앞의 이익을 좇아 소신을 바꿀 때, 당신은 홀로 깊은 방에 앉아 세상에 전할 진실한 울림을 길어 올리고 있습니다.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 4. 사주 명식(四柱) & 오행 분포 (좌우 2열 그리드) -->
-            <section class="section-chapter chapter-bazi-grid">
-                <!-- 좌측: 사주 명식 (四柱) -->
-                <div class="chapter-card bazi-card">
-                    <div class="card-inner-header">
-                        <h3 class="bazi-card-title">사주 명식 <span class="hanja">(四柱)</span></h3>
-                        <p class="bazi-card-sub">태어난 순간을 담은 네 기둥입니다.</p>
-                    </div>
-                    <div class="pillars-table-wrapper">
-                        <table class="pillars-table" id="pillars-table">
-                            <thead>
-                                <tr>
-                                    <th>년주<br><span class="p-sub">태어난 해</span></th>
-                                    <th>월주<br><span class="p-sub">태어난 달</span></th>
-                                    <th class="day-pillar-th">일주<br><span class="p-sub">나의 중심</span></th>
-                                    <th>시주<br><span class="p-sub">태어난 시간</span></th>
-                                </tr>
-                            </thead>
-                            <tbody id="pillars-tbody">
-                                <!-- JS 렌더링 -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="pillars-footer-notice">
-                        <span class="notice-icon">⚏</span>
-                        <span>일주의 위 글자가 나를 나타내는 <strong>'일간(日干)'</strong>이자 타고난 본원입니다.</span>
-                    </div>
-                </div>
-
-                <!-- 우측: 오행 분포 (원형 도넛 게이지 + 5개 기운 스탯) -->
-                <div class="chapter-card elements-card">
-                    <div class="card-inner-header">
-                        <h3 class="bazi-card-title">오행 분포</h3>
-                        <p class="bazi-card-sub">당신의 사주에 담긴 다섯 기운의 균형입니다.</p>
-                    </div>
-                    
-                    <div class="elements-donut-wrap">
-                        <div class="donut-chart-box">
-                            <div class="donut-wheel" id="donut-wheel"></div>
-                            <div class="donut-center-info">
-                                <span class="donut-hanja">五行</span>
-                                <span class="donut-label">나를 이루는<br>다섯 기운</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="elements-stat-row" id="elements-stat-row">
-                        <!-- 목, 화, 토, 금, 수 스탯 JS 바인딩 -->
-                    </div>
-                    <div class="elements-summary-text" id="elements-summary-text">
-                        사주 속 오행의 기운이 조화롭게 자리잡고 있어 깊은 통찰력과 잠재력을 지니고 있습니다.
-                    </div>
-                </div>
-            </section>
-
-            <!-- 5. 第二章 타고난 성향 (2x2 그리드) -->
-            <section class="section-chapter chapter-nature">
-                <div class="chapter-title-bar">
-                    <span class="chapter-badge">第二章</span>
-                    <h2 class="chapter-main-title">타고난 성향</h2>
-                    <span class="chapter-sub-desc">당신의 사주에 나타난 주요 성향입니다.</span>
-                </div>
-                <div class="nature-grid-2x2" id="nature-grid-2x2">
-                    <!-- 4개 성향 카드 JS 바인딩 -->
-                </div>
-            </section>
-
-            <!-- 6. 돈은 어디로 새고, 인연은 왜 반복될까 (4열 실전 카드 그리드) -->
-            <section class="section-chapter chapter-reality">
-                <div class="chapter-title-bar">
-                    <h2 class="chapter-main-title reality-title">돈은 어디로 새고, 인연은 왜 반복될까</h2>
-                    <span class="chapter-sub-desc">당신의 사주가 현실에서 어떻게 드러나는지 확인해 보세요.</span>
-                </div>
-                <div class="reality-grid-4" id="reality-grid-4">
-                    <!-- 재물운, 인연운, 직업운, 생활과 균형 4개 카드 JS 바인딩 -->
-                </div>
-            </section>
-
-            <!-- 7. 심층 운명서 페이월 및 전문 섹션 -->
-            <section class="section-chapter chapter-paywall-report">
-                <div class="paywall-boundary-line">
-                    <span class="boundary-text">― 당신의 운명은 지금부터, 더욱 깊어집니다 ―</span>
-                </div>
-
-                <div class="paywall-teaser-container" id="paywall-teaser-container">
-                    <div class="paywall-lock-banner" id="paywall-lock-banner">
-                        <div class="lock-icon-wrap">🔒</div>
-                        <h3 class="lock-banner-title">무료 사주에서는 여기까지 확인할 수 있습니다.</h3>
-                        <p class="lock-banner-desc">앞으로의 운을 고민하는 당신에게 지금 가장 필요한 것은 막연한 불안감 대신 자신의 본질에 맞는 구체적인 생존 전략을 세우는 것입니다. 다가오는 10년 대운 속에서 이 신념의 탐구자 기질을 어떻게 무기로 활용할지 그 해답을 깊이 있게 열어보려 합니다.</p>
-                        <button type="button" class="btn-unlock-inline" onclick="handlePaywallClick()">
-                            <span>심층 운명서 열기 🔒</span>
-                        </button>
-                    </div>
-
-                    <!-- 블러 티저 본문 (클릭 시 티저 해제되어 선명 노출) -->
-                    <div id="ai-content" class="result-deep-report teaser-mode">
-                        <!-- AI 전체 본문 & 대운/개운법 -->
-                    </div>
-                </div>
-            </section>
-
-            <!-- 하단 액션 버튼 (공유 / 다시하기) -->
-            <div class="result-footer-actions">
-                <button type="button" class="action-btn secondary" onclick="copyResult()">
-                    <span>📋 리포트 전문 복사</span>
-                </button>
-                <button type="button" class="action-btn primary" onclick="resetForm()">
-                    <span>✨ 다른 사주 읽어보기</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- 하단 스티키 결제 바 -->
-        <aside class="sticky-paywall-bar" id="sticky-paywall-bar">
-            <div class="sticky-bar-inner">
-                <div class="sticky-left-info">
-                    <div class="sticky-product-title">나의 평생 심층 운명서</div>
-                    <div class="sticky-price-group">
-                        <span class="price-origin">29,000원</span>
-                        <span class="price-discount">80% 할인 중</span>
-                        <span class="price-final">5,900<span class="price-unit">원</span></span>
-                        <span class="price-sub">· 1회 결제</span>
-                    </div>
-                </div>
-                <button type="button" class="sticky-cta-btn" onclick="handlePaywallClick()">
-                    <span>심층 운명서 열기 🔒</span>
-                </button>
-            </div>
-        </aside>
-        
-        <!-- 로딩 오버레이 화면 (밝고 고즈넉한 조선 서재 등잔불 & 고서 연출) -->
-        <div id="loading-screen">
-            
-            <div class="loading-scene-wrap">
-                <!-- 서재 호롱불 / 등잔 촛불 -->
-                <div class="candle-flame-wrap">
-                    <div class="candle-flame"></div>
-                    <div class="candle-wick"></div>
-                    <div class="candle-body"></div>
-                </div>
-
-                <!-- 3D 고서 책장 넘김 애니메이션 -->
-                <div class="ancient-book-stage">
-                    <div class="book-base">
-                        <!-- 책 왼쪽 페이지 -->
-                        <div class="book-cover left">
-                            <div class="book-inner-parchment">
-                                <span class="parchment-symbol">命</span>
-                                <div class="parchment-lines">
-                                    <div class="pline"></div>
-                                    <div class="pline"></div>
-                                    <div class="pline short"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="book-spine-gold"></div>
-
-                        <!-- 책 오른쪽 페이지 -->
-                        <div class="book-cover right">
-                            <div class="book-inner-parchment">
-                                <span class="parchment-symbol">運</span>
-                                <div class="parchment-lines">
-                                    <div class="pline"></div>
-                                    <div class="pline"></div>
-                                    <div class="pline short"></div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 넘어가는 책장들 -->
-                        <div class="turning-leaf leaf-1">
-                            <div class="leaf-face leaf-front">
-                                <span class="leaf-symbol">天</span>
-                                <div class="leaf-lines">
-                                    <div class="leaf-line"></div>
-                                    <div class="leaf-line short"></div>
-                                    <div class="leaf-line"></div>
-                                </div>
-                            </div>
-                            <div class="leaf-face leaf-back">
-                                <span class="leaf-symbol">地</span>
-                                <div class="leaf-lines">
-                                    <div class="leaf-line"></div>
-                                    <div class="leaf-line"></div>
-                                    <div class="leaf-line short"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="turning-leaf leaf-2">
-                            <div class="leaf-face leaf-front">
-                                <span class="leaf-symbol">道</span>
-                                <div class="leaf-lines">
-                                    <div class="leaf-line"></div>
-                                    <div class="leaf-line"></div>
-                                    <div class="leaf-line short"></div>
-                                </div>
-                            </div>
-                            <div class="leaf-face leaf-back">
-                                <span class="leaf-symbol">氣</span>
-                                <div class="leaf-lines">
-                                    <div class="leaf-line short"></div>
-                                    <div class="leaf-line"></div>
-                                    <div class="leaf-line"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 서재 스토리텔링 텍스트 -->
-            <div class="loading-narrative">
-                <h2 class="loading-story-title">한 장씩 펼쳐지는 당신만의 이야기</h2>
-                <p class="loading-story-subtitle" id="step-title">사주 명식을 펼치고 있습니다...</p>
-            </div>
-
-            <!-- 실시간 분석 엔진 로그 터미널 -->
-            <div class="loading-logs-wrapper">
-                <div class="loading-logs-header">
-                    <span class="log-indicator"></span>
-                    <span class="log-header-text">AI REAL-TIME ENGINE</span>
-                </div>
-                <div class="loading-logs" id="loading-logs">
-                    <!-- JS로 실시간 로그 추가 -->
-                </div>
-            </div>
-
-            <div class="progress-container">
-                <div class="progress-bar" id="p-bar"></div>
-            </div>
-        </div>
-
-    </main>
 </div>
 
 <!-- ==========================================================================
-   7. 자바스크립트 로직 (백엔드 main.py 데이터 통신 및 렌더링 완벽 유지)
+   자바스크립트 로직: UX 화면 전환 & 백엔드 main.py 연동 완벽 보존
    ========================================================================== -->
 <script>
-    // Marked 옵션 사전 설정 (GFM 활성화, 자동 줄바꿈 활성화)
+    // Marked 옵션
     if (typeof marked !== 'undefined') {
         marked.use({
             gfm: true,
@@ -2235,8 +2000,59 @@
     }
 
     /**
-     * 마크다운 텍스트를 안전한 HTML로 변환하는 헬퍼 함수
+     * [UX 요구사항] 카테고리 클릭 시 화면 전환 (Fade-out -> Fade-in)
      */
+    function openSajuForm(categoryName, categoryDesc) {
+        const catScreen = document.getElementById('category-screen');
+        const formScreen = document.getElementById('form-screen');
+        const badge = document.getElementById('chosen-cat-badge');
+        const descEl = document.getElementById('form-danja-desc');
+
+        if (badge) badge.textContent = categoryName;
+        if (descEl && categoryDesc) {
+            descEl.textContent = `${categoryDesc} - 사주 단자를 적어 올리시오.`;
+        }
+
+        // 카테고리 Fade-out 후 폼 Fade-in
+        catScreen.style.opacity = '0';
+        catScreen.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            catScreen.style.display = 'none';
+            formScreen.style.display = 'block';
+            formScreen.style.opacity = '0';
+            formScreen.style.transform = 'translateY(12px)';
+            setTimeout(() => {
+                formScreen.style.opacity = '1';
+                formScreen.style.transform = 'translateY(0)';
+            }, 30);
+        }, 220);
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /**
+     * [UX 요구사항] 뒤로 가기 버튼: 폼 -> 카테고리 복귀
+     */
+    function goBackToCategories() {
+        const catScreen = document.getElementById('category-screen');
+        const formScreen = document.getElementById('form-screen');
+
+        formScreen.style.opacity = '0';
+        formScreen.style.transform = 'translateY(10px)';
+        setTimeout(() => {
+            formScreen.style.display = 'none';
+            catScreen.style.display = 'block';
+            catScreen.style.opacity = '0';
+            catScreen.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+                catScreen.style.opacity = '1';
+                catScreen.style.transform = 'translateY(0)';
+            }, 30);
+        }, 220);
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     function parseMarkdownToHtml(rawMarkdown) {
         if (!rawMarkdown || typeof rawMarkdown !== 'string') return '';
         let parsedHtml = '';
@@ -2250,15 +2066,11 @@
                     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             }
         } catch (e) {
-            console.warn('Marked.parse error, using fallback:', e);
-            parsedHtml = rawMarkdown
-                .replace(/\n\n/g, '</p><p>')
-                .replace(/\n/g, '<br>');
+            parsedHtml = rawMarkdown.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
         }
         parsedHtml = parsedHtml.replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>');
         parsedHtml = parsedHtml.replace(/<table>/g, '<div class="table-wrap"><table>');
         parsedHtml = parsedHtml.replace(/<\/table>/g, '</table></div>');
-        // XSS 방지
         if (typeof DOMPurify !== 'undefined') {
             parsedHtml = DOMPurify.sanitize(parsedHtml, {
                 ALLOWED_TAGS: ['p','br','strong','em','ul','ol','li','h1','h2','h3','h4','table','thead','tbody','tr','th','td','div','span','blockquote','code','pre','hr','b','i','a'],
@@ -2268,9 +2080,6 @@
         return parsedHtml;
     }
 
-    /**
-     * 5-Chapter 결과 렌더링 엔진
-     */
     function renderStructuredSajuResult(apiData) {
         if (!apiData) return;
 
@@ -2280,123 +2089,63 @@
         const elementsCount = apiData.elements_count || {};
         const dayMaster = apiData.day_master || "甲";
 
-        // 1. 유저 프로필 메타 칩 바 바인딩
         const nameEl = document.getElementById('res-user-name');
         const birthEl = document.getElementById('res-user-birth');
         const timeEl = document.getElementById('res-user-time');
         const genderEl = document.getElementById('res-user-gender');
 
-        if (nameEl) nameEl.textContent = userInfo.name || "사용자";
+        if (nameEl) nameEl.textContent = userInfo.name || "선비";
         if (birthEl) birthEl.textContent = `${userInfo.birth_date || "1995.08.20"} (${userInfo.birth_type === '음력' ? '음력' : '양력'})`;
         if (timeEl) timeEl.textContent = formatSajuTimeLabel(userInfo.birth_time || "10:30");
-        if (genderEl) genderEl.textContent = (userInfo.gender === 'F') ? "여성" : "남성";
+        if (genderEl) genderEl.textContent = (userInfo.gender === 'F') ? "여성 (坤命)" : "남성 (乾命)";
 
-        // 2. 第一章: 당신의 사주 한마디 (와이드 수묵화풍 카드)
         renderChapterOne(dayMaster, interpretation, userInfo.name);
-
-        // 3. 사주 명식 4기둥 표 (년주, 월주, 일주, 시주)
         renderPillarsTable(pillarsDetail, dayMaster);
-
-        // 4. 오행 분포 원형 도넛 차트 & 5개 기운 스탯
         renderElementsDonut(elementsCount);
-
-        // 5. 第二章: 타고난 성향 (2x2 그리드)
         renderNatureCards(elementsCount, dayMaster);
-
-        // 6. 돈은 어디로 새고, 인연은 왜 반복될까 (4열 실전 카드)
         renderRealityCards(elementsCount, dayMaster);
-
-        // 7. 심층 운명서 전문 & 페이월 래퍼
         renderDeepReportContent(interpretation);
 
-        // 8. 하단 스티키 결제 바 노출 활성화
         const stickyBar = document.getElementById('sticky-paywall-bar');
         if (stickyBar) {
             stickyBar.classList.add('visible');
             const stickyBtn = stickyBar.querySelector('.sticky-cta-btn');
-            if (stickyBtn) {
-                stickyBtn.innerHTML = '<span>심층 운명서 열기 🔒</span>';
-            }
+            if (stickyBtn) stickyBtn.innerHTML = '<span>심층 운명서 열기 🔒</span>';
         }
     }
 
-    /**
-     * 시간 코드를 사주 시주 한글 명칭으로 변환
-     */
     function formatSajuTimeLabel(timeStr) {
         if (!timeStr || timeStr === "12:00") return "시간 모름 (삼주)";
         const timeMap = {
-            "00:30": "자시 (子時)",
-            "02:30": "축시 (丑時)",
-            "04:30": "인시 (寅時)",
-            "06:30": "묘시 (卯時)",
-            "08:30": "진시 (辰時)",
-            "10:30": "사시 (巳時)",
-            "12:30": "오시 (午時)",
-            "14:30": "미시 (未時)",
-            "16:30": "신시 (申時)",
-            "18:30": "유시 (酉時)",
-            "20:30": "술시 (戌時)",
-            "22:30": "해시 (亥時)"
+            "00:30": "자시 (子時)", "02:30": "축시 (丑時)", "04:30": "인시 (寅時)",
+            "06:30": "묘시 (卯時)", "08:30": "진시 (辰時)", "10:30": "사시 (巳時)",
+            "12:30": "오시 (午時)", "14:30": "미시 (未時)", "16:30": "신시 (申時)",
+            "18:30": "유시 (酉時)", "20:30": "술시 (戌時)", "22:30": "해시 (亥時)"
         };
         return timeMap[timeStr] || timeStr;
     }
 
-    /**
-     * 第一章 사주 한마디 바인딩
-     */
     function renderChapterOne(dayMaster, interpretation, userName) {
         const headlineEl = document.getElementById('verdict-headline');
         const leadEl = document.getElementById('verdict-lead');
         const descBoxEl = document.getElementById('verdict-desc-box');
 
         const headlines = {
-            "甲": {
-                title: "“우직한 신념으로 숲을 이루는 거목의 개척자”",
-                lead: "남들의 얕은 잔재주에 흔들리지 않으며, 뿌리 깊은 자아와 당당한 기상으로 목표를 쟁취하는 당당한 기질"
-            },
-            "乙": {
-                title: "“바위틈에서도 기어이 꽃을 피우는 생명력의 조율자”",
-                lead: "어떤 모진 비바람과 역경 속에서도 유연하게 적응하며 끝내 결실을 맺고야 마는 외유내강의 화초"
-            },
-            "丙": {
-                title: "“세상을 환하게 비추는 열정의 태양”",
-                lead: "가식이나 비겁함을 혐오하며, 뜨거운 열정과 투명한 진심으로 사람들의 마음을 움직이는 천생 리더"
-            },
-            "丁": {
-                title: "“어둠을 밝히며 온기를 전하는 등불의 지혜자”",
-                lead: "자신을 태워 주변을 따스하게 채우며, 보이지 않는 곳까지 세심하게 통찰하는 깊은 영혼의 소유자"
-            },
-            "戊": {
-                title: "“만물을 묵묵히 품어 안는 장엄한 대지의 수호자”",
-                lead: "가벼운 계산과 세파에 흔들리지 않는 묵직한 신뢰감으로 모든 이들의 의지가 되어주는 든든한 태산"
-            },
-            "己": {
-                title: "“풍요로운 결실을 길러내는 비옥한 전답의 조력자”",
-                lead: "속마음을 섣불리 드러내지 않으나 내실이 단단하고, 사람과 기회를 귀하게 가꾸어내는 탁월한 감각"
-            },
-            "庚": {
-                title: "“의리와 결단력으로 길을 내는 강철의 승부사”",
-                lead: "불의와 타협하지 않고 결단을 내려야 할 때 단칼에 매듭을 짓는 카리스마와 남다른 뚝심의 개척자"
-            },
-            "辛": {
-                title: "“자신만의 세계를 빚어내는 신념의 탐구자”",
-                lead: "속물적인 계산과 타협에 영혼을 팔지 않으며, 고독 속에서도 진정한 자아와 순수한 이상의 가치를 빚어내는 완벽주의자"
-            },
-            "壬": {
-                title: "“도도하게 흐르는 거대한 대양, 광활한 지혜의 전략가”",
-                lead: "모든 물길을 포용하며 유유히 흐르되, 한번 결심하면 누구도 막을 수 없는 웅장한 추진력의 승부사"
-            },
-            "癸": {
-                title: "“메마른 대지를 적시는 봄비, 총명한 영혼의 모사”",
-                lead: "사람의 마음을 소리 없이 파고드는 직관과 유연한 지혜로 위기를 기회로 바꾸는 타고난 감각가"
-            }
+            "甲": { title: "“우직한 신념으로 숲을 이루는 거목의 개척자”", lead: "남들의 얕은 잔재주에 흔들리지 않으며, 뿌리 깊은 자아와 당당한 기상으로 목표를 쟁취하는 기질" },
+            "乙": { title: "“바위틈에서도 기어이 꽃을 피우는 생명력의 조율자”", lead: "어떤 모진 비바람과 역경 속에서도 유연하게 적응하며 끝내 결실을 맺고야 마는 외유내강의 화초" },
+            "丙": { title: "“세상을 환하게 비추는 열정의 태양”", lead: "가식이나 비겁함을 혐오하며, 뜨거운 열정과 투명한 진심으로 사람들의 마음을 움직이는 천생 리더" },
+            "丁": { title: "“어둠을 밝히며 온기를 전하는 등불의 지혜자”", lead: "자신을 태워 주변을 따스하게 채우며, 보이지 않는 곳까지 세심하게 통찰하는 깊은 영혼의 소유자" },
+            "戊": { title: "“만물을 묵묵히 품어 안는 장엄한 대지의 수호자”", lead: "가벼운 계산과 세파에 흔들리지 않는 묵직한 신뢰감으로 모든 이들의 의지가 되어주는 든든한 태산" },
+            "己": { title: "“풍요로운 결실을 길러내는 비옥한 전답의 조력자”", lead: "속마음을 섣불리 드러내지 않으나 내실이 단단하고, 사람과 기회를 귀하게 가꾸어내는 탁월한 감각" },
+            "庚": { title: "“의리와 결단력으로 길을 내는 강철의 승부사”", lead: "불의와 타협하지 않고 결단을 내려야 할 때 단칼에 매듭을 짓는 카리스마와 남다른 뚝심의 개척자" },
+            "辛": { title: "“자신만의 세계를 빚어내는 신념의 탐구자”", lead: "속물적인 계산과 타협에 영혼을 팔지 않으며, 고독 속에서도 진정한 자아와 순수한 이상의 가치를 빚어내는 완벽주의자" },
+            "壬": { title: "“도도하게 흐르는 거대한 대양, 광활한 지혜의 전략가”", lead: "모든 물길을 포용하며 유유히 흐르되, 한번 결심하면 누구도 막을 수 없는 웅장한 추진력의 승부사" },
+            "癸": { title: "“메마른 대지를 적시는 봄비, 총명한 영혼의 모사”", lead: "사람의 마음을 소리 없이 파고드는 직관과 유연한 지혜로 위기를 기회로 바꾸는 타고난 감각가" }
         };
 
         const item = headlines[dayMaster] || headlines["辛"];
         if (headlineEl) headlineEl.textContent = item.title;
         if (leadEl) leadEl.textContent = item.lead;
-
         if (descBoxEl) {
             descBoxEl.innerHTML = `
                 <p>세상의 속물적인 계산과 타협에 영혼을 쉽게 내어주지 않으며, 고독 속에서도 진정한 자아와 순수한 이상의 가치를 묵묵히 빚어내는 삶의 방식을 고수합니다.</p>
@@ -2405,14 +2154,10 @@
         }
     }
 
-    /**
-     * 사주 명식 4기둥 표 렌더링 (년주, 월주, 일주, 시주)
-     */
     function renderPillarsTable(pillarsDetail, dayMaster) {
         const tbody = document.getElementById('pillars-tbody');
         if (!tbody) return;
 
-        // 기준 순서: 년주, 월주, 일주, 시주 (좌측 -> 우측)
         const cols = [
             pillarsDetail.year || { title: "년주", stem: { hanja: "辛", hangul: "신", element: "금" }, branch: { hanja: "未", hangul: "미", element: "토" } },
             pillarsDetail.month || { title: "월주", stem: { hanja: "丙", hangul: "병", element: "화" }, branch: { hanja: "申", hangul: "신", element: "금" } },
@@ -2429,7 +2174,7 @@
         let trGanjiName   = '<tr>';
 
         cols.forEach((col, idx) => {
-            const isDay = (idx === 2); // 일주 강조
+            const isDay = (idx === 2);
             const dayClass = isDay ? 'day-pillar-td' : '';
             const goldClass = isDay ? 'gold-active' : '';
 
@@ -2445,18 +2190,10 @@
             trGanjiName   += `<td class="${dayClass}"><div class="pillar-ganji-name">${(col.stem.hangul || '') + (col.branch.hangul || '')}</div></td>`;
         });
 
-        trStemHanja += '</tr>';
-        trStemTag   += '</tr>';
-        trBranchHanja += '</tr>';
-        trBranchTag   += '</tr>';
-        trGanjiName   += '</tr>';
-
+        trStemHanja += '</tr>'; trStemTag += '</tr>'; trBranchHanja += '</tr>'; trBranchTag += '</tr>'; trGanjiName += '</tr>';
         tbody.innerHTML = trStemHanja + trStemTag + trBranchHanja + trBranchTag + trGanjiName;
     }
 
-    /**
-     * 오행 분포 원형 도넛 휠 및 스탯 렌더링 (전통 오방색 배색)
-     */
     function renderElementsDonut(elementsCount) {
         const donutWheel = document.getElementById('donut-wheel');
         const statRow = document.getElementById('elements-stat-row');
@@ -2474,14 +2211,13 @@
         const total = counts['목'] + counts['화'] + counts['토'] + counts['금'] + counts['수'] || 8;
 
         const meta = [
-            { key: '목', name: '목 🌳', color: '#2B7262', class: 'wood',  count: counts['목'] },
-            { key: '화', name: '화 🔥', color: '#B23D33', class: 'fire',  count: counts['화'] },
-            { key: '토', name: '토 🏔️', color: '#A67C2E', class: 'earth', count: counts['토'] },
-            { key: '금', name: '금 ⚔️', color: '#6E685F', class: 'metal', count: counts['금'] },
-            { key: '수', name: '수 💧', color: '#284D6E', class: 'water', count: counts['수'] }
+            { key: '목', name: '목 🌳', color: '#38A169', class: 'wood',  count: counts['목'] },
+            { key: '화', name: '화 🔥', color: '#E53E3E', class: 'fire',  count: counts['화'] },
+            { key: '토', name: '토 🏔️', color: '#D69E2E', class: 'earth', count: counts['토'] },
+            { key: '금', name: '금 ⚔️', color: '#CBD5E0', class: 'metal', count: counts['금'] },
+            { key: '수', name: '수 💧', color: '#3182CE', class: 'water', count: counts['수'] }
         ];
 
-        // 1. 코닉 그라디언트 휠
         let currentDeg = 0;
         const gradientStops = [];
 
@@ -2499,11 +2235,10 @@
             if (gradientStops.length > 0) {
                 donutWheel.style.background = `conic-gradient(${gradientStops.join(', ')})`;
             } else {
-                donutWheel.style.background = `conic-gradient(#CFC5B4 0deg 360deg)`;
+                donutWheel.style.background = `conic-gradient(rgba(223,183,56,0.3) 0deg 360deg)`;
             }
         }
 
-        // 2. 5개 기운 스탯 리스트 바인딩
         let statHtml = '';
         meta.forEach(item => {
             statHtml += `
@@ -2516,18 +2251,14 @@
         });
         statRow.innerHTML = statHtml;
 
-        // 3. 우세 기운 통찰 문구
         const sorted = [...meta].sort((a, b) => b.count - a.count);
         if (summaryText) {
             const top1 = sorted[0].key;
             const top2 = sorted[1].key;
-            summaryText.textContent = `${top1}과 ${top2}의 기운이 굳건하게 자리 잡고 있어, 생각의 깊이가 남다르고 난관을 슬기롭게 극복하는 저력이 있습니다.`;
+            summaryText.textContent = `${top1}과 ${top2}의 기운이 굳건하게 자리 잡아, 생각의 깊이가 남다르고 난관을 슬기롭게 극복하는 저력이 있습니다.`;
         }
     }
 
-    /**
-     * 第二章 타고난 성향 (2x2 그리드 바인딩)
-     */
     function renderNatureCards(elementsCount, dayMaster) {
         const grid = document.getElementById('nature-grid-2x2');
         if (!grid) return;
@@ -2565,7 +2296,7 @@
             {
                 num: "03",
                 title: "고독한 방",
-                desc: "누구에게도 방해받지 않는 혼자만의 공간과 시간이 주어질 때 비로소 에너지가 채워지고 머릿속 아이디어가 선명해집니다. 조용히 서재로 들어가 세상과의 접속을 끊고 내면에 깊이 집중합니다."
+                desc: "누구에게도 방해받지 않는 혼자만의 공간과 시간이 주어질 때 비로소 에너지가 채워지고 머릿속 아이디어가 선명해집니다. 조용히 점술가의 방처럼 고요한 공간에서 내면에 깊이 집중합니다."
             },
             {
                 num: "04",
@@ -2585,9 +2316,6 @@
         `).join('');
     }
 
-    /**
-     * 돈은 어디로 새고, 인연은 왜 반복될까 (4열 실전 카드)
-     */
     function renderRealityCards(elementsCount, dayMaster) {
         const grid = document.getElementById('reality-grid-4');
         if (!grid) return;
@@ -2633,19 +2361,14 @@
         `).join('');
     }
 
-    /**
-     * 심층 운명서 포맷팅 엔진
-     */
     function formatDeepReportHtml(rawMarkdown) {
         if (!rawMarkdown || typeof rawMarkdown !== 'string') return '';
 
-        // 1. 머리글/사주표/중복 요약 정리
         let md = rawMarkdown.trim()
             .replace(/## 📜[\s\S]*?(?=(?:## 🔮|### 💡|### 👤|$))/i, '')
             .replace(/## 🔮[\s\S]*?(?=(?:### 💡|### 👤|### 💰|$))/i, '')
             .replace(/### 💡[\s\S]*?(?=(?:### 👤|### 💰|### 💼|$))/i, '');
 
-        // 2. '### ' 기준 챕터 분할
         const rawSections = md.split(/(?=###\s+)/).filter(s => s.trim().length > 0 && s.trim().startsWith('###'));
 
         if (rawSections.length === 0) {
@@ -2685,14 +2408,11 @@
                 });
             }
 
-            // 가독성 최적화 트랜스폼:
-            // A. 핵심 명언 ("..." 또는 “...”)
             parsed = parsed.replace(/<p>\s*<strong>\s*["“](.*?)["”]\s*<\/strong>\s*<\/p>/g,
                 '<div class="lead-quote-box"><span class="quote-mark">“</span>$1<span class="quote-mark">”</span></div>');
             parsed = parsed.replace(/<p>\s*["“](.*?)["”]\s*<\/p>/g,
                 '<div class="lead-quote-box"><span class="quote-mark">“</span>$1<span class="quote-mark">”</span></div>');
 
-            // B. 💡 솔루션 / 개운법 / 꿀팁 콜아웃 박스
             parsed = parsed.replace(/(?:<p>|<li>)\s*💡\s*(?:<strong>)?(.*?)(?:<\/strong>)?[:：]?([\s\S]*?)(?:<\/p>|<\/li>)/g, function(match, calloutTitle, calloutRest) {
                 const cleanTitle = calloutTitle.replace(/<\/?[^>]+(>|$)/g, "").trim();
                 return `
@@ -2708,12 +2428,10 @@
                 `;
             });
 
-            // C. 콜아웃 내부 서브 리스트
             parsed = parsed.replace(/(<\/div>\s*<\/div>)\s*(<ul>[\s\S]*?<\/ul>)/g, function(match, closeTag, ulHtml) {
                 return `<div class="callout-sub-list">${ulHtml}</div>${closeTag}`;
             });
 
-            // D. <ol> 리스트 -> 추천 항목
             parsed = parsed.replace(/<ol>([\s\S]*?)<\/ol>/g, function(match, listInner) {
                 let itemIndex = 1;
                 const items = listInner.replace(/<li>([\s\S]*?)<\/li>/g, function(m, liContent) {
@@ -2728,11 +2446,9 @@
                 return `<div class="recommend-list">${items}</div>`;
             });
 
-            // E. 소제목 강조
             parsed = parsed.replace(/<p>\s*•\s*(?:추천하는|핵심|구체적인)(.*?)<\/p>/g,
-                '<p style="font-weight: 700; color: var(--point-jade); font-size: 15px; margin-top: 20px; margin-bottom: 8px;">◆ 추천하는 $1</p>');
+                '<p style="font-weight: 700; color: var(--text-gold); font-size: 15px; margin-top: 20px; margin-bottom: 8px;">◆ 추천하는 $1</p>');
 
-            // F. <strong> 키워드 강조
             parsed = parsed.replace(/<strong>(.*?)<\/strong>/g, '<strong class="hl-keyword">$1</strong>');
 
             const partNum = String(idx + 1).padStart(2, '0');
@@ -2757,9 +2473,6 @@
         return cardsHtml.join('\n');
     }
 
-    /**
-     * 심층 운명서 전문 렌더링
-     */
     function renderDeepReportContent(rawMarkdown) {
         const aiContent = document.getElementById('ai-content');
         if (!aiContent) return;
@@ -2769,9 +2482,6 @@
         aiContent.classList.add('teaser-mode');
     }
 
-    /**
-     * 심층 운명서 클릭 시 즉시 잠금 해제 & 스무스 스크롤
-     */
     function handlePaywallClick() {
         const lockBanner = document.getElementById('paywall-lock-banner');
         const aiContent = document.getElementById('ai-content');
@@ -2790,12 +2500,12 @@
 
         if (lockBanner) {
             lockBanner.innerHTML = `
-                <div class="lock-icon-wrap" style="color: var(--point-jade);">✓</div>
-                <h3 class="lock-banner-title" style="color: var(--point-jade);">심층 운명서 전문 잠금 해제 완료</h3>
+                <div class="lock-icon-wrap" style="color: var(--text-gold);">✓</div>
+                <h3 class="lock-banner-title" style="color: var(--text-gold-light);">심층 운명서 전문 잠금 해제 완료</h3>
                 <p class="lock-banner-desc">재물, 대운의 황금기, 개운 처방전까지 모든 비전(秘傳) 풀이를 열람하실 수 있습니다.</p>
             `;
-            lockBanner.style.borderColor = 'var(--point-jade-border)';
-            lockBanner.style.background = 'var(--point-jade-bg)';
+            lockBanner.style.borderColor = 'var(--text-gold)';
+            lockBanner.style.background = 'rgba(20, 16, 12, 0.95)';
         }
 
         if (stickyBar) {
@@ -2803,7 +2513,7 @@
             if (stickyBtn) {
                 stickyBtn.innerHTML = '<span>✓ 전편 열람 중</span>';
                 stickyBtn.style.background = 'var(--point-jade)';
-                stickyBtn.style.borderColor = 'var(--point-jade-hover)';
+                stickyBtn.style.borderColor = 'var(--point-jade-light)';
             }
         }
 
@@ -2816,7 +2526,6 @@
 
     let lastResultText = "";
 
-    // 음력 선택 시 윤달 체크박스 토글
     document.querySelectorAll('input[name="calendar"]').forEach(radio => {
         radio.addEventListener('change', () => {
             const leapGroup = document.getElementById('leap-month-group');
@@ -2869,7 +2578,7 @@
         
         const nameInput = document.getElementById('name');
         const rawName = nameInput ? nameInput.value.trim() : "";
-        const finalName = (!rawName || rawName.length === 0) ? "사용자" : rawName;
+        const finalName = (!rawName || rawName.length === 0) ? "선비" : rawName;
         
         const birthTime = document.getElementById('birth_time').value;
         const leapEl = document.getElementById('is_leap_month');
@@ -2881,23 +2590,20 @@
         const pBar = document.getElementById('p-bar');
         const stepTitle = document.getElementById('step-title');
 
-        // 로딩 화면 전환
+        // 로딩 화면 전환 (붓글씨 애니메이션 가동)
         formScreen.style.display = 'none';
         loadingScreen.style.display = 'flex';
         pBar.style.width = '0%';
         
         setTimeout(() => { pBar.style.width = '88%'; }, 150);
 
-        // 실시간 분석 로그 UI
         const logsContainer = document.getElementById('loading-logs');
-        if (logsContainer) {
-            logsContainer.innerHTML = '';
-        }
+        if (logsContainer) logsContainer.innerHTML = '';
 
         const logSequence = [
-            "▸ 사주 원국 명식 4기둥 스캔 중...",
-            "▸ 일간과 월지의 오행 상호작용 계산 완료",
-            "▸ 10년 대운의 물줄기와 인생 황금기 도출 중...",
+            "▸ 사주 단자의 네 기둥(四柱)을 봉심(奉審)하는 중...",
+            "▸ 일간과 월지의 오행 상호작용 및 신살 계산 완료",
+            "▸ 10년 대운의 물줄기와 부귀영화 황금기 도출 중...",
             "▸ 재물운과 적성 직업운 심층 데이터 추출 중...",
             `▸ ${finalName} 맞춤형 심층 운명서 편찬 완료!`,
             "▸ 액운 방지 및 길운 개운 비책 정리 중...",
@@ -2912,7 +2618,7 @@
             const prevActive = logsContainer.querySelector('.log-line.active');
             if (prevActive) {
                 prevActive.classList.remove('active');
-                prevActive.style.color = 'var(--ink-mid)';
+                prevActive.style.color = 'var(--text-muted)';
             }
 
             const lineEl = document.createElement('div');
@@ -2927,11 +2633,10 @@
         pushNextLog();
         const logTimer = setInterval(pushNextLog, 750);
 
-        // 시네마틱 서브타이틀 롤링
         const rollingTitles = [
-            "사주 명식을 펼치고 있습니다...",
-            "오행과 십신의 기운을 해독하는 중...",
-            "대운과 인생의 황금기를 찾는 중...",
+            "점술가가 먹을 갈아 붓을 들고 있소이다...",
+            "사주 단자의 기운을 해독하는 중이오니...",
+            "대운과 인생의 황금기를 비추는 중이오니...",
             `${finalName}님을 위한 운명서를 작성하는 중...`
         ];
         let titleIdx = 0;
@@ -2988,12 +2693,8 @@
 
                 setTimeout(() => {
                     loadingScreen.style.display = 'none';
-                    
                     renderStructuredSajuResult(data);
-                    
-                    document.querySelector('.layout-wrapper').classList.add('result-mode');
                     resultScreen.style.display = 'block';
-                    
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }, 600);
             } else {
@@ -3002,7 +2703,6 @@
         } catch (error) {
             clearInterval(logTimer);
             clearInterval(titleTimer);
-            document.querySelector('.layout-wrapper').classList.remove('result-mode');
             loadingScreen.style.display = 'none';
             formScreen.style.display = 'block';
             alert("분석 중 오류가 발생했습니다: " + error.message);
@@ -3010,9 +2710,16 @@
     }
 
     function resetForm() {
-        document.querySelector('.layout-wrapper').classList.remove('result-mode');
         document.getElementById('result-screen').style.display = 'none';
-        document.getElementById('form-screen').style.display = 'block';
+        document.getElementById('form-screen').style.display = 'none';
+        
+        // 홈 카테고리 화면으로 원복
+        const catScreen = document.getElementById('category-screen');
+        if (catScreen) {
+            catScreen.style.display = 'block';
+            catScreen.style.opacity = '1';
+            catScreen.style.transform = 'translateY(0)';
+        }
         
         const stickyBar = document.getElementById('sticky-paywall-bar');
         if (stickyBar) stickyBar.classList.remove('visible');
@@ -3033,23 +2740,23 @@
             lockBanner.innerHTML = `
                 <div class="lock-icon-wrap">🔒</div>
                 <h3 class="lock-banner-title">무료 사주에서는 여기까지 확인할 수 있습니다.</h3>
-                <p class="lock-banner-desc">앞으로의 운을 고민하는 당신에게 지금 가장 필요한 것은 막연한 불안감 대신 자신의 본질에 맞는 구체적인 생존 전략을 세우는 것입니다. 다가오는 10년 대운 속에서 이 신념의 탐구자 기질을 어떻게 무기로 활용할지 그 해답을 깊이 있게 열어보려 합니다.</p>
+                <p class="lock-banner-desc">다가오는 10년 대운 속에서 타고난 기운을 어떻게 무기로 활용할지, 재물과 액운 방지 비책의 모든 풀이를 열어보려 합니다.</p>
                 <button type="button" class="btn-unlock-inline" onclick="handlePaywallClick()">
                     <span>심층 운명서 열기 🔒</span>
                 </button>
             `;
-            lockBanner.style.borderColor = 'var(--point-seal-border)';
-            lockBanner.style.background = '#FFFFFF';
+            lockBanner.style.borderColor = 'var(--border-gold)';
+            lockBanner.style.background = 'var(--card-bg-dark)';
         }
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // 스크롤 시 스티키 바 표시 제어
     window.addEventListener('scroll', () => {
-        const isResultMode = document.querySelector('.layout-wrapper')?.classList.contains('result-mode');
+        const resultScreen = document.getElementById('result-screen');
+        const isResultVisible = resultScreen && resultScreen.style.display === 'block';
         const stickyBar = document.getElementById('sticky-paywall-bar');
-        if (isResultMode && stickyBar) {
+        if (isResultVisible && stickyBar) {
             stickyBar.classList.add('visible');
         }
     });
@@ -3062,7 +2769,7 @@
 
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(lastResultText)
-                .then(() => alert("사주 리포트 전문이 클립보드에 복사되었습니다."))
+                .then(() => alert("사주 감정 결과지 전문이 클립보드에 복사되었습니다."))
                 .catch(() => fallbackCopy(lastResultText));
         } else {
             fallbackCopy(lastResultText);
@@ -3076,7 +2783,7 @@
         textarea.select();
         try {
             document.execCommand('copy');
-            alert("사주 리포트 전문이 클립보드에 복사되었습니다.");
+            alert("사주 감정 결과지 전문이 클립보드에 복사되었습니다.");
         } catch (err) {
             alert("복사 권한이 없어 수동으로 복사해주세요.");
         }
