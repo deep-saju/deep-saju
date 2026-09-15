@@ -3207,8 +3207,16 @@
                         </div>
                     </div>
 
-                    <button type="button" class="btn-unlock-inline" onclick="handlePaywallClick()">
-                        <span>심층 운명서 열기 🔒</span>
+                    <!-- 🌟 결제 금액 배지 및 해제 버튼 -->
+                    <div class="paywall-price-summary" id="paywall-price-summary" style="margin: 18px 0 14px 0; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
+                        <span class="paywall-price-label" style="font-size: 13.5px; color: var(--text-sub);">심층 비전 열람 비용:</span>
+                        <span class="paywall-price-origin" id="paywall-inline-origin" style="font-size: 13px; color: var(--text-muted); text-decoration: line-through;">39,000원</span>
+                        <span class="paywall-price-discount" id="paywall-inline-discount" style="font-size: 13px; color: #FFA5A5; font-weight: 700;">80% 할인</span>
+                        <span class="paywall-price-final" id="paywall-inline-price" style="font-size: 19px; font-weight: 800; color: var(--text-gold);">7,900원</span>
+                    </div>
+
+                    <button type="button" class="btn-unlock-inline" id="btn-unlock-inline" onclick="handlePaywallClick()">
+                        <span id="btn-unlock-inline-text">심층 운명서 열기 (7,900원) 🔒</span>
                     </button>
                 </div>
 
@@ -3233,16 +3241,16 @@
     <aside class="sticky-paywall-bar" id="sticky-paywall-bar">
         <div class="sticky-bar-inner">
             <div class="sticky-left-info">
-                <div class="sticky-product-title">나의 평생 심층 운명서</div>
+                <div class="sticky-product-title" id="sticky-product-title">나의 평생 심층 운명서</div>
                 <div class="sticky-price-group">
-                    <span class="price-origin">29,000원</span>
-                    <span class="price-discount">80% 할인</span>
-                    <span class="price-final">5,900<span class="price-unit">원</span></span>
+                    <span class="price-origin" id="sticky-price-origin">39,000원</span>
+                    <span class="price-discount" id="sticky-price-discount">80% 할인</span>
+                    <span class="price-final" id="sticky-price-final">7,900<span class="price-unit">원</span></span>
                     <span class="price-sub">· 1회 결제</span>
                 </div>
             </div>
-            <button type="button" class="sticky-cta-btn" onclick="handlePaywallClick()">
-                <span>심층 운명서 열기 🔒</span>
+            <button type="button" class="sticky-cta-btn" id="sticky-cta-btn" onclick="handlePaywallClick()">
+                <span id="sticky-cta-text">심층 운명서 열기 (7,900원) 🔒</span>
             </button>
         </div>
     </aside>
@@ -3684,12 +3692,83 @@
         }
 
         renderDeepReportContent(interpretation, activeCat);
+        updatePaywallPricing(activeCat);
+    }
 
+    const categoryPricingConfig = {
+        saju: {
+            title: "나의 평생 심층 운명서",
+            originPrice: "39,000원",
+            discount: "80% 할인",
+            finalPrice: "7,900원",
+            finalNum: "7,900",
+            btnLabel: "심층 운명서 열기 (7,900원) 🔒"
+        },
+        gunghap: {
+            title: "두 사람의 백년해로 궁합 심층 비전",
+            originPrice: "29,000원",
+            discount: "80% 할인",
+            finalPrice: "5,900원",
+            finalNum: "5,900",
+            btnLabel: "궁합 비전 열기 (5,900원) 🔒"
+        },
+        tojeong: {
+            title: "올 한 해 토정비결 신수 심층 비결서",
+            originPrice: "29,000원",
+            discount: "80% 할인",
+            finalPrice: "5,900원",
+            finalNum: "5,900",
+            btnLabel: "토정비결 열기 (5,900원) 🔒"
+        },
+        today: {
+            title: "금일 하루 일진 & 승부 비책 리포트",
+            originPrice: "9,900원",
+            discount: "78% 할인",
+            finalPrice: "2,200원",
+            finalNum: "2,200",
+            btnLabel: "오늘의 비책 열기 (2,200원) 🔒"
+        }
+    };
+
+    function updatePaywallPricing(cat) {
+        const config = categoryPricingConfig[cat] || categoryPricingConfig.saju;
+
+        // 1. 인라인 결제창 가격 업데이트
+        const inlinePrice = document.getElementById('paywall-inline-price');
+        const inlineOrigin = document.getElementById('paywall-inline-origin');
+        const inlineDiscount = document.getElementById('paywall-inline-discount');
+        const inlineBtnText = document.getElementById('btn-unlock-inline-text');
+        const btnUnlock = document.getElementById('btn-unlock-inline');
+
+        if (inlinePrice) inlinePrice.textContent = config.finalPrice;
+        if (inlineOrigin) inlineOrigin.textContent = config.originPrice;
+        if (inlineDiscount) inlineDiscount.textContent = config.discount;
+        if (inlineBtnText) {
+            inlineBtnText.textContent = config.btnLabel;
+        } else if (btnUnlock) {
+            btnUnlock.innerHTML = `<span>${config.btnLabel}</span>`;
+        }
+
+        // 2. 하단 스티키 바 가격 업데이트
         const stickyBar = document.getElementById('sticky-paywall-bar');
+        const stickyTitle = document.getElementById('sticky-product-title');
+        const stickyOrigin = document.getElementById('sticky-price-origin');
+        const stickyDiscount = document.getElementById('sticky-price-discount');
+        const stickyFinal = document.getElementById('sticky-price-final');
+        const stickyCtaText = document.getElementById('sticky-cta-text');
+        const stickyBtn = document.getElementById('sticky-cta-btn');
+
+        if (stickyTitle) stickyTitle.textContent = config.title;
+        if (stickyOrigin) stickyOrigin.textContent = config.originPrice;
+        if (stickyDiscount) stickyDiscount.textContent = config.discount;
+        if (stickyFinal) stickyFinal.innerHTML = `${config.finalNum}<span class="price-unit">원</span>`;
+        if (stickyCtaText) {
+            stickyCtaText.textContent = config.btnLabel;
+        } else if (stickyBtn) {
+            stickyBtn.innerHTML = `<span>${config.btnLabel}</span>`;
+        }
         if (stickyBar) {
             stickyBar.classList.add('visible');
-            const stickyBtn = stickyBar.querySelector('.sticky-cta-btn');
-            if (stickyBtn) stickyBtn.innerHTML = '<span>심층 운명서 열기 🔒</span>';
         }
     }
 
@@ -4276,39 +4355,47 @@
         // 로딩 화면 전환 (붓글씨 애니메이션 가동)
         formScreen.style.display = 'none';
         loadingScreen.style.display = 'flex';
+        pBar.style.transition = 'width 4.6s cubic-bezier(0.1, 0.7, 0.1, 1)';
         pBar.style.width = '0%';
-        
-        setTimeout(() => { pBar.style.width = '88%'; }, 150);
+        setTimeout(() => { pBar.style.width = '92%'; }, 80);
+
+        const loadingStartTime = Date.now();
+        const MIN_LOADING_TIME = 4800; // 🌟 최소 4.5초 ~ 5초 로딩 지연 시간 보장
 
         const logsContainer = document.getElementById('loading-logs');
         if (logsContainer) logsContainer.innerHTML = '';
 
-        // 카테고리별 맞춤 점술방 秘傳 로그 시퀀스
+        // 카테고리별 맞춤 점술방 秘傳 로그 시퀀스 (충분한 분량으로 4.8초간 순차 노출)
         let logSequence = [];
         if (activeCategory === 'gunghap') {
             const pName = partnerData ? partnerData.name : "인연";
             logSequence = [
                 "▸ 두 분의 사주 단자를 정성껏 봉심(奉審)하는 중...",
                 "▸ 일간과 오행의 상생상극 및 음양 조화 계산 완료",
-                "▸ 전생과 현생을 잇는 인연의 깊이와 갈등 지점 분석 중...",
-                `▸ ${finalName} 선비님과 ${pName} 님의 백년해로 비책 도출 중...`,
-                "▸ 조선시대풍 3대 관계 개운법 정리 중...",
+                "▸ 두 사람 중 관계의 주도권(기운의 우위) 판별 중...",
+                "▸ 다투었을 때 먼저 사과해야 풀리는 화해 비책 도출 중...",
+                "▸ 행운의 데이트 방위와 추천 취미 분석 중...",
+                `▸ ${finalName} 선비님과 ${pName} 님의 백년해로 비책 정리 완료!`,
                 "▸ 최종 궁합 감정서 편찬 완료!"
             ];
         } else if (activeCategory === 'today') {
             logSequence = [
                 "▸ 오늘의 일진(日辰)과 천기를 봉심(奉審)하는 중...",
                 "▸ 선비님의 일간과 오늘의 천간/지지 대조 완료",
-                "▸ 귀인(貴人)이 오는 길한 방위와 승부 시간대 도출 중...",
+                "▸ 오늘 나를 지켜줄 행운의 숫자(1~9)와 음식 기운 조율 중...",
+                "▸ 가장 맑은 기운이 들어오는 시간대(時辰)와 귀인 방위 포착 중...",
                 "▸ 오늘 반드시 피해야 할 액운과 경계 요인 분석 중...",
-                "▸ 하루를 승리로 이끄는 금일 비책(秘策) 정리 완료!"
+                "▸ 하루를 승리로 이끄는 금일 비책(今日 秘策) 도출 완료!",
+                "▸ 오늘의 일일 운명서 편찬 완료!"
             ];
         } else if (activeCategory === 'tojeong') {
             logSequence = [
                 "▸ 토정 이지함 선생의 신수 비결서를 펼치는 중...",
                 "▸ 올해 세운(歲運)과 선비님의 사주 원국 대조 완료",
                 "▸ 상반기와 하반기 12달의 운기 흐름 분석 중...",
-                "▸ 올해 반드시 잡아야 할 천운의 기회 및 삼재팔난 경고 도출 중...",
+                "▸ 봄·여름·가을·겨울 4계절 운세 흐름 세부 분할 중...",
+                "▸ 조심해야 할 질병과 재물이 들어오는 달 계산 완료",
+                "▸ 천운의 기회 및 삼재팔난 경고 도출 중...",
                 "▸ 토정 선생의 최종 신수 총평 작성 완료!"
             ];
         } else {
@@ -4344,7 +4431,7 @@
         }
 
         pushNextLog();
-        const logTimer = setInterval(pushNextLog, 750);
+        const logTimer = setInterval(pushNextLog, 700);
 
         const rollingTitles = [
             "점술가가 먹을 갈아 붓을 들고 있소이다...",
@@ -4363,7 +4450,7 @@
                     stepTitle.style.opacity = '1';
                 }, 250);
             }
-        }, 2600);
+        }, 2400);
 
         const requestData = {
             name: finalName,
@@ -4400,28 +4487,42 @@
 
             const data = await response.json();
 
-            clearInterval(logTimer);
-            clearInterval(titleTimer);
+            // 🌟 최소 4.5초 ~ 5초 로딩 지연 시간 보장 후 결과 화면 노출
+            const elapsedTime = Date.now() - loadingStartTime;
+            const remainingDelay = Math.max(0, MIN_LOADING_TIME - elapsedTime);
 
-            if (data.status === "success" && data.interpretation) {
-                lastResultText = data.interpretation;
-                pBar.style.width = '100%';
+            setTimeout(() => {
+                clearInterval(logTimer);
+                clearInterval(titleTimer);
 
-                setTimeout(() => {
+                if (data.status === "success" && data.interpretation) {
+                    lastResultText = data.interpretation;
+                    pBar.style.transition = 'width 0.35s ease';
+                    pBar.style.width = '100%';
+
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                        renderStructuredSajuResult(data);
+                        resultScreen.style.display = 'block';
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 400);
+                } else {
                     loadingScreen.style.display = 'none';
-                    renderStructuredSajuResult(data);
-                    resultScreen.style.display = 'block';
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }, 600);
-            } else {
-                throw new Error(data.detail || "사주 분석 데이터를 받아오지 못했습니다.");
-            }
+                    formScreen.style.display = 'block';
+                    alert("분석 중 오류가 발생했습니다: " + (data.detail || "사주 분석 데이터를 받아오지 못했습니다."));
+                }
+            }, remainingDelay);
+
         } catch (error) {
-            clearInterval(logTimer);
-            clearInterval(titleTimer);
-            loadingScreen.style.display = 'none';
-            formScreen.style.display = 'block';
-            alert("분석 중 오류가 발생했습니다: " + error.message);
+            const elapsedTime = Date.now() - loadingStartTime;
+            const remainingDelay = Math.max(0, Math.min(1000, MIN_LOADING_TIME - elapsedTime));
+            setTimeout(() => {
+                clearInterval(logTimer);
+                clearInterval(titleTimer);
+                loadingScreen.style.display = 'none';
+                formScreen.style.display = 'block';
+                alert("분석 중 오류가 발생했습니다: " + error.message);
+            }, remainingDelay);
         }
     }
 
@@ -4523,14 +4624,23 @@
                     </div>
                 </div>
 
-                <button type="button" class="btn-unlock-inline" onclick="handlePaywallClick()">
-                    <span>심층 운명서 열기 🔒</span>
+                <!-- 🌟 결제 금액 배지 및 해제 버튼 -->
+                <div class="paywall-price-summary" id="paywall-price-summary" style="margin: 18px 0 14px 0; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
+                    <span class="paywall-price-label" style="font-size: 13.5px; color: var(--text-sub);">심층 비전 열람 비용:</span>
+                    <span class="paywall-price-origin" id="paywall-inline-origin" style="font-size: 13px; color: var(--text-muted); text-decoration: line-through;">39,000원</span>
+                    <span class="paywall-price-discount" id="paywall-inline-discount" style="font-size: 13px; color: #FFA5A5; font-weight: 700;">80% 할인</span>
+                    <span class="paywall-price-final" id="paywall-inline-price" style="font-size: 19px; font-weight: 800; color: var(--text-gold);">7,900원</span>
+                </div>
+
+                <button type="button" class="btn-unlock-inline" id="btn-unlock-inline" onclick="handlePaywallClick()">
+                    <span id="btn-unlock-inline-text">심층 운명서 열기 (7,900원) 🔒</span>
                 </button>
             `;
             lockBanner.style.borderColor = 'var(--border-gold)';
             lockBanner.style.background = 'var(--card-bg-dark)';
         }
 
+        updatePaywallPricing('saju');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
