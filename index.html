@@ -3287,6 +3287,32 @@
         const catInput = document.getElementById('selected_category');
         if (catInput) catInput.value = currentCategory;
 
+        // 이전 분석에서 남은 입력값을 초기화하여, 여러 사람을 테스트해도
+        // 마지막 생년월일이 그대로 재사용되지 않도록 한다.
+        const resetField = (id) => { const el = document.getElementById(id); if (el) el.value = ''; };
+        resetField('name');
+        resetField('year');
+        resetField('month');
+        resetField('day');
+        resetField('partner_name');
+        resetField('partner_year');
+        resetField('partner_month');
+        resetField('partner_day');
+
+        const birthTime = document.getElementById('birth_time');
+        if (birthTime) birthTime.value = '12:00';
+        const partnerBirthTime = document.getElementById('partner_birth_time');
+        if (partnerBirthTime) partnerBirthTime.value = '12:00';
+
+        const genderM = document.getElementById('gender-m');
+        if (genderM) genderM.checked = true;
+        const calSolar = document.getElementById('cal-solar');
+        if (calSolar) calSolar.checked = true;
+        const leapMonth = document.getElementById('is_leap_month');
+        if (leapMonth) leapMonth.checked = false;
+        const partnerCalSolar = document.getElementById('partner-cal-solar');
+        if (partnerCalSolar) partnerCalSolar.checked = true;
+
         const catScreen = document.getElementById('category-screen');
         const formScreen = document.getElementById('form-screen');
         const badge = document.getElementById('chosen-cat-badge');
@@ -3859,10 +3885,19 @@
         if (headlineEl) headlineEl.textContent = item.title;
         if (leadEl) leadEl.textContent = item.lead;
         if (descBoxEl) {
-            descBoxEl.innerHTML = `
-                <p>세상의 속물적인 계산과 타협에 영혼을 쉽게 내어주지 않으며, 고독 속에서도 진정한 자아와 순수한 이상의 가치를 묵묵히 빚어내는 삶의 방식을 고수합니다.</p>
-                <p>남들이 눈앞의 이익을 좇아 소신을 바꿀 때, 당신은 홀로 깊은 방에 앉아 세상에 전할 진실한 울림을 길어 올리고 있습니다.</p>
-            `;
+            const descs = {
+                "甲": `<p>정직과 곧음이 몸에 배어, 세상의 잔꾀와 술수 앞에서도 흔들림 없이 제 갈 길을 묵묵히 개척해 나가는 개척자적 기질을 지니셨습니다.</p><p>남들이 쉬운 길을 좇아 소신을 굽힐 때, 당신은 뿌리 깊은 큰 나무처럼 오랜 시간을 인내로 견디며 결국 더 큰 숲을 이루는 승부를 거시옵니다.</p>`,
+                "乙": `<p>부드러운 겉모습 속에 물러서지 않는 단단한 골격을 감추시어, 역경의 바위틈에서도 끝내 꽃을 피워내는 풀잎 같은 생명력을 지니셨습니다.</p><p>무력으로 부딪히기보다 유연하게 휘어질 줄 알고, 때가 무르익기를 기다렸다 온 몸으로 뻗어나가는 예지의 지혜가 남다르시옵니다.</p>`,
+                "丙": `<p>마음이 뜨겁고 시원하여 거짓과 위선을 견디지 못하시고, 자신을 태워 남을 밝히는 태양 같은 기백을 지니셨습니다.</p><p>좌절의 어둠 속에서도 결코 빛을 잃지 않는 낙천성과 배포로, 사람들을 자연스레 앞에 세우는 천생의 기운이 사주 깊이 흐르시옵니다.</p>`,
+                "丁": `<p>침착하고 예리한 통찰로 세상의 이면까지 꿰뚫어 보시는 지성의 등불 기질을 지니셨습니다.</p><p>겉으로는 얌전하고 조용하나, 그 마음속에는 타인을 감싸 안는 따뜻한 온기와 물러서지 않는 내공이 함께 살아 숨 쉬시옵니다.</p>`,
+                "戊": `<p>한번 마음먹으면 좀처럼 흔들리지 않는 무게감과 신뢰로, 주위 사람들이 자연히 의지하게 되는 대지 같은 품성을 지니셨습니다.</p><p>속내가 깊고 실속을 중시하여, 화려함보다는 성실함으로 인생의 지반을 차근차근 쌓아 올리시는 확신의 기질이옵니다.</p>`,
+                "己": `<p>겉으로는 드러내지 않으나 속은 단단하고 정밀하여, 일을 이루기 전까지 끝끝내 다스리는 내공 있는 조력자의 기질을 지니셨습니다.</p><p>풍요로운 논밭처럼 인재와 기회를 가꾸고 역경의 씨앗까지도 결실로 바꾸는, 차분하고 꼼꼼한 힘이 사주에 깃들어 있사옵니다.</p>`,
+                "庚": `<p>의리와 결단이 몸에 밴 강철 같은 기상으로, 방향을 정한 뒤에는 단호하게 칼을 내리치는 승부사의 품성을 지니셨습니다.</p><p>불의를 보면 참지 못하고, 어려움을 만날수록 오히려 정면으로 맞서는 배포와 뚝심이 남의 추종을 불허하나이다.</p>`,
+                "辛": `<p>순수와 이상을 향한 집요함으로, 세속의 잡소리에 흔들리지 않고 오직 진실한 것만을 추구해 온 신념의 탐구자 기질이옵니다.</p><p>잘 드는 보석 칼날처럼 단단하고 예리하여, 자기 분야에서 남이 흉내 내지 못하는 정교한 내공을 갈고닦으시는 독고다이의 성품을 지니셨습니다.</p>`,
+                "壬": `<p>물길처럼 어디서든 길을 내는 융통성과 포용력을 갖추시고, 한번 결심하면 흐름을 거스르지 못하는 대양 같은 추진력을 지니셨습니다.</p><p>눈치가 빠르고 두뇌 회전이 빨라, 곤경 속에서도 반드시 탈출구를 찾아내는 전략가의 기지를 타고 나셨사옵니다.</p>`,
+                "癸": `<p>가녀린 듯하나 실속 있는 봄비와 같은 기운으로, 남의 마음을 놀라울 만큼 섬세하게 읽어내는 직관을 지니셨습니다.</p><p>큰소리를 내기보다 은밀히 준비를 끝마치신 뒤, 때가 되면 부드럽게 흘러가며 모든 일을 자기 뜻대로 이끄는 모사의 재주가 남다르시옵니다.</p>`
+            };
+            descBoxEl.innerHTML = descs[dayMaster] || descs["辛"];
         }
     }
 
