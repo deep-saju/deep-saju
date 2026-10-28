@@ -268,20 +268,52 @@
             transition: var(--transition-smooth);
         }
 
-        /* 1번째 줄: 메인 3대 감정서 (평생 사주, 인연과 궁합, 오늘의 운세) */
+        /* 1번째 줄: 메인 4대 감정서 (평생 사주, 인연과 궁합, 오늘의 운세, 재회운) */
         .category-grid-primary {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
             width: 100%;
             margin-bottom: 26px;
         }
 
-        @media (max-width: 860px) {
+        @media (max-width: 1024px) {
+            .category-grid-primary {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 18px;
+            }
+        }
+
+        @media (max-width: 640px) {
             .category-grid-primary {
                 grid-template-columns: 1fr;
                 gap: 18px;
             }
+        }
+
+        /* 재회운 카드 전용 강조 */
+        .cat-card-reunion {
+            border-color: rgba(168, 43, 43, 0.55);
+        }
+
+        .cat-card-reunion:hover {
+            border-color: var(--point-seal-hover);
+            box-shadow: 0 14px 34px rgba(168, 43, 43, 0.28);
+        }
+
+        .cat-ribbon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 2;
+            padding: 3px 9px;
+            border-radius: 2px;
+            background: var(--point-seal);
+            color: #FFF4E8;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
         }
 
         /* 중간 고풍스러운 구분선 및 서브 타이틀 */
@@ -2358,6 +2390,292 @@
             color: var(--text-gold-light);
             line-height: 1.6;
         }
+
+        /* ============================================================
+           하단 사업자 정보 푸터
+           ============================================================ */
+        .site-footer {
+            width: calc(100% - 32px);
+            max-width: 900px;
+            margin: 8px auto 28px;
+            padding: 26px 24px 30px;
+            border: 1px solid var(--border-ink);
+            border-radius: 12px;
+            background: rgba(12, 10, 8, 0.62);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            text-align: center;
+            color: var(--text-sub);
+            font-size: 12.5px;
+            line-height: 1.9;
+            box-sizing: border-box;
+        }
+
+        .footer-brand-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .footer-stamp {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border: 1px solid var(--border-seal);
+            border-radius: 3px;
+            color: var(--point-seal);
+            font-size: 8.5px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            transform: rotate(-4deg);
+            background: rgba(168, 43, 43, 0.08);
+        }
+
+        .footer-brand {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-gold);
+            letter-spacing: 2px;
+        }
+
+        .footer-info {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 0 10px;
+            color: var(--text-muted);
+            word-break: keep-all;
+        }
+
+        .footer-info .footer-divider {
+            color: rgba(158, 149, 132, 0.5);
+        }
+
+        .footer-info .footer-strong {
+            color: var(--text-sub);
+        }
+
+        .footer-links {
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px 20px;
+        }
+
+        .footer-link {
+            appearance: none;
+            background: none;
+            border: 0;
+            padding: 0;
+            font-family: inherit;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-sub);
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            text-decoration-color: rgba(211, 201, 184, 0.45);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .footer-link:hover,
+        .footer-link:focus-visible {
+            color: var(--text-gold-light);
+            text-decoration-color: var(--text-gold);
+            outline: none;
+        }
+
+        .footer-link.primary {
+            color: var(--text-gold-light);
+            font-weight: 700;
+        }
+
+        .footer-link-sep {
+            color: rgba(158, 149, 132, 0.4);
+            font-size: 12px;
+        }
+
+        .footer-copyright {
+            margin-top: 14px;
+            font-size: 11.5px;
+            letter-spacing: 0.4px;
+            color: rgba(158, 149, 132, 0.72);
+        }
+
+        /* 하단 결제 바가 떠 있을 때 푸터가 가려지지 않도록 여백 확보 */
+        body:has(#sticky-paywall-bar.visible) .site-footer {
+            padding-bottom: 120px;
+        }
+
+        /* ============================================================
+           약관 / 개인정보 처리방침 모달
+           ============================================================ */
+        .legal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 2100;
+            display: none;
+            padding: 28px 14px;
+            background: rgba(6, 5, 4, 0.82);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            overflow-y: auto;
+        }
+
+        .legal-overlay.open {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .legal-dialog {
+            position: relative;
+            width: 100%;
+            max-width: 760px;
+            margin: auto;
+            background: linear-gradient(160deg, rgba(26, 22, 18, 0.99), rgba(16, 13, 11, 0.99));
+            border: 1px solid var(--border-gold);
+            border-radius: 10px;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.75);
+            overflow: hidden;
+            animation: legalFadeIn 0.22s ease;
+        }
+
+        @keyframes legalFadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .legal-dialog-header {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 16px 22px;
+            background: rgba(22, 18, 14, 0.99);
+            border-bottom: 1px solid var(--border-ink);
+        }
+
+        .legal-dialog-title {
+            font-size: 16.5px;
+            font-weight: 700;
+            color: var(--text-gold);
+            letter-spacing: 0.5px;
+        }
+
+        .legal-close-btn {
+            appearance: none;
+            flex: 0 0 auto;
+            width: 34px;
+            height: 34px;
+            border: 1px solid var(--border-ink);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-sub);
+            font-size: 17px;
+            line-height: 1;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .legal-close-btn:hover,
+        .legal-close-btn:focus-visible {
+            color: var(--text-gold-light);
+            border-color: var(--border-gold);
+            outline: none;
+        }
+
+        .legal-dialog-body {
+            max-height: min(72vh, 720px);
+            overflow-y: auto;
+            padding: 22px 24px 34px;
+            font-size: 13.5px;
+            line-height: 1.9;
+            color: var(--text-sub);
+            word-break: keep-all;
+        }
+
+        .legal-dialog-body .legal-effective {
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px dashed var(--border-ink);
+            font-size: 12.5px;
+            color: var(--text-muted);
+        }
+
+        .legal-dialog-body h3 {
+            margin: 24px 0 8px;
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--text-gold-light);
+        }
+
+        .legal-dialog-body h3:first-of-type {
+            margin-top: 0;
+        }
+
+        .legal-dialog-body p {
+            margin: 0 0 10px;
+        }
+
+        .legal-dialog-body ol,
+        .legal-dialog-body ul {
+            margin: 0 0 12px;
+            padding-left: 20px;
+        }
+
+        .legal-dialog-body li {
+            margin-bottom: 5px;
+        }
+
+        .legal-dialog-body .legal-note {
+            margin-top: 20px;
+            padding: 14px 16px;
+            border: 1px solid var(--border-ink);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.02);
+            font-size: 12.5px;
+            color: var(--text-muted);
+        }
+
+        body.legal-open {
+            overflow: hidden;
+        }
+
+        @media (max-width: 640px) {
+            .site-footer {
+                padding: 22px 16px 36px;
+                font-size: 12px;
+            }
+
+            .footer-info {
+                gap: 0 6px;
+            }
+
+            .legal-overlay {
+                padding: 14px 10px;
+            }
+
+            .legal-dialog-body {
+                max-height: 76vh;
+                padding: 18px 18px 28px;
+                font-size: 13px;
+            }
+
+            .legal-dialog-header {
+                padding: 14px 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2389,10 +2707,10 @@
     </header>
 
     <!-- ====================================================================
-         1단계: 초기 화면 - 카테고리 선택 (1행: 3대 주요 감정서 / 2행: 토정비결 + 준비중 4종)
+         1단계: 초기 화면 - 카테고리 선택 (1행: 4대 주요 감정서 / 2행: 토정비결 + 준비중 4종)
          ==================================================================== -->
     <section id="category-screen">
-        <!-- 1번째 줄: 메인 3대 감정서 (평생 사주, 인연과 궁합, 오늘의 운세) -->
+        <!-- 1번째 줄: 메인 4대 감정서 (평생 사주, 인연과 궁합, 오늘의 운세, 재회운) -->
         <div class="category-grid-primary">
             <!-- 1. 평생 사주 -->
             <div class="cat-card" onclick="openSajuForm('saju', '평생 사주', '평생의 명식과 사주팔자, 10년 대운과 부귀의 흐름')">
@@ -2436,6 +2754,22 @@
                     </div>
                     <h2 class="cat-title">오늘의 운세 (日運)</h2>
                     <p class="cat-desc">오늘 하루 귀인의 도움과 뜻밖의 횡재수, 마주칠 액운을 미리 살핍니다.</p>
+                </div>
+            </div>
+
+            <!-- 4. 재회운 -->
+            <div class="cat-card cat-card-reunion" onclick="openSajuForm('reunion', '재회운', '헤어진 두 사람의 인연의 끈, 재회 가능성과 연락 타이밍')">
+                <div class="cat-img-box wm-crop-container">
+                    <img src="icon_gunghap.png" alt="재회운" class="wm-crop-img">
+                    <span class="cat-ribbon">NEW</span>
+                </div>
+                <div class="cat-info">
+                    <div class="cat-tag-row">
+                        <span class="cat-hanja">再會 · 因緣</span>
+                        <span class="cat-arrow">문 열기 ➔</span>
+                    </div>
+                    <h2 class="cat-title">재회운 (再會)</h2>
+                    <p class="cat-desc">이별의 이유와 상대의 속마음, 연락 타이밍과 재회 가능성을 심층 풀이합니다.</p>
                 </div>
             </div>
         </div>
@@ -2644,8 +2978,8 @@
             <!-- 🌟 [인연과 궁합 전용] 상대방 사주 단자 입력 섹션 -->
             <div id="partner-saju-section" style="display: none; margin-top: 26px; padding-top: 22px; border-top: 1.5px dashed var(--border-gold);">
                 <div style="font-size: 15px; font-weight: 800; color: var(--text-gold-light); margin-bottom: 18px; padding-bottom: 8px; border-bottom: 1px solid var(--border-gold); display: flex; align-items: center; justify-content: space-between;">
-                    <span>✦ 상대방 (第二人) 사주 단자</span>
-                    <span style="font-size: 11px; color: var(--text-sub); font-weight: 500; letter-spacing: 0.5px;">궁합 감정 대상</span>
+                    <span id="partner-section-title-text">✦ 상대방 (第二人) 사주 단자</span>
+                    <span id="partner-section-badge" style="font-size: 11px; color: var(--text-sub); font-weight: 500; letter-spacing: 0.5px;">궁합 감정 대상</span>
                 </div>
 
                 <!-- 상대방 생년월일 -->
@@ -2801,7 +3135,7 @@
                 <div class="chip-icon">👤</div>
                 <div class="chip-content">
                     <span class="chip-label">성함</span>
-                    <span class="chip-val" id="res-user-name">홍길동</span>
+                    <span class="chip-val" id="res-user-name">선비</span>
                 </div>
             </div>
             <div class="meta-chip">
@@ -2916,7 +3250,7 @@
         <!-- [궁합 전용] 두 사람의 사주 명식 및 오행 분포 side-by-side 비교 프리뷰 -->
         <section id="gunghap-preview-section" class="section-chapter gunghap-preview-section" style="display: none;">
             <div class="gunghap-pair-banner">
-                <span class="pair-badge">천생연분 궁합 감정</span>
+                <span class="pair-badge" id="gh-pair-badge">천생연분 궁합 감정</span>
                 <h2 class="pair-title">
                     <span id="gh-u1-title">선비 (본인)</span>
                     <span class="pair-vs">✕</span>
@@ -3059,20 +3393,20 @@
             <!-- 🌟 [궁합 전용] 궁합 지수 티저 게이지 (? %) -->
             <div class="gunghap-teaser-gauge-card" id="gunghap-teaser-gauge-card" style="display: none;">
                 <div class="teaser-gauge-header">
-                    <span class="teaser-gauge-hanja">宮合指數 · 秘傳封印</span>
-                    <h3 class="teaser-gauge-main-title">두 사람의 천생연분 궁합 지수</h3>
+                    <span class="teaser-gauge-hanja" id="teaser-gauge-hanja">宮合指數 · 秘傳封印</span>
+                    <h3 class="teaser-gauge-main-title" id="teaser-gauge-main-title">두 사람의 천생연분 궁합 지수</h3>
                 </div>
                 <div class="teaser-gauge-circle-wrap">
                     <div class="teaser-gauge-ring">
                         <div class="teaser-gauge-inner">
                             <div class="teaser-gauge-qmark">? <span class="qmark-unit">%</span></div>
-                            <div class="teaser-gauge-locked-label">🔒 비전 봉인중</div>
+                            <div class="teaser-gauge-locked-label" id="teaser-gauge-locked-label">🔒 비전 봉인중</div>
                         </div>
                     </div>
                 </div>
                 <div class="teaser-gauge-footer">
-                    <div class="teaser-gauge-cta-headline">두 사람의 천생연분 지수는? <span class="teaser-highlight">(심층 운명서 결제 후 공개됩니다)</span></div>
-                    <p class="teaser-gauge-cta-desc">두 분의 사주에 깃든 음양오행의 상생상극과 백년해로의 비밀, 진짜 인연 점수를 심층 운명서에서 즉시 확인해 보십시오.</p>
+                    <div class="teaser-gauge-cta-headline" id="teaser-gauge-cta-headline">두 사람의 천생연분 지수는? <span class="teaser-highlight">(심층 운명서 결제 후 공개됩니다)</span></div>
+                    <p class="teaser-gauge-cta-desc" id="teaser-gauge-cta-desc">두 분의 사주에 깃든 음양오행의 상생상극과 백년해로의 비밀, 진짜 인연 점수를 심층 운명서에서 즉시 확인해 보십시오.</p>
                 </div>
             </div>
 
@@ -3110,6 +3444,45 @@
                         <div class="toc-content">
                             <strong class="toc-title">대운으로 보는 두 사람의 미래</strong>
                             <p class="toc-desc">함께할 때 펼쳐질 재물과 관운</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🌟 [재회운 전용] 결제창 직전 심층 운명서 목차 (조선 고서적 스타일) -->
+            <div class="gunghap-toc-card" id="reunion-toc-card" style="display: none;">
+                <div class="toc-header">
+                    <span class="toc-header-hanja" style="letter-spacing: 2px;">再會書 目次</span>
+                    <h4 class="toc-header-title">재회운 심층 운명서(再會書) 목차</h4>
+                    <span class="toc-header-sub">결제 즉시 열람 가능한 두 사람의 재회 비전</span>
+                </div>
+                <div class="toc-grid">
+                    <div class="toc-item">
+                        <span class="toc-num">제 1장</span>
+                        <div class="toc-content">
+                            <strong class="toc-title">어디서 어긋났을까</strong>
+                            <p class="toc-desc">이별의 구조와 반복된 다툼의 뇌관</p>
+                        </div>
+                    </div>
+                    <div class="toc-item">
+                        <span class="toc-num">제 2장</span>
+                        <div class="toc-content">
+                            <strong class="toc-title">두 사람의 기운 비교</strong>
+                            <p class="toc-desc">끌렸던 이유와 어긋난 지점</p>
+                        </div>
+                    </div>
+                    <div class="toc-item">
+                        <span class="toc-num">제 3장</span>
+                        <div class="toc-content">
+                            <strong class="toc-title">그 사람의 속마음과 연락 타이밍</strong>
+                            <p class="toc-desc">지금 나를 어떻게 생각하는가</p>
+                        </div>
+                    </div>
+                    <div class="toc-item">
+                        <span class="toc-num">제 4장</span>
+                        <div class="toc-content">
+                            <strong class="toc-title">재회 가능성과 다음 인연</strong>
+                            <p class="toc-desc">재회 지수 · 문이 열리는 시기 · 관계 비책</p>
                         </div>
                     </div>
                 </div>
@@ -3262,6 +3635,256 @@
     </aside>
 </div>
 
+<!-- ============================================================
+     하단 사업자 정보 및 약관 링크 푸터
+     ============================================================ -->
+<footer class="site-footer">
+    <div class="footer-brand-row">
+        <span class="footer-stamp" aria-hidden="true">硏究所</span>
+        <span class="footer-brand">명리학연구소</span>
+    </div>
+
+    <div class="footer-info">
+        <span>상호 <span class="footer-strong">명리학연구소</span></span>
+        <span class="footer-divider" aria-hidden="true">|</span>
+        <span>대표 <span class="footer-strong">변인석</span></span>
+        <span class="footer-divider" aria-hidden="true">|</span>
+        <span>사업자등록번호 <span class="footer-strong">383-48-01319</span></span>
+    </div>
+
+    <div class="footer-info">
+        <span>업태 도매 및 소매업</span>
+        <span class="footer-divider" aria-hidden="true">|</span>
+        <span>종목 전자상거래 소매업</span>
+    </div>
+
+    <div class="footer-info">
+        <span>전화 <span class="footer-strong">010-4620-9496</span></span>
+        <span class="footer-divider" aria-hidden="true">|</span>
+        <span>이메일 <span class="footer-strong">ekdekekd@naver.com</span></span>
+    </div>
+
+    <div class="footer-info">
+        <span>주소 경기도 화성시 병점구 효행로 1338-44, 105동 503호 (반월동, 신동탄 롯데캐슬)</span>
+    </div>
+
+    <nav class="footer-links" aria-label="약관 및 정책 안내">
+        <button type="button" class="footer-link primary" onclick="openLegal('terms')">서비스 이용약관</button>
+        <span class="footer-link-sep" aria-hidden="true">|</span>
+        <button type="button" class="footer-link" onclick="openLegal('privacy')">개인정보 처리방침</button>
+    </nav>
+
+    <p class="footer-copyright">© 2026 명리학연구소. All rights reserved.</p>
+</footer>
+
+<!-- ============================================================
+     서비스 이용약관 모달
+     ============================================================ -->
+<div class="legal-overlay" id="legal-terms" role="dialog" aria-modal="true" aria-labelledby="legal-terms-title" aria-hidden="true"
+     onclick="if (event.target === this) closeLegal(this)">
+    <div class="legal-dialog">
+        <div class="legal-dialog-header">
+            <span class="legal-dialog-title" id="legal-terms-title">서비스 이용약관</span>
+            <button type="button" class="legal-close-btn" aria-label="약관 닫기" onclick="closeLegal('legal-terms')">✕</button>
+        </div>
+        <div class="legal-dialog-body">
+            <p class="legal-effective">시행일: 2026년 10월 2일</p>
+
+            <h3>제1조 (목적)</h3>
+            <p>본 약관은 명리학연구소(이하 “회사”)가 운영하는 웹사이트에서 제공하는 사주·명리 상담 및 디지털 콘텐츠 서비스(이하 “서비스”)의 이용과 관련하여 회사와 이용자 간의 권리, 의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로 합니다.</p>
+
+            <h3>제2조 (정의)</h3>
+            <ol>
+                <li>“서비스”란 회사가 웹사이트를 통해 제공하는 평생 사주, 인연과 궁합, 오늘의 운세, 토정비결 등 명리 기반 콘텐츠와 이에 부수하는 서비스를 말합니다.</li>
+                <li>“이용자”란 본 약관에 동의하고 회사가 제공하는 서비스를 이용하는 자를 말합니다.</li>
+                <li>“유료 콘텐츠”란 이용자가 대금을 지급하고 이용하는 심층 운명서 등 디지털 형태의 콘텐츠를 말합니다.</li>
+            </ol>
+
+            <h3>제3조 (약관의 게시와 개정)</h3>
+            <ol>
+                <li>회사는 본 약관을 서비스 화면 하단 또는 연결 화면에 게시합니다.</li>
+                <li>회사는 「약관의 규제에 관한 법률」 등 관련 법령을 위배하지 않는 범위에서 본 약관을 개정할 수 있습니다.</li>
+                <li>약관을 개정하는 경우 회사는 적용일자 및 개정 사유를 명시하여 적용일자 7일 전부터 공지합니다. 다만 이용자에게 불리한 변경의 경우 30일 전부터 공지합니다.</li>
+                <li>이용자가 개정 약관의 적용일 이후에도 서비스를 계속 이용하는 경우 개정 약관에 동의한 것으로 봅니다.</li>
+            </ol>
+
+            <h3>제4조 (이용계약의 성립)</h3>
+            <ol>
+                <li>이용계약은 이용자가 본 약관 및 개인정보 처리방침에 동의하고 회사가 정한 절차에 따라 서비스 이용을 신청함으로써 성립합니다.</li>
+                <li>회사는 다음 각 호에 해당하는 경우 이용 신청을 승낙하지 않거나 사후에 이용계약을 해지할 수 있습니다.
+                    <ul>
+                        <li>타인의 정보를 도용하거나 허위 정보를 기재한 경우</li>
+                        <li>서비스의 정상적인 운영을 방해한 경우</li>
+                        <li>관련 법령 또는 본 약관을 위반한 경우</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h3>제5조 (서비스의 제공 및 변경)</h3>
+            <ol>
+                <li>회사는 다음 각 호의 서비스를 제공합니다.
+                    <ul>
+                        <li>사주팔자 기반 성향·재물·직업·인연·대운 분석</li>
+                        <li>인연과 궁합 분석</li>
+                        <li>오늘의 운세 및 토정비결</li>
+                        <li>기타 회사가 정하여 제공하는 명리 콘텐츠</li>
+                    </ul>
+                </li>
+                <li>서비스는 연중무휴 24시간 제공을 원칙으로 합니다. 다만 시스템 점검·교체, 통신 장애, 천재지변 등 부득이한 사유가 있는 경우 서비스가 일시적으로 중단될 수 있습니다.</li>
+                <li>회사는 서비스의 내용과 품질을 개선하기 위해 서비스의 전부 또는 일부를 변경할 수 있으며, 중요한 변경 사항은 사전에 공지합니다.</li>
+            </ol>
+
+            <h3>제6조 (대금의 결제 및 청약철회·환불)</h3>
+            <ol>
+                <li>유료 콘텐츠의 대금은 회사가 정한 결제수단(신용카드, 간편결제 등)으로 지급합니다.</li>
+                <li>이용자는 결제일로부터 7일 이내에 청약철회를 할 수 있습니다. 다만 「전자상거래 등에서의 소비자보호에 관한 법률」 제17조 제2항에 따라, 이용자가 유료 콘텐츠의 제공을 개시받아 이를 열람·이용한 경우에는 청약철회가 제한될 수 있습니다.</li>
+                <li>회사의 귀책사유로 콘텐츠가 제공되지 않았거나 표시·광고한 내용과 다르게 제공된 경우에는 전액 환불합니다.</li>
+                <li>환불은 결제에 사용한 수단으로 처리되며, 카드사 또는 결제대행사의 사정에 따라 환불 완료까지 일정 기간이 소요될 수 있습니다.</li>
+            </ol>
+
+            <h3>제7조 (이용자의 의무)</h3>
+            <ol>
+                <li>이용자는 관련 법령, 본 약관 및 서비스 이용 안내를 준수하여야 합니다.</li>
+                <li>이용자는 다음 각 호의 행위를 하여서는 안 됩니다.
+                    <ul>
+                        <li>타인의 개인정보를 도용하는 행위</li>
+                        <li>콘텐츠를 무단으로 복제·배포·판매하거나 2차적 저작물을 작성하는 행위</li>
+                        <li>서비스의 운영을 방해하거나 비정상적인 방법으로 접속하는 행위</li>
+                        <li>자동화 수단을 이용하여 콘텐츠를 대량으로 수집하는 행위</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h3>제8조 (지식재산권)</h3>
+            <p>서비스와 콘텐츠에 관한 저작권 등 지식재산권은 회사에 귀속됩니다. 이용자는 회사의 사전 승낙 없이 콘텐츠를 영리 목적으로 이용하거나 제3자에게 제공할 수 없습니다.</p>
+
+            <h3>제9조 (서비스 이용의 제한 및 계약 해지)</h3>
+            <p>회사는 이용자가 본 약관을 위반한 경우 사전 통지 후 서비스 이용을 제한하거나 이용계약을 해지할 수 있습니다. 다만 긴급한 사유가 있는 경우 사후에 통지할 수 있습니다.</p>
+
+            <h3>제10조 (책임의 제한 및 면책)</h3>
+            <ol>
+                <li>본 서비스가 제공하는 사주·운세 콘텐츠는 전통 명리학에 기반한 참고 및 오락 목적의 정보이며, 의료·법률·투자·세무 등 전문적 조언을 대체하지 않습니다.</li>
+                <li>이용자는 콘텐츠를 참고하여 내린 결정에 대해 스스로 책임을 부담하며, 회사는 이용자의 의사결정 결과에 대하여 책임지지 않습니다.</li>
+                <li>회사는 천재지변, 통신 장애, 제3자의 불법 행위 등 회사의 합리적 통제를 벗어난 사유로 인한 손해에 대하여 책임지지 않습니다.</li>
+            </ol>
+
+            <h3>제11조 (분쟁의 해결)</h3>
+            <ol>
+                <li>본 약관은 대한민국 법률에 따라 해석되고 적용됩니다.</li>
+                <li>회사와 이용자 간에 발생한 분쟁은 상호 협의로 해결하며, 협의가 이루어지지 않는 경우 관할 법원은 「민사소송법」에 따릅니다.</li>
+            </ol>
+
+            <h3>부칙</h3>
+            <p>본 약관은 2026년 10월 2일부터 시행합니다.</p>
+
+            <p class="legal-note">문의처: 명리학연구소 (대표 변인석) · 전화 010-4620-9496 · 이메일 ekdekekd@naver.com</p>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     개인정보 처리방침 모달
+     ============================================================ -->
+<div class="legal-overlay" id="legal-privacy" role="dialog" aria-modal="true" aria-labelledby="legal-privacy-title" aria-hidden="true"
+     onclick="if (event.target === this) closeLegal(this)">
+    <div class="legal-dialog">
+        <div class="legal-dialog-header">
+            <span class="legal-dialog-title" id="legal-privacy-title">개인정보 처리방침</span>
+            <button type="button" class="legal-close-btn" aria-label="개인정보 처리방침 닫기" onclick="closeLegal('legal-privacy')">✕</button>
+        </div>
+        <div class="legal-dialog-body">
+            <p class="legal-effective">공고일: 2026년 10월 2일 · 시행일: 2026년 10월 2일</p>
+
+            <p>명리학연구소(이하 “회사”)는 이용자의 개인정보를 소중히 여기며, 「개인정보 보호법」 등 관련 법령을 준수하기 위하여 다음과 같이 개인정보 처리방침을 수립·공개합니다.</p>
+
+            <h3>1. 수집하는 개인정보 항목</h3>
+            <ul>
+                <li><strong>서비스 이용 시(필수):</strong> 이름 또는 닉네임, 성별, 생년월일, 출생시간, 양력·음력 구분, 윤달 여부</li>
+                <li><strong>유료 콘텐츠 결제 시:</strong> 결제수단 정보 및 결제 승인 내역 (결제는 결제대행사를 통해 처리되며, 회사는 카드번호 전체를 저장하지 않습니다)</li>
+                <li><strong>자동 수집 항목:</strong> 접속 IP, 브라우저 종류 및 버전, 접속 일시, 서비스 이용 기록</li>
+            </ul>
+
+            <h3>2. 개인정보의 수집·이용 목적</h3>
+            <ul>
+                <li>사주팔자 산출 및 이용자별 맞춤형 콘텐츠 제공</li>
+                <li>유료 콘텐츠의 결제, 환불 및 이용 관리</li>
+                <li>서비스 품질 개선과 이용 통계 분석</li>
+                <li>고객 문의 응대 및 서비스 관련 공지 전달</li>
+            </ul>
+
+            <h3>3. 개인정보의 보유 및 이용기간</h3>
+            <p>회사는 수집·이용 목적이 달성되면 지체 없이 개인정보를 파기합니다. 다만 관련 법령에 따라 다음 기간 동안 보관합니다.</p>
+            <ul>
+                <li>서비스 이용 기록: 이용계약 종료 시까지</li>
+                <li>계약 또는 청약철회 등에 관한 기록: 5년 (전자상거래 등에서의 소비자보호에 관한 법률)</li>
+                <li>대금 결제 및 재화 등의 공급에 관한 기록: 5년 (전자상거래 등에서의 소비자보호에 관한 법률)</li>
+                <li>소비자 불만 또는 분쟁 처리에 관한 기록: 3년 (전자상거래 등에서의 소비자보호에 관한 법률)</li>
+                <li>접속에 관한 기록: 3개월 (통신비밀보호법)</li>
+            </ul>
+
+            <h3>4. 개인정보의 제3자 제공</h3>
+            <p>회사는 원칙적으로 이용자의 개인정보를 제3자에게 제공하지 않습니다. 다만 다음 각 호의 경우에는 예외로 합니다.</p>
+            <ul>
+                <li>이용자가 사전에 별도로 동의한 경우</li>
+                <li>법령의 규정에 따라 수사기관 등이 적법한 절차로 요구하는 경우</li>
+            </ul>
+
+            <h3>5. 개인정보 처리의 위탁</h3>
+            <p>회사는 원활한 서비스 제공을 위해 다음과 같이 개인정보 처리 업무를 위탁할 수 있습니다.</p>
+            <ul>
+                <li><strong>결제대행사:</strong> 결제 승인, 취소 및 환불 처리</li>
+                <li><strong>클라우드 호스팅 사업자:</strong> 서비스 서버 운영 및 데이터 보관</li>
+            </ul>
+            <p>회사는 위탁계약 체결 시 개인정보 보호 관련 법령에 따라 안전한 처리를 위한 조치를 이행하며, 위탁 내용이 변경되는 경우 본 방침을 통해 공개합니다.</p>
+
+            <h3>6. 이용자 및 법정대리인의 권리와 행사 방법</h3>
+            <ul>
+                <li>이용자는 언제든지 자신의 개인정보에 대한 열람, 정정, 삭제, 처리정지를 요구할 수 있습니다.</li>
+                <li>권리 행사는 서비스 내 문의처 또는 아래 개인정보 보호책임자에게 서면·전화·이메일로 요청할 수 있으며, 회사는 지체 없이 조치합니다.</li>
+                <li>만 14세 미만 아동의 개인정보는 법정대리인의 동의 없이 수집하지 않습니다.</li>
+            </ul>
+
+            <h3>7. 개인정보의 파기 절차 및 방법</h3>
+            <ul>
+                <li><strong>파기 절차:</strong> 보유기간이 경과하거나 처리 목적이 달성된 개인정보는 내부 절차에 따라 지체 없이 파기합니다.</li>
+                <li><strong>파기 방법:</strong> 전자적 파일은 복구할 수 없는 방법으로 삭제하고, 종이 문서는 분쇄하거나 소각합니다.</li>
+            </ul>
+
+            <h3>8. 쿠키의 운영 및 거부 방법</h3>
+            <p>회사는 이용자의 편의를 위해 쿠키를 사용할 수 있습니다. 이용자는 웹브라우저의 설정을 통해 쿠키 저장을 허용하거나 거부할 수 있으며, 쿠키 저장을 거부하는 경우 일부 서비스 이용에 제한이 있을 수 있습니다.</p>
+
+            <h3>9. 개인정보의 안전성 확보 조치</h3>
+            <ul>
+                <li>개인정보에 접근할 수 있는 인원을 최소화하고 접근 권한을 관리합니다.</li>
+                <li>개인정보 전송 구간을 암호화(HTTPS)하여 보호합니다.</li>
+                <li>접속 기록을 보관하고 위조·변조를 방지합니다.</li>
+            </ul>
+
+            <h3>10. 개인정보 보호책임자</h3>
+            <ul>
+                <li><strong>성명:</strong> 변인석 (대표)</li>
+                <li><strong>주소:</strong> 경기도 화성시 병점구 효행로 1338-44, 105동 503호 (반월동, 신동탄 롯데캐슬)</li>
+                <li><strong>연락처:</strong> 010-4620-9496</li>
+                <li><strong>이메일:</strong> ekdekekd@naver.com</li>
+            </ul>
+            <p>이용자는 개인정보와 관련한 문의를 위 연락처로 할 수 있으며, 회사는 지체 없이 답변하겠습니다.</p>
+
+            <h3>11. 권익침해 구제 방법</h3>
+            <p>개인정보 침해에 대한 신고나 상담이 필요한 경우 아래 기관에 문의할 수 있습니다.</p>
+            <ul>
+                <li>개인정보보호위원회: privacy.go.kr / 국번 없이 182</li>
+                <li>한국인터넷진흥원 개인정보침해신고센터: privacy.kisa.or.kr / 국번 없이 118</li>
+                <li>대검찰청 사이버수사과: spo.go.kr / 국번 없이 1301</li>
+            </ul>
+
+            <h3>12. 고지의 의무</h3>
+            <p>본 방침의 내용이 추가·삭제·수정되는 경우 회사는 시행 7일 전부터 서비스 화면을 통해 공지합니다.</p>
+
+            <p class="legal-note">본 방침은 2026년 10월 2일부터 적용됩니다.</p>
+        </div>
+    </div>
+</div>
+
 <!-- ==========================================================================
    자바스크립트 로직: UX 화면 전환 & 백엔드 main.py 연동 완벽 보존
    ========================================================================== -->
@@ -3276,8 +3899,15 @@
         });
     }
 
-    // 현재 선택된 카테고리 (saju, gunghap, today, tojeong)
+    // 현재 선택된 카테고리 (saju, gunghap, today, tojeong, reunion)
     let currentCategory = 'saju';
+
+    // 결제/리포트 복원 상태
+    const PAYMENT_PENDING_KEY = 'saju_pending_payment_v1';
+    let lastAnalysisData = null;
+    let paymentInProgress = false;
+    let reportUnlocked = false;
+    let paymentToastTimer = null;
 
     /**
      * [UX 요구사항] 카테고리 클릭 시 화면 전환 (Fade-out -> Fade-in) 및 궁합 폼 동적 확장
@@ -3321,18 +3951,36 @@
         const submitBtn = document.getElementById('submit-btn');
         const partnerSection = document.getElementById('partner-saju-section');
         const user1Title = document.getElementById('user1-section-title');
+        const partnerSectionTitle = document.getElementById('partner-section-title-text');
+        const partnerSectionBadge = document.getElementById('partner-section-badge');
+        const partnerNameInput = document.getElementById('partner_name');
 
         if (badge) badge.textContent = categoryName;
         if (descEl && categoryDesc) {
             descEl.textContent = `${categoryDesc} - 사주 단자를 적어 올리시오.`;
         }
 
-        // [인연과 궁합] 카테고리일 때만 폼을 확장하여 두 사람 정보 입력 UI 가동
-        if (currentCategory === 'gunghap') {
-            if (titleEl) titleEl.textContent = "두 사람의 사주 단자를 적어 올리시오";
+        // [인연과 궁합 / 재회운] 두 사람의 사주 단자를 받는 카테고리
+        const isPairCategory = (currentCategory === 'gunghap' || currentCategory === 'reunion');
+
+        if (isPairCategory) {
+            if (currentCategory === 'reunion') {
+                if (titleEl) titleEl.textContent = "헤어진 두 사람의 사주 단자를 적어 올리시오";
+                if (user1Title) user1Title.textContent = "✦ 나 (第一人)의 사주 단자";
+                if (partnerSectionTitle) partnerSectionTitle.textContent = "✦ 전 연인 (第二人) 사주 단자";
+                if (partnerSectionBadge) partnerSectionBadge.textContent = "재회운 감정 대상";
+                if (partnerNameInput) partnerNameInput.placeholder = "미입력 시 '그 사람'으로 불리옵니다";
+                if (submitBtn) submitBtn.innerHTML = "<span>재회운 단자 올리기 ➔</span>";
+            } else {
+                if (titleEl) titleEl.textContent = "두 사람의 사주 단자를 적어 올리시오";
+                if (user1Title) user1Title.textContent = "✦ 본인 (第一人) 사주 단자";
+                if (partnerSectionTitle) partnerSectionTitle.textContent = "✦ 상대방 (第二人) 사주 단자";
+                if (partnerSectionBadge) partnerSectionBadge.textContent = "궁합 감정 대상";
+                if (partnerNameInput) partnerNameInput.placeholder = "미입력 시 '인연'으로 불리옵니다";
+                if (submitBtn) submitBtn.innerHTML = "<span>두 분의 궁합 단자 올리기 ➔</span>";
+            }
             if (user1Title) user1Title.style.display = 'block';
             if (partnerSection) partnerSection.style.display = 'block';
-            if (submitBtn) submitBtn.innerHTML = "<span>두 분의 궁합 단자 올리기 ➔</span>";
         } else {
             if (titleEl) titleEl.textContent = "이곳에 사주 단자를 적어 올리시오";
             if (user1Title) user1Title.style.display = 'none';
@@ -3536,6 +4184,27 @@
     function renderStructuredSajuResult(apiData) {
         if (!apiData) return;
 
+        // 새 리포트를 렌더링할 때는 항상 잠금 상태에서 시작한다.
+        reportUnlocked = false;
+        paymentInProgress = false;
+
+        // 이전 결제에서 잠금 해제된 버튼 상태를 초기화한다.
+        const unlockBtnReset = document.getElementById('btn-unlock-inline');
+        if (unlockBtnReset) {
+            unlockBtnReset.disabled = false;
+            unlockBtnReset.style.background = '';
+            unlockBtnReset.style.borderColor = '';
+        }
+        const stickyCtaReset = document.getElementById('sticky-cta-btn');
+        if (stickyCtaReset) {
+            stickyCtaReset.disabled = false;
+            stickyCtaReset.style.background = '';
+            stickyCtaReset.style.borderColor = '';
+            if (!document.getElementById('sticky-cta-text')) {
+                stickyCtaReset.innerHTML = '<span id="sticky-cta-text"></span>';
+            }
+        }
+
         const interpretation = apiData.interpretation || "";
         const userInfo = apiData.user_info || {};
         const pillarsDetail = apiData.pillars_detail || {};
@@ -3549,6 +4218,9 @@
         if (activeCat === 'gunghap') {
             if (heroTitle) heroTitle.textContent = "인연과 궁합 감정 결과지";
             if (heroSub) heroSub.textContent = "두 사람의 명식을 대조하여 음양오행의 상생상극과 백년가약의 비책을 풀이하였소이다.";
+        } else if (activeCat === 'reunion') {
+            if (heroTitle) heroTitle.textContent = "재회운 감정 결과지";
+            if (heroSub) heroSub.textContent = "헤어진 두 사람의 명식을 대조하여 이별의 이유와 재회의 문이 열리는 시기를 풀이하였소이다.";
         } else if (activeCat === 'today') {
             if (heroTitle) heroTitle.textContent = "오늘의 운세 감정 결과지";
             if (heroSub) heroSub.textContent = "금일 일진(日辰)과 선비님의 본원을 대조하여 하루의 길흉화복을 풀이하였소이다.";
@@ -3570,12 +4242,13 @@
         if (timeEl) timeEl.textContent = formatSajuTimeLabel(userInfo.birth_time || "10:30");
         if (genderEl) genderEl.textContent = (userInfo.gender === 'F') ? "여성 (坤命)" : "남성 (乾命)";
 
-        // 카테고리별 맞춤 UI 분기: 평생 사주, 궁합, 오늘의 운세, 토정비결
+        // 카테고리별 맞춤 UI 분기: 평생 사주, 궁합, 재회운, 오늘의 운세, 토정비결
         const ch1Area = document.getElementById('chapter-one-area');
         const chNature = document.querySelector('.chapter-nature');
         const chReality = document.querySelector('.chapter-reality');
         const paywallToc = document.getElementById('paywall-toc-card');
         const gunghapToc = document.getElementById('gunghap-toc-card');
+        const reunionToc = document.getElementById('reunion-toc-card');
         const gunghapGauge = document.getElementById('gunghap-teaser-gauge-card');
         const todayToc = document.getElementById('today-toc-card');
         const singleBaziSection = document.getElementById('single-bazi-section');
@@ -3585,8 +4258,9 @@
         const lockBannerDesc = document.querySelector('.lock-banner-desc');
         const boundaryText = document.querySelector('.boundary-text');
 
-        if (activeCat === 'gunghap') {
-            // 1. [궁합 전용] 두 사람의 명식 나란히 비교 프리뷰, 궁합 지수 티저(? %) 및 전용 목차
+        if (activeCat === 'gunghap' || activeCat === 'reunion') {
+            // 1. [궁합 / 재회운 전용] 두 사람의 명식 나란히 비교 프리뷰, 지수 티저(? %) 및 전용 목차
+            const isReunion = (activeCat === 'reunion');
             if (singleBaziSection) singleBaziSection.style.display = 'none';
             if (todayDashboardSection) todayDashboardSection.style.display = 'none';
             if (gunghapPreviewSection) gunghapPreviewSection.style.display = 'block';
@@ -3598,15 +4272,36 @@
             if (paywallToc) paywallToc.style.display = 'none';
             if (todayToc) todayToc.style.display = 'none';
 
-            // 🌟 궁합 지수 티저 게이지(? %) 및 결제창 직전 심층 운명서 목차 노출
-            window.currentGunghapScore = (typeof apiData.gunghap_score === 'number') ? apiData.gunghap_score : 88;
+            // 🌟 지수 티저 게이지(? %) 및 결제창 직전 심층 운명서 목차 노출
+            window.currentGaugeMode = isReunion ? 'reunion' : 'gunghap';
+            window.currentGunghapScore = isReunion
+                ? ((typeof apiData.reunion_score === 'number') ? apiData.reunion_score : 62)
+                : ((typeof apiData.gunghap_score === 'number') ? apiData.gunghap_score : 88);
             resetGunghapGaugeTeaser();
             if (gunghapGauge) gunghapGauge.style.display = 'block';
-            if (gunghapToc) gunghapToc.style.display = 'block';
+            if (isReunion) {
+                if (gunghapToc) gunghapToc.style.display = 'none';
+                if (reunionToc) reunionToc.style.display = 'block';
+            } else {
+                if (gunghapToc) gunghapToc.style.display = 'block';
+                if (reunionToc) reunionToc.style.display = 'none';
+            }
 
-            if (boundaryText) boundaryText.textContent = "― 인연의 깊이와 백년해로 개운 비책 ―";
-            if (lockBannerTitle) lockBannerTitle.textContent = "무료 궁합 감정에서는 여기까지 확인할 수 있습니다.";
-            if (lockBannerDesc) lockBannerDesc.textContent = "두 사람의 오행 상생상극과 전생 인연, 백년해로를 위한 3대 관계 개운 비책의 모든 풀이를 열람하실 수 있습니다.";
+            const ghPairBadge = document.getElementById('gh-pair-badge');
+            const ghPairDesc = document.getElementById('gh-pair-relation-desc');
+            if (isReunion) {
+                if (ghPairBadge) ghPairBadge.textContent = '재회운 심층 감정';
+                if (ghPairDesc) ghPairDesc.textContent = '헤어진 두 사람의 사주 명식을 맞대어 이별의 이유와 재회의 문이 열리는 시기를 풀이하였소이다.';
+                if (boundaryText) boundaryText.textContent = "― 이별의 이유와 재회의 문이 열리는 시기 ―";
+                if (lockBannerTitle) lockBannerTitle.textContent = "무료 재회운에서는 여기까지 확인할 수 있습니다.";
+                if (lockBannerDesc) lockBannerDesc.textContent = "헤어진 진짜 이유와 상대의 속마음, 연락 타이밍과 재회 가능성, 다시 만난 뒤의 관계 비책까지 모든 풀이를 열람하실 수 있습니다.";
+            } else {
+                if (ghPairBadge) ghPairBadge.textContent = '천생연분 궁합 감정';
+                if (ghPairDesc) ghPairDesc.textContent = '두 분의 사주 명식을 맞대어 음양오행의 상생상극과 백년해로의 기운을 풀이하였소이다.';
+                if (boundaryText) boundaryText.textContent = "― 인연의 깊이와 백년해로 개운 비책 ―";
+                if (lockBannerTitle) lockBannerTitle.textContent = "무료 궁합 감정에서는 여기까지 확인할 수 있습니다.";
+                if (lockBannerDesc) lockBannerDesc.textContent = "두 사람의 오행 상생상극과 전생 인연, 백년해로를 위한 3대 관계 개운 비책의 모든 풀이를 열람하실 수 있습니다.";
+            }
 
             // 두 사람 데이터 바인딩
             const partnerInfo = apiData.partner_info || {};
@@ -3616,7 +4311,7 @@
 
             const u1Name = userInfo.name || "선비";
             const u2GenderWord = (partnerInfo.gender === 'M') ? "선비" : "낭자";
-            const u2Name = partnerInfo.name ? `${partnerInfo.name}` : u2GenderWord;
+            const u2Name = partnerInfo.name ? `${partnerInfo.name}` : (isReunion ? "그 사람" : u2GenderWord);
 
             const ghU1Title = document.getElementById('gh-u1-title');
             const ghU2Title = document.getElementById('gh-u2-title');
@@ -3644,6 +4339,7 @@
             if (gunghapPreviewSection) gunghapPreviewSection.style.display = 'none';
             if (gunghapGauge) gunghapGauge.style.display = 'none';
             if (gunghapToc) gunghapToc.style.display = 'none';
+            if (reunionToc) reunionToc.style.display = 'none';
             if (paywallToc) paywallToc.style.display = 'none';
             if (ch1Area) ch1Area.style.display = 'none';
             if (chNature) chNature.style.display = 'none';
@@ -3686,6 +4382,7 @@
             if (todayDashboardSection) todayDashboardSection.style.display = 'none';
             if (gunghapGauge) gunghapGauge.style.display = 'none';
             if (gunghapToc) gunghapToc.style.display = 'none';
+            if (reunionToc) reunionToc.style.display = 'none';
             if (todayToc) todayToc.style.display = 'none';
             if (singleBaziSection) singleBaziSection.style.display = '';
             if (ch1Area) ch1Area.style.display = 'none';
@@ -3706,6 +4403,7 @@
             if (todayDashboardSection) todayDashboardSection.style.display = 'none';
             if (gunghapGauge) gunghapGauge.style.display = 'none';
             if (gunghapToc) gunghapToc.style.display = 'none';
+            if (reunionToc) reunionToc.style.display = 'none';
             if (todayToc) todayToc.style.display = 'none';
             if (singleBaziSection) singleBaziSection.style.display = '';
 
@@ -3740,19 +4438,27 @@
         },
         gunghap: {
             title: "두 사람의 백년해로 궁합 심층 비전",
-            originPrice: "29,000원",
+            originPrice: "24,500원",
             discount: "80% 할인",
-            finalPrice: "5,900원",
-            finalNum: "5,900",
-            btnLabel: "궁합 비전 열기 (5,900원) 🔒"
+            finalPrice: "4,900원",
+            finalNum: "4,900",
+            btnLabel: "궁합 비전 열기 (4,900원) 🔒"
+        },
+        reunion: {
+            title: "두 사람의 재회 가능성 심층 비전",
+            originPrice: "14,500원",
+            discount: "80% 할인",
+            finalPrice: "2,900원",
+            finalNum: "2,900",
+            btnLabel: "재회운 비전 열기 (2,900원) 🔒"
         },
         tojeong: {
             title: "올 한 해 토정비결 신수 심층 비결서",
-            originPrice: "29,000원",
+            originPrice: "39,500원",
             discount: "80% 할인",
-            finalPrice: "5,900원",
-            finalNum: "5,900",
-            btnLabel: "토정비결 열기 (5,900원) 🔒"
+            finalPrice: "7,900원",
+            finalNum: "7,900",
+            btnLabel: "토정비결 열기 (7,900원) 🔒"
         },
         today: {
             title: "금일 하루 일진 & 승부 비책 리포트",
@@ -4131,14 +4837,14 @@
             const rawHeader = lines[0].replace(/^###\s*/, '').trim();
             const contentMarkdown = lines.slice(1).join('\n').trim();
 
-            const emojiMatch = rawHeader.match(/([\u{1F300}-\u{1FAFF}]|[\u2600-\u26FF]|\u2764\uFE0F?)/u);
+            const emojiMatch = rawHeader.match(/([\u{1F300}-\u{1FAFF}][\uFE0F]?|[\u2600-\u27BF][\uFE0F]?)/u);
             const icon = emojiMatch ? emojiMatch[0] : '📜';
 
             const tagMatch = rawHeader.match(/\((.*?)\)/);
             const tag = tagMatch ? tagMatch[1] : '';
 
             const title = rawHeader
-                .replace(/([\u{1F300}-\u{1FAFF}]|[\u2600-\u26FF]|\u2764\uFE0F?)/u, '')
+                .replace(/([\u{1F300}-\u{1FAFF}][\uFE0F]?|[\u2600-\u27BF][\uFE0F]?)/u, '')
                 .replace(/\(.*?\)/, '')
                 .replace(/^[•\-\*\s]+/, '')
                 .trim();
@@ -4233,26 +4939,39 @@
     }
 
     function resetGunghapGaugeTeaser() {
+        const isReunion = (window.currentGaugeMode === 'reunion');
         const qmarkEl = document.querySelector('.teaser-gauge-qmark');
         if (qmarkEl) {
             qmarkEl.innerHTML = '? <span class="qmark-unit">%</span>';
             qmarkEl.style.color = '';
             qmarkEl.style.textShadow = '';
         }
-        const lockedLabelEl = document.querySelector('.teaser-gauge-locked-label');
+        const lockedLabelEl = document.getElementById('teaser-gauge-locked-label') || document.querySelector('.teaser-gauge-locked-label');
         if (lockedLabelEl) {
-            lockedLabelEl.textContent = '🔒 비전 봉인중';
+            lockedLabelEl.textContent = isReunion ? '🔒 인연 봉인중' : '🔒 비전 봉인중';
             lockedLabelEl.style.background = '';
             lockedLabelEl.style.borderColor = '';
             lockedLabelEl.style.color = '';
         }
-        const ctaHeadlineEl = document.querySelector('.teaser-gauge-cta-headline');
+        const ctaHeadlineEl = document.getElementById('teaser-gauge-cta-headline') || document.querySelector('.teaser-gauge-cta-headline');
         if (ctaHeadlineEl) {
-            ctaHeadlineEl.innerHTML = '두 사람의 천생연분 지수는? <span class="teaser-highlight">(심층 운명서 결제 후 공개됩니다)</span>';
+            ctaHeadlineEl.innerHTML = isReunion
+                ? '두 사람의 재회 가능성은? <span class="teaser-highlight">(심층 운명서 결제 후 공개됩니다)</span>'
+                : '두 사람의 천생연분 지수는? <span class="teaser-highlight">(심층 운명서 결제 후 공개됩니다)</span>';
         }
-        const hanjaEl = document.querySelector('.teaser-gauge-hanja');
+        const hanjaEl = document.getElementById('teaser-gauge-hanja') || document.querySelector('.teaser-gauge-hanja');
         if (hanjaEl) {
-            hanjaEl.textContent = '宮合指數 · 秘傳封印';
+            hanjaEl.textContent = isReunion ? '再會指數 · 秘傳封印' : '宮合指數 · 秘傳封印';
+        }
+        const titleEl = document.getElementById('teaser-gauge-main-title') || document.querySelector('.teaser-gauge-main-title');
+        if (titleEl) {
+            titleEl.textContent = isReunion ? '두 사람의 재회 가능성 지수' : '두 사람의 천생연분 궁합 지수';
+        }
+        const descEl = document.getElementById('teaser-gauge-cta-desc') || document.querySelector('.teaser-gauge-cta-desc');
+        if (descEl) {
+            descEl.textContent = isReunion
+                ? '이별의 진짜 이유와 그 사람의 속마음, 연락이 닿는 시기, 재회 가능성과 다시 만난 뒤의 관계 비책까지 심층 운명서에서 확인해 보십시오.'
+                : '두 분의 사주에 깃든 음양오행의 상생상극과 백년해로의 비밀, 진짜 인연 점수를 심층 운명서에서 즉시 확인해 보십시오.';
         }
         const ringEl = document.querySelector('.teaser-gauge-ring');
         if (ringEl) {
@@ -4264,11 +4983,12 @@
         const gaugeCard = document.getElementById('gunghap-teaser-gauge-card');
         if (!gaugeCard || gaugeCard.style.display === 'none') return;
 
+        const isReunion = (window.currentGaugeMode === 'reunion');
         const targetScore = (typeof window.currentGunghapScore === 'number') ? window.currentGunghapScore : 88;
         const qmarkEl = document.querySelector('.teaser-gauge-qmark');
-        const lockedLabelEl = document.querySelector('.teaser-gauge-locked-label');
-        const ctaHeadlineEl = document.querySelector('.teaser-gauge-cta-headline');
-        const hanjaEl = document.querySelector('.teaser-gauge-hanja');
+        const lockedLabelEl = document.getElementById('teaser-gauge-locked-label') || document.querySelector('.teaser-gauge-locked-label');
+        const ctaHeadlineEl = document.getElementById('teaser-gauge-cta-headline') || document.querySelector('.teaser-gauge-cta-headline');
+        const hanjaEl = document.getElementById('teaser-gauge-hanja') || document.querySelector('.teaser-gauge-hanja');
         const ringEl = document.querySelector('.teaser-gauge-ring');
 
         if (qmarkEl) {
@@ -4295,25 +5015,119 @@
         }
 
         if (lockedLabelEl) {
-            lockedLabelEl.textContent = '✓ 천생연분 확인 완료';
+            lockedLabelEl.textContent = isReunion ? '✓ 재회 가능성 확인 완료' : '✓ 천생연분 확인 완료';
             lockedLabelEl.style.background = 'rgba(43, 122, 109, 0.4)';
             lockedLabelEl.style.borderColor = 'var(--point-jade-light)';
             lockedLabelEl.style.color = 'var(--text-gold-light)';
         }
 
         if (ctaHeadlineEl) {
-            ctaHeadlineEl.innerHTML = `두 사람의 천생연분 궁합 지수는 <span class="teaser-highlight" style="color: var(--text-gold); font-size: 20px; font-weight: 800;">${targetScore}%</span> 입니다!`;
+            ctaHeadlineEl.innerHTML = isReunion
+                ? `두 사람의 재회 가능성은 <span class="teaser-highlight" style="color: var(--text-gold); font-size: 20px; font-weight: 800;">${targetScore}%</span> 입니다!`
+                : `두 사람의 천생연분 궁합 지수는 <span class="teaser-highlight" style="color: var(--text-gold); font-size: 20px; font-weight: 800;">${targetScore}%</span> 입니다!`;
         }
 
         if (hanjaEl) {
-            hanjaEl.textContent = '宮合指數 · 秘傳解禁';
+            hanjaEl.textContent = isReunion ? '再會指數 · 秘傳解禁' : '宮合指數 · 秘傳解禁';
         }
     }
 
-    function handlePaywallClick() {
+    function showPaymentToast(message, type = 'info', duration = 4200) {
+        let toast = document.getElementById('payment-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'payment-toast';
+            toast.setAttribute('role', 'status');
+            toast.style.cssText = [
+                'position:fixed', 'left:50%', 'bottom:96px', 'transform:translate(-50%, -12px)',
+                'max-width:min(90vw, 460px)', 'padding:13px 20px', 'border-radius:12px',
+                'font-size:14px', 'font-weight:700', 'line-height:1.5', 'text-align:center',
+                'z-index:100000', 'opacity:0', 'pointer-events:none',
+                'transition:opacity .25s ease, transform .25s ease',
+                'box-shadow:0 12px 32px rgba(0,0,0,.45)', 'word-break:keep-all'
+            ].join(';');
+            document.body.appendChild(toast);
+        }
+
+        const palette = {
+            info: { bg: 'rgba(28, 24, 20, 0.97)', color: '#F3E7CE', border: 'rgba(212, 175, 55, 0.55)' },
+            success: { bg: 'rgba(20, 52, 45, 0.97)', color: '#E9F7EF', border: 'rgba(88, 190, 150, 0.7)' },
+            error: { bg: 'rgba(58, 22, 22, 0.97)', color: '#FFE3E3', border: 'rgba(230, 120, 120, 0.7)' }
+        };
+        const theme = palette[type] || palette.info;
+        toast.textContent = message;
+        toast.style.background = theme.bg;
+        toast.style.color = theme.color;
+        toast.style.border = `1px solid ${theme.border}`;
+        toast.style.opacity = '1';
+        toast.style.transform = 'translate(-50%, 0)';
+
+        if (paymentToastTimer) clearTimeout(paymentToastTimer);
+        if (duration > 0) {
+            paymentToastTimer = setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translate(-50%, -12px)';
+            }, duration);
+        }
+    }
+
+    function setPaymentButtonsBusy(busy, category) {
+        const inlineBtn = document.getElementById('btn-unlock-inline');
+        const inlineText = document.getElementById('btn-unlock-inline-text');
+        const stickyBtn = document.getElementById('sticky-cta-btn');
+        const stickyText = document.getElementById('sticky-cta-text');
+
+        if (busy) {
+            if (inlineBtn) inlineBtn.disabled = true;
+            if (stickyBtn) stickyBtn.disabled = true;
+            if (inlineText) inlineText.textContent = '결제창으로 이동 중...';
+            if (stickyText) stickyText.textContent = '결제창으로 이동 중...';
+        } else {
+            if (inlineBtn) inlineBtn.disabled = false;
+            if (stickyBtn) stickyBtn.disabled = false;
+            updatePaywallPricing(category || currentCategory);
+        }
+    }
+
+    function getPendingPayment() {
+        try {
+            const raw = sessionStorage.getItem(PAYMENT_PENDING_KEY);
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async function confirmTossPayment(orderNo, paymentToken) {
+        const response = await fetch('/api/payments/toss/confirm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderNo, paymentToken })
+        });
+        let payload = {};
+        try {
+            payload = await response.json();
+        } catch (e) {
+            payload = {};
+        }
+        if (!response.ok) {
+            throw new Error(payload.detail || `결제 확인 실패 (HTTP ${response.status})`);
+        }
+        return payload;
+    }
+
+    /**
+     * 결제 완료 후 리포트 잠금을 해제하는 UI 처리 (실제 결제 검증은 서버에서 완료된 뒤 호출)
+     */
+    function unlockReportContent() {
+        paymentInProgress = false;
+        reportUnlocked = true;
+
         const lockBanner = document.getElementById('paywall-lock-banner');
         const aiContent = document.getElementById('ai-content');
         const stickyBar = document.getElementById('sticky-paywall-bar');
+        const inlineBtn = document.getElementById('btn-unlock-inline');
+        const inlineText = document.getElementById('btn-unlock-inline-text');
 
         if (aiContent) {
             aiContent.classList.remove('teaser-mode');
@@ -4336,16 +5150,26 @@
             lockBanner.style.background = 'rgba(20, 16, 12, 0.95)';
         }
 
+        if (inlineBtn) {
+            inlineBtn.disabled = true;
+            inlineBtn.style.background = 'var(--point-jade)';
+            inlineBtn.style.borderColor = 'var(--point-jade-light)';
+        }
+        if (inlineText) {
+            inlineText.textContent = '✓ 전편 열람 중';
+        }
+
         if (stickyBar) {
             const stickyBtn = stickyBar.querySelector('.sticky-cta-btn');
             if (stickyBtn) {
+                stickyBtn.disabled = true;
                 stickyBtn.innerHTML = '<span>✓ 전편 열람 중</span>';
                 stickyBtn.style.background = 'var(--point-jade)';
                 stickyBtn.style.borderColor = 'var(--point-jade-light)';
             }
         }
 
-        // 🌟 [궁합 전용] 결제 잠금 해제 시 실제 궁합 점수로 부드럽게 전환
+        // 🌟 [궁합/재회운 전용] 결제 잠금 해제 시 실제 점수로 부드럽게 전환
         unlockGunghapGaugeScore();
 
         setTimeout(() => {
@@ -4353,6 +5177,151 @@
                 aiContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }, 120);
+    }
+
+    /**
+     * 결제 버튼 클릭: 서버에서 주문을 생성한 뒤 토스페이 결제창으로 이동합니다.
+     * 결제 완료 전에는 절대 리포트를 열지 않습니다.
+     */
+    async function handlePaywallClick() {
+        if (paymentInProgress || reportUnlocked) return;
+
+        if (!lastAnalysisData || !lastAnalysisData.interpretation) {
+            alert("리포트 데이터를 찾을 수 없습니다. 사주 분석을 다시 진행해 주세요.");
+            return;
+        }
+
+        const category = lastAnalysisData.category || currentCategory || 'saju';
+        paymentInProgress = true;
+        setPaymentButtonsBusy(true, category);
+
+        try {
+            // 이전에 결제를 마쳤지만 확인 응답을 받지 못한 주문이 있으면 먼저 재확인한다.
+            // (중복 결제를 막기 위한 안전장치)
+            const pending = getPendingPayment();
+            if (pending && pending.orderNo && pending.paymentToken
+                && pending.category === category
+                && pending.data && pending.data.category === category
+                && pending.data.interpretation === lastAnalysisData.interpretation) {
+                try {
+                    const existing = await confirmTossPayment(pending.orderNo, pending.paymentToken);
+                    if (existing && existing.paid && existing.category === category) {
+                        sessionStorage.removeItem(PAYMENT_PENDING_KEY);
+                        unlockReportContent();
+                        showPaymentToast('이미 완료된 결제를 확인했습니다. 심층 리포트가 열렸습니다.', 'success', 5000);
+                        return;
+                    }
+                } catch (e) {
+                    // 미결제/확인 실패라면 새 주문 생성을 계속 진행한다.
+                }
+            }
+
+            const response = await fetch('/api/payments/toss/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ category })
+            });
+
+            let payload = {};
+            try {
+                payload = await response.json();
+            } catch (e) {
+                payload = {};
+            }
+
+            if (!response.ok || !payload.checkoutPage) {
+                throw new Error(payload.detail || `결제 생성 실패 (HTTP ${response.status})`);
+            }
+
+            // 결제창으로 이동하면 페이지가 새로 로드되므로, 복귀 후 복원할 데이터를 저장한다.
+            sessionStorage.setItem(PAYMENT_PENDING_KEY, JSON.stringify({
+                orderNo: payload.orderNo,
+                paymentToken: payload.paymentToken,
+                category,
+                amount: payload.amount,
+                data: lastAnalysisData,
+                createdAt: Date.now()
+            }));
+
+            window.location.href = payload.checkoutPage;
+        } catch (error) {
+            paymentInProgress = false;
+            setPaymentButtonsBusy(false, category);
+            alert("결제를 시작하지 못했습니다.\n" + error.message);
+        }
+    }
+
+    /**
+     * 토스페이 결제창에서 돌아온 뒤 결과를 복원하고, 서버 검증이 통과한 경우에만 잠금을 해제한다.
+     */
+    async function handlePaymentReturn() {
+        const params = new URLSearchParams(window.location.search);
+        const tossState = params.get('toss');
+        if (!tossState) return;
+
+        const orderNo = params.get('orderNo') || '';
+        const returnStatus = params.get('status') || '';
+
+        // 주소창에서 결제 파라미터를 제거해 새로고침 시 중복 확인을 방지한다.
+        try {
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (e) { /* noop */ }
+
+        const pending = getPendingPayment();
+        if (!pending || !pending.data || !pending.data.interpretation) {
+            showPaymentToast('결제 정보를 찾지 못했습니다. 리포트를 다시 생성해 주세요.', 'error', 6000);
+            return;
+        }
+
+        const category = pending.category || pending.data.category || 'saju';
+        if ((pending.data.category || category) !== category) {
+            sessionStorage.removeItem(PAYMENT_PENDING_KEY);
+            showPaymentToast('결제 정보와 리포트 정보가 일치하지 않습니다. 다시 시도해 주세요.', 'error', 6000);
+            return;
+        }
+        currentCategory = category;
+        const catInput = document.getElementById('selected_category');
+        if (catInput) catInput.value = category;
+
+        lastAnalysisData = pending.data;
+        lastResultText = pending.data.interpretation || '';
+
+        // 결제 전에 보던 리포트 화면을 그대로 복원한다.
+        renderStructuredSajuResult(pending.data);
+        const catScreen = document.getElementById('category-screen');
+        const formScreen = document.getElementById('form-screen');
+        const resultScreen = document.getElementById('result-screen');
+        if (catScreen) catScreen.style.display = 'none';
+        if (formScreen) formScreen.style.display = 'none';
+        if (resultScreen) resultScreen.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'auto' });
+
+        if (tossState === 'cancel' || returnStatus === 'PAY_CANCEL') {
+            sessionStorage.removeItem(PAYMENT_PENDING_KEY);
+            showPaymentToast('결제가 취소되었습니다. 리포트는 잠금 상태로 유지됩니다.', 'info', 5000);
+            return;
+        }
+
+        if (!orderNo || !pending.orderNo || orderNo !== pending.orderNo) {
+            showPaymentToast('주문번호가 일치하지 않아 결제 확인을 진행하지 못했습니다.', 'error', 6000);
+            return;
+        }
+
+        showPaymentToast('결제 승인을 확인하는 중입니다...', 'info', 0);
+        try {
+            const result = await confirmTossPayment(orderNo, pending.paymentToken);
+            if (result && result.paid && result.category === category) {
+                sessionStorage.removeItem(PAYMENT_PENDING_KEY);
+                unlockReportContent();
+                showPaymentToast('결제가 완료되었습니다. 심층 리포트가 열렸습니다.', 'success', 5000);
+            } else if (result && result.paid) {
+                showPaymentToast('결제 카테고리가 현재 리포트와 일치하지 않습니다. 고객센터에 문의해 주세요.', 'error', 7000);
+            } else {
+                showPaymentToast('결제가 아직 완료되지 않았습니다. 리포트는 잠금 상태로 유지됩니다.', 'error', 6000);
+            }
+        } catch (error) {
+            showPaymentToast('결제 확인 실패: ' + error.message, 'error', 7000);
+        }
     }
 
     let lastResultText = "";
@@ -4425,9 +5394,9 @@
         const catInput = document.getElementById('selected_category');
         const activeCategory = (catInput && catInput.value) ? catInput.value : (currentCategory || 'saju');
 
-        // [인연과 궁합] 선택 시 상대방 사주 단자 유효성 검사 및 데이터 추출
+        // [인연과 궁합 / 재회운] 선택 시 상대방 사주 단자 유효성 검사 및 데이터 추출
         let partnerData = null;
-        if (activeCategory === 'gunghap') {
+        if (activeCategory === 'gunghap' || activeCategory === 'reunion') {
             const pYVal = document.getElementById('partner_year').value.trim();
             const pMVal = document.getElementById('partner_month').value.trim();
             const pDVal = document.getElementById('partner_day').value.trim();
@@ -4461,7 +5430,9 @@
             const pCalendar = document.querySelector('input[name="partner_calendar"]:checked').value;
             const pNameInput = document.getElementById('partner_name');
             const pRawName = pNameInput ? pNameInput.value.trim() : "";
-            const pFinalName = (!pRawName || pRawName.length === 0) ? "인연" : pRawName;
+            const pFinalName = (!pRawName || pRawName.length === 0)
+                ? (activeCategory === 'reunion' ? "그 사람" : "인연")
+                : pRawName;
             const pBirthTime = document.getElementById('partner_birth_time').value;
             const pLeapEl = document.getElementById('partner_is_leap_month');
             const pIsLeapMonth = !!pLeapEl && pLeapEl.checked;
@@ -4501,6 +5472,18 @@
                 "▸ 행운의 데이트 방위와 추천 취미 분석 중...",
                 `▸ ${finalName} 선비님과 ${pName} 님의 백년해로 비책 정리 완료!`,
                 "▸ 최종 궁합 감정서 편찬 완료!"
+            ];
+        } else if (activeCategory === 'reunion') {
+            const pName = partnerData ? partnerData.name : "그 사람";
+            logSequence = [
+                "▸ 헤어진 두 분의 사주 단자를 정성껏 봉심(奉審)하는 중...",
+                "▸ 두 사람의 일간과 오행의 상생상극 및 이별의 구조 해독 중...",
+                "▸ 어긋난 시점과 반복된 다툼의 뇌관(雷管) 추적 완료",
+                "▸ 그 사람의 현재 속마음과 미련의 정도를 살피는 중...",
+                "▸ 연락이 닿을 시기와 먼저 연락해도 되는 조건 계산 중...",
+                `▸ ${finalName} 님과 ${pName} 님의 재회 가능성 지수 산출 완료`,
+                "▸ 다시 만난 뒤의 관계 비책과 다음 인연 시기 정리 중...",
+                "▸ 최종 재회운 감정서 편찬 완료!"
             ];
         } else if (activeCategory === 'today') {
             logSequence = [
@@ -4621,6 +5604,7 @@
 
                 if (data.status === "success" && data.interpretation) {
                     lastResultText = data.interpretation;
+                    lastAnalysisData = data;
                     pBar.style.transition = 'width 0.35s ease';
                     pBar.style.width = '100%';
 
@@ -4665,6 +5649,25 @@
         const stickyBar = document.getElementById('sticky-paywall-bar');
         if (stickyBar) stickyBar.classList.remove('visible');
 
+        // 새 리포트를 시작하므로 이전 결제/복원 상태를 정리한다.
+        lastAnalysisData = null;
+        paymentInProgress = false;
+        reportUnlocked = false;
+        const unlockBtnAfterReset = document.getElementById('btn-unlock-inline');
+        if (unlockBtnAfterReset) {
+            unlockBtnAfterReset.disabled = false;
+            unlockBtnAfterReset.style.background = '';
+            unlockBtnAfterReset.style.borderColor = '';
+        }
+        const stickyBtnAfterReset = document.getElementById('sticky-cta-btn');
+        if (stickyBtnAfterReset) {
+            stickyBtnAfterReset.disabled = false;
+            stickyBtnAfterReset.style.background = '';
+            stickyBtnAfterReset.style.borderColor = '';
+            stickyBtnAfterReset.innerHTML = '<span id="sticky-cta-text"></span>';
+        }
+        try { sessionStorage.removeItem(PAYMENT_PENDING_KEY); } catch (e) { /* noop */ }
+
         const ghPreview = document.getElementById('gunghap-preview-section');
         if (ghPreview) ghPreview.style.display = 'none';
         const todayDash = document.getElementById('today-dashboard-section');
@@ -4699,7 +5702,7 @@
                 <h3 class="lock-banner-title">무료 사주에서는 여기까지 확인할 수 있습니다.</h3>
                 <p class="lock-banner-desc">다가오는 10년 대운 속에서 타고난 기운을 어떻게 무기로 활용할지, 재물과 액운 방지 비책의 모든 풀이를 열어보려 합니다.</p>
                 
-                <div class="paywall-toc-card">
+                <div class="paywall-toc-card" id="paywall-toc-card">
                     <div class="toc-header">
                         <span class="toc-header-hanja" style="letter-spacing: 1px;">목차</span>
                         <h4 class="toc-header-title">심층 운명서 전편(全篇) 수록 목차</h4>
@@ -4767,7 +5770,10 @@
             lockBanner.style.background = 'var(--card-bg-dark)';
         }
 
-        updatePaywallPricing('saju');
+        const activeCatInput = document.getElementById('selected_category');
+        updatePaywallPricing((activeCatInput && activeCatInput.value) ? activeCatInput.value : 'saju');
+        // 카테고리 화면으로 돌아왔으므로 하단 결제 바는 반드시 감춘다.
+        if (stickyBar) stickyBar.classList.remove('visible');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -4777,6 +5783,16 @@
         const stickyBar = document.getElementById('sticky-paywall-bar');
         if (isResultVisible && stickyBar) {
             stickyBar.classList.add('visible');
+        }
+    });
+
+    // 토스페이 결제창에서 브라우저 뒤로가기로 돌아온 경우(bfcache) 버튼 잠금을 해제한다.
+    window.addEventListener('pageshow', (event) => {
+        if (!event.persisted) return;
+        paymentInProgress = false;
+        const resultScreen = document.getElementById('result-screen');
+        if (!reportUnlocked && resultScreen && resultScreen.style.display === 'block') {
+            setPaymentButtonsBusy(false, currentCategory);
         }
     });
 
@@ -4807,6 +5823,43 @@
             alert("복사 권한이 없어 수동으로 복사해주세요.");
         }
         document.body.removeChild(textarea);
+    }
+
+    /* ============================================================
+       하단 약관 / 개인정보 처리방침 모달 제어
+       ============================================================ */
+    function openLegal(id) {
+        const overlay = document.getElementById('legal-' + id);
+        if (!overlay) return;
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('legal-open');
+        const closeBtn = overlay.querySelector('.legal-close-btn');
+        if (closeBtn) closeBtn.focus({ preventScroll: true });
+    }
+
+    function closeLegal(target) {
+        const overlay = typeof target === 'string' ? document.getElementById(target) : target;
+        if (!overlay) return;
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
+        if (!document.querySelector('.legal-overlay.open')) {
+            document.body.classList.remove('legal-open');
+        }
+    }
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key !== 'Escape') return;
+        document.querySelectorAll('.legal-overlay.open').forEach(function (overlay) {
+            closeLegal(overlay);
+        });
+    });
+
+    // 토스페이 결제창에서 복귀한 경우 리포트 복원 + 결제 검증
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', handlePaymentReturn);
+    } else {
+        handlePaymentReturn();
     }
 </script>
 

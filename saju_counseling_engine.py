@@ -5,6 +5,10 @@
 5대 핵심 섹션을 비롯한 전 6장의 풀이를 100% 동적으로 맞춤 생성합니다.
 """
 
+import re
+import random
+import hashlib
+
 DAY_MASTER_META = {
     "甲": {
         "name": "갑목(甲木)",
@@ -562,6 +566,29 @@ def build_personalized_emergency_report(name: str, saju_data: dict) -> str:
     def cnt(k: str) -> int:
         return int(counts.get(k, 0) or 0)
 
+    def split_two(paragraph: str):
+        """문단을 두 절로 나누어 반환 (같은 일간이어도 중간에 개인화 문장을 끼우기 위함)"""
+        if not paragraph:
+            return "", ""
+        parts = [p.strip() for p in re.split(r'(?<=[.!?。])', paragraph) if p.strip()]
+        if len(parts) <= 1:
+            return paragraph, ""
+        half = max(1, len(parts) // 2)
+        head = "".join(parts[:half])
+        tail = "".join(parts[half:])
+        return head, tail
+
+    def interleave(items, extras):
+        """리스트 항목 사이사이에 개인화 보강 문장을 끼워 넣어 연속 반복을 깨기"""
+        if not extras:
+            return "\n".join(items)
+        out = []
+        for i, it in enumerate(items):
+            out.append(it)
+            if i < len(items) - 1:
+                out.append(extras[i % len(extras)])
+        return "\n".join(out)
+
     # 1. 일간 메타데이터 추출
     meta = DAY_MASTER_META.get(day_master, DAY_MASTER_META["甲"])
     desc = meta["title"]
@@ -584,25 +611,31 @@ def build_personalized_emergency_report(name: str, saju_data: dict) -> str:
     hook_md = "\n".join(f"- {q}" for q in hook_list)
 
     nature_text = CHAPTER_1_NATURE.get(day_master, CHAPTER_1_NATURE["甲"])
+    nature_head, nature_tail = split_two(nature_text)
     mind_base = MIND_DAY_MASTER_BASE.get(day_master, MIND_DAY_MASTER_BASE["甲"])
     mind_weak = MIND_WEAK_ELEMENT_PRESCRIPTIONS.get(weak_elem, MIND_WEAK_ELEMENT_PRESCRIPTIONS["토"])
 
     wealth_text = CHAPTER_2_WEALTH.get(day_master, CHAPTER_2_WEALTH["甲"])
+    wealth_head, wealth_tail = split_two(wealth_text)
     w_tips = WEALTH_TIPS.get(day_master, WEALTH_TIPS["甲"])
     wealth_tips_md = "\n".join(f"1. **{t}**" for t in w_tips)
 
     career_text = CHAPTER_3_CAREER.get(day_master, CHAPTER_3_CAREER["甲"])
+    career_head, career_tail = split_two(career_text)
     c_jobs = CAREER_JOBS.get(day_master, CAREER_JOBS["甲"])
     career_jobs_md = "\n".join(f"- **{j}**" for j in c_jobs)
     workplace_tip_md = WORKPLACE_TIPS.get(day_master, WORKPLACE_TIPS["甲"])
 
     love_text = CHAPTER_4_LOVE.get(day_master, CHAPTER_4_LOVE["甲"])
+    love_head, love_tail = split_two(love_text)
     relation_tip_md = RELATION_TIPS.get(day_master, RELATION_TIPS["甲"])
 
     daewon_text = CHAPTER_5_DAEWON.get(day_master, CHAPTER_5_DAEWON["甲"])
+    daewon_head, daewon_tail = split_two(daewon_text)
     daewon_strategy_md = DAEWON_STRATEGIES.get(day_master, DAEWON_STRATEGIES["甲"])
 
     counseling_text = COUNSELING_CLOSING.get(day_master, COUNSELING_CLOSING["甲"])
+    counseling_head, counseling_tail = split_two(counseling_text)
 
     def elem_count_list():
         return f"목({cnt('목')}) · 화({cnt('화')}) · 토({cnt('토')}) · 금({cnt('금')}) · 수({cnt('수')})"
@@ -673,6 +706,216 @@ def build_personalized_emergency_report(name: str, saju_data: dict) -> str:
     }
     closing_advice = closing_variants.get(strong_elem, closing_variants["토"])
 
+    # 5. 4장(연애)·5장(대운)용 사주 원국 개인화 변주 (계절·강약·시주·오행분포 기반)
+    season_str = (saju_data.get("season_str") or "환절기").strip()
+    season_key = {"봄": "春", "여름": "夏", "가을": "秋", "겨울": "冬"}.get(season_str, "")
+    day_strength = (saju_data.get("day_strength") or "중화(中和)").strip()
+    hour_branch = h.get("branch", "子")
+    hour_stem = h.get("stem", "甲")
+    weak_count = cnt(weak_elem)
+    strong_count = cnt(strong_elem)
+
+    love_pull_variants = {
+        "목": f"그 마음의 씨앗은 화초처럼 곱고 서정적이되, 원국에 뿌리내린 {strong_elem} 기운({strong_count}자리)이 데어 있어 큰 힘에서 오는 든든한 이끌림을 느끼게 하옵니다.",
+        "화": f"그 마음의 온도는 불꽃처럼 뜨거우나 갓 지핀 화롯불과 같아, 서로에게 부는 순간의 열기가 먼저 미소를 터뜨리게 하옵니다.",
+        "토": f"그 마음의 깊이는 논처럼 포근하여, 등 따뜻한 언덕을 찾아가듯 편안함이 곧 사랑이 되는 은근한 끌림을 베푸시옵니다.",
+        "금": f"그 마음의 벼림은 칼날처럼 시원하되 소중한 인연에는 뜻밖의 부드러움이 스며들어, 강한 이끌림 뒤에 진향이 남게 하옵니다.",
+        "수": f"그 마음의 흐름은 맑은 샘물처럼 깊어, 한 번 헤아린 순간 마르지 않을 애정의 물살로 이어지는 매혹을 지니셨사옵니다.",
+    }
+    love_pull = love_pull_variants.get(strong_elem, love_pull_variants["토"])
+
+    love_weak_variants = {
+        "목": f"다만 {weak_elem} 기운({weak_count}자리)이 충분치 않아, 상대의 서운한 기색을 읽고도 먼저 남아 대화를 풀어내는 추진력이 더딜 수 있으니, 다정한 말 한마디를 먼저 꺼내는 용기를 준비하시옵소서.",
+        "화": f"다만 {weak_elem} 기운({weak_count}자리)이 충분치 않아, 애정의 뜨거움을 자연스레 드러내는 표현력이 아쉬워 속마음을 감추다 소원해질 수 있으니, 짧은 온기 표현을 일상에서 수련하시옵소서.",
+        "토": f"다만 {weak_elem} 기운({weak_count}자리)이 충분치 않아, 감정의 흔들림을 붙잡아주는 중심 잡기가 어려워 오해가 싸이기 쉬우니, 차분한 대화 후 질문을 덧붙이는 습관을 들이시옵소서.",
+        "금": f"다만 {weak_elem} 기운({weak_count}자리)이 충분치 않아, 서운한 마음을 단숨에 정리하지 못해 미련이 늪처럼 길어질 수 있으니, 아쉬움은 글월에 새겨 내려놓으시옵소서.",
+        "수": f"다만 {weak_elem} 기운({weak_count}자리)이 충분치 않아, 감정의 기복이 심한 날엔 상대의 진심을 과도하게 의심하기 쉬우니, 의심 대신 하고 싶은 말을 짧게라도 전하는 길을 택하시옵소서.",
+    }
+    love_weak = love_weak_variants.get(weak_elem, love_weak_variants["토"])
+
+    season_love_variants = {
+        "春": "계절이 화기애애한 봄에 태어나셔서, 연애의 시작도 봄바람처럼 자연스럽고 상대의 마음을 따스이 녹이는 재주가 타고나셨사옵니다.",
+        "夏": "계절이 왕성한 여름에 태어나셔서, 애정의 표현도 여름 햇살처럼 눈부시고 과감하여 상대를 단숨에 사로잡는 매력이 드러나옵니다.",
+        "秋": "계절이 결실의 가을에 태어나셔서, 연애도 결실을 저울질하는 경향이 있어 한 분의 인연을 깊이 지켜가는 안정형 사랑을 보여주옵니다.",
+        "冬": "계절이 엄동설한의 겨울에 태어나셔서, 겉은 차가워도 속은 뜨겁게 끓는 적자생존형 사랑으로, 벽을 넘는 순간 애정이 깊어지옵니다.",
+    }
+    season_love = season_love_variants.get(season_key, season_love_variants["春"]) if season_key else ""
+
+    love_hour_variants = {
+        "子": "시주에 자수(子水)가 자리하여 밤의 서정이 강하오니, 깊은 밤의 부드러운 대화가 애정을 오래도록 적셔줄 것이옵니다.",
+        "午": "시주에 오화(午火)가 자리하여 한낮의 활력이 깃들었사오니, 함께 웃으며 보내는 주간의 시간이 애정의 밑거름이 되옵니다.",
+        "卯": "시주에 묘목(卯木)이 자리하여 봄날 아침의 청량함이 깃들었사오니, 산책과 같은 소박한 교감이 마음을 틔워주옵니다.",
+        "酉": "시주에 유금(酉金)이 자리하여 석양의 정취가 깃들었사오니, 저물녘의 정갈한 만찬과 고요한 동행이 인연을 도탑게 하옵니다.",
+    }
+    love_hour = love_hour_variants.get(hour_branch, "")
+
+    daewon_season_variants = {
+        "春": "이 대운은 봄의 생기가 땅을 뚫고 솟아오르듯, 그동안 웅크렸던 선비님의 시동기가 차례로 방아쇠를 당기는 시기이옵니다.",
+        "夏": "이 대운은 여름의 절정이 모든 것을 올곧게 밝히듯, 선비님의 적극성이 세상의 주목을 끝내 회수하는 결실 국면이옵니다.",
+        "秋": "이 대운은 가을의 결실이 서리를 이기고 여물듯, 성급한 흥분보다 묵묵히 정리한 대가가 가장 실한 열매로 돌아오는 시기이옵니다.",
+        "冬": "이 대운은 겨울의 심고요함이 봄의 물을 저장하듯, 겉으로는 고요하나 내부에서 가장 큰 축적이 이루어지는 준비의 시기이옵니다.",
+    }
+    daewon_season = daewon_season_variants.get(season_key, "") if season_key else ""
+
+    daewon_strength_variants = {
+        "신강": f"선비님은 {strong_elem} 기운이 왕성하여 기세가 먼저 차오르는 명조이오니, 대운의 승부수는 밀기보다 당겨쓰는 절제로 더 크게 결실을 맺으시옵소서.",
+        "신약": f"선비님은 {strong_elem} 기운이 얇아 외부의 도움과 때를 빌리는 지혜가 으뜸이오니, 대운의 승부수는 남의 역량을 먼저 들여와 힘을 기르는 연대를 택하시옵소서.",
+        "중화": f"선비님은 {strong_elem} 기운과 {weak_elem} 기운이 조화를 이룬 중용의 명조이오니, 대운의 승부수는 한 가지에 우선 집중한 뒤 균형을 유지하는 전략이 으뜸이옵니다.",
+    }
+    daewon_strength = daewon_strength_variants.get(day_strength.replace("신강(身强)", "신강").replace("신약(身弱)", "신약").replace("중화(中和)", "중화"), daewon_strength_variants["중화"])
+
+    daewon_hour_variants = {
+        "寅": "시주의 인목(寅木)이 큰 사업의 씨앗을 스스로 뿌려 우뚝 서는 자리를 만드나이다.",
+        "辰": "시주의 진토(辰土)가 손에 쥔 재물을 온전히 굳혀 주는 보물창고의 역할을 하옵니다.",
+        "巳": "시주의 사화(巳火)가 재능을 세상에 알리는 등불을 켜 주어 명성과 실리를 같이 얻게 하옵니다.",
+        "申": "시주의 신금(申金)이 결단을 도와 헤맴 대신 곧장 목표로 나아가는 지름길을 열어주옵니다.",
+        "亥": "시주의 해수(亥水)가 사람들을 진정시키는 큰 그릇이 되어 흔들림 속에서도 중심을 잡아주옵니다.",
+    }
+    daewon_hour = daewon_hour_variants.get(hour_branch, "")
+
+    # 6. 1장 본연성향·2장 재물·3장 직업용 계절·강약·시간대별 개인화 문구
+    season_nature_variants = {
+        "春": "선비님 태어난 계절(월지)이 봄이라 그 기상은 만물이 함께 피어나는 서정의 화음이요,",
+        "夏": "선비님 태어난 계절(월지)이 여름이라 그 기상은 뜨거운 실천과 확신의 왕성함이요,",
+        "秋": "선비님 태어난 계절(월지)이 가을이라 그 기상은 정확한 분별과 결실을 거두는 통찰이요,",
+        "冬": "선비님 태어난 계절(월지)이 겨울이라 그 기상은 깊은 침잠과 준비의 지혜가,",
+    }
+    season_nature = season_nature_variants.get(season_key, "") if season_key else ""
+
+    strength_nature_variants = {
+        "신강": f"원국의 {strong_elem} 기운이 두텁게 자라나 스스로 세력을 온전히 끌어안는 자립형 명조이옵니다.",
+        "신약": f"원국의 {strong_elem} 기운이 아직 어려 배움의 변방에 힘을 싣는 것이 상책이오나, 그 {strong_elem} 기운이 곧 선비님을 키울 거름이 되옵니다.",
+        "중화": f"원국의 {strong_elem} 기운과 {weak_elem} 기운이 서로를 다스려 주는 균형미를 지닌 명조이옵니다.",
+    }
+    strength_nature = strength_nature_variants.get(day_strength.replace("신강(身强)", "신강").replace("신약(身弱)", "신약").replace("중화(中和)", "중화"), strength_nature_variants["중화"])
+
+    season_wealth_variants = {
+        "春": "봄에 태어나셔서 재물도 봄볕처럼 천천히 그러나 거침없이 무르익어가며,",
+        "夏": "여름에 태어나셔서 재물도 한여름 일조량처럼 뜨겁게 치솟는 것을 경계하고 서늘한 곳에 고이 담아두시면,",
+        "秋": "가을에 태어나셔서 재물도 수확의 철에 가장 알을 낳으니, 계절의 결실을 거두는 시점에 과감히 방아쇠를 당기시면,",
+        "冬": "겨울에 태어나셔서 재물도 은행나무 열매가 겨울에 다져져 맛나듯, 깊이 쌓아 익히는 인내의 수가 곧 큰 부를 부르옵니다.",
+    }
+    season_wealth = season_wealth_variants.get(season_key, "") if season_key else ""
+
+    hour_wealth_variants = {
+        "寅": "시주 인목이 이를 부추겨 아침 일찍 일어나 시작하는 재배(財輩)가 가장 왕성하옵니다.",
+        "巳": "시주 사화가 진취성을 이끌어 남보다 한 발 먼저 움직이는 선점 투자가 재목(財木)을 키우옵니다.",
+        "申": "시주 신금이 재리의 심판자를 두어 무리한 빚과 보증을 삼가게 하옵니다.",
+        "亥": "시주 해수가 재물의 비밀스러운 성정을 붙들어 큰돈은 소리 내지 않은 채 굴리는 것이 제격이옵니다.",
+    }
+    hour_wealth = hour_wealth_variants.get(hour_branch, "")
+
+    season_career_variants = {
+        "春": "봄에 난 선비님께는 끊임없이 새싹을 틔우는 신사업·신기획 발굴이 천직이 되옵니다.",
+        "夏": "여름에 난 선비님께는 사람들과 활발히 부대끼며 중심에서 일을 벌이는 대외 활동이 천직이 되옵니다.",
+        "秋": "가을에 난 선비님께는 결판을 내고 결실을 정리하는 실무 총괄이 천직이 되옵니다.",
+        "冬": "겨울에 난 선비님께는 깊이 연구하고 준비하는 전략과 분석, 기획 직군이 천직이 되옵니다.",
+    }
+    season_career = season_career_variants.get(season_key, "") if season_key else ""
+
+    hour_career_variants = {
+        "卯": "시주 묘목 덕에 유관 부서 및 공직과 같은 제도권 속 협업이 빛을 발하옵니다.",
+        "午": "시주 오화 덕에 언론·마케팅·교육 등 사람의 이목을 모으는 자리에서 진가가 드러나옵니다.",
+        "酉": "시주 유금 덕에 법률·회계·감사·정밀 검증 계통에서 두각을 나타내시옵니다.",
+        "子": "시주 자수 덕에 학술·연구·데이터·상담처럼 수면 아래의 진리를 탐구하는 직군과 인연이 깊으옵니다.",
+    }
+    hour_career = hour_career_variants.get(hour_branch, "")
+
+    # 7. 리스트형 팁 사이사이에 끼워 넣을 사주 원국 개인화 보강 문장
+    def strength_gap():
+        s = day_strength.replace("신강(身强)", "신강").replace("신약(身弱)", "신약").replace("중화(中和)", "중화")
+        if s == "신강":
+            return f"{strong_elem} 기운이 두텁게 받쳐주는 명조이니, 우격다짐보다 {weak_elem} 기운을 보강하는 여백을 두실 때 일이 더욱 순조로와지옵니다."
+        if s == "신약":
+            return f"{strong_elem} 기운이 아직 약하니 남의 힘과 시기를 먼저 빌리는 겸손한 연대가 곧 가장 빠른 지름길이옵니다."
+        return f"{strong_elem} 기운과 {weak_elem} 기운이 팽팽히 조화를 이루는 중용의 명조이니, 한쪽으로 기울기보다 균형을 지키는 선택이 늘 정답이옵니다."
+
+    def season_gap():
+        s = season_key
+        if s == "春":
+            return "봄에 태어나신 만큼, 새로운 시작을 두려워하지 마시고 이 시기를 쏘아 올리신다면 계절의 생기를 온전히 흡수하실 수 있사옵니다."
+        if s == "夏":
+            return "여름에 태어나신 만큼, 열정이 과열되기 쉬우니 속도를 늦추고 쉼의 지혜를 곁들이실 때 불꽃이 재가 아니라 금실로 오래 남사옵니다."
+        if s == "秋":
+            return "가을에 태어나신 만큼, 급한 결실을 욕심내기보다 익어가는 순서를 존중하시면 결실의 무게가 몇 배로 무거워지옵니다."
+        if s == "冬":
+            return "겨울에 태어나신 만큼, 남몰래 견디며 쌓는 힘이 남들보다 깊사오니 내린 결심과 준비를 어둠 속에서도 놓지 마시옵소서."
+        return "환절기에 태어나신 만큼, 어느 쪽 기운에도 치우치지 않는 적응의 지혜가 선비님의 가장 큰 무기가 되옵니다."
+
+    def hour_gap():
+        return f"시주가 {hour_branch} 지지라 선비님의 일거수일투족에 {hour_branch} 기운의 성정이 깃들어 있사옵니다."
+
+    wealth_gap1 = f"선비님의 재물은 {strong_elem} 기운이 주도하는 만큼, {strong_desc}를 살리는 방향으로 자산을 배치하시는 것이 상책이옵니다."
+    wealth_gap2 = f"반면 {weak_elem} 기운이 결핍한 격이오니, {weak_desc}까지 균형 있게 보강할 때 자산의 물꼬가 막히지 않사옵니다."
+
+    career_gap1 = f"선비님의 직업운은 {strong_elem} 기운이 이끌기에, {strong_desc}를 발휘하는 분야에서 임금이 오래오래 치솟으옵니다."
+    career_gap2 = f"특히 {weak_elem} 기운이 약한 부분을 보완하는 사람과의 협업이 선비님의 든든한 방패가 되사옵니다."
+
+    workplace_gap = f"직장에서는 {strong_elem} 기운이 왕성한 앞으로 끌고 나가는 추진력을 살리되, {weak_elem} 기운이 부족한 디테일은 동료와 분업하시옵소서."
+
+    love_gap = f"{strong_elem} 기운이 주도하는 선비님의 사랑은 한번 맺으면 곧은 뿌리를 내리나, {weak_elem} 기운이 부족하여 표현이 아쉬울 때가 잦사오니 다정한 말 한마디를 먼저 건네시옵소서."
+
+    daewon_gap1 = f"이 대운의 승부수는 매사를 남과 견주기보다, 선비님 사주 원국의 가장 적은 자리({weak_elem} 기운)를 채우는 방향으로 작심하시옵소서."
+    daewon_gap2 = f"시주({hour_branch} 지지)가 연 이상의 은혜와 보답으로 맺어진 인연이 선비님의 대운을 더욱 견고하게 붙들어 줄 것이옵니다."
+
+    hook_list = [f"- {q}" for q in hook_list]
+    rng = random.Random(f"{day_master}:{strong_elem}:{weak_elem}:{season_str}:{hour_branch}:{name.strip()}")
+    rng.shuffle(hook_list)
+    hook_list = hook_list[:3]
+    hook_md = "\n".join(hook_list)
+
+    # 리스트 항목에 붙일 사주 원국 접두 변형 (왕성/보완 오행 + 강약)
+    s_short = day_strength.replace("신강(身强)", "신강").replace("신약(身弱)", "신약").replace("중화(中和)", "중화")
+    sulfix_map = {
+        "신강": "기운이 가득 찬 명조이니",
+        "신약": "기운을 보태야 하는 명조이니",
+        "중화": "기운이 고른 명조이니",
+    }
+    sulfix = sulfix_map.get(s_short, "기운이 고른 명조이니")
+    elem_prefix = {
+        "목": f"{strong_elem} 기운을 살리는 이 전략은 {sulfix}",
+        "화": f"{strong_elem} 기운을 불태우는 이 전략은 {sulfix}",
+        "토": f"{strong_elem} 기운을 북돋는 이 전략은 {sulfix}",
+        "금": f"{strong_elem} 기운을 벼리는 이 전략은 {sulfix}",
+        "수": f"{strong_elem} 기운을 흘려보내는 이 전략은 {sulfix}",
+    }
+    prefix_str = elem_prefix.get(strong_elem, elem_prefix["토"])
+
+    # 사주 원국 맞춤형 대체 항목 (왕성 오행 × 보완 오행 조합)
+    def custom_wealth_item():
+        return (f"왕성한 {strong_elem} 기운을 담금질하고, 부족한 {weak_elem} 기운을 보강하는 "
+                f"'{strong_elem}-{weak_elem} 밸런스' 재테크 설계로 자산의 두 날개를 동시에 펼치시옵소서.")
+
+    def custom_career_item():
+        return (f"{weak_elem} 기운이 결핍한 격이오니, {weak_default_job()} 계통의 조력자를 두어 "
+                f"{strong_elem} 기운의 추진력을 온전히 실전으로 쏟아내시옵소서.")
+
+    def weak_default_job():
+        job_map = {
+            "목": "기획·신사업",
+            "화": "마케팅·홍보",
+            "토": "재무·행정",
+            "금": "감사·법무",
+            "수": "연구·데이터",
+        }
+        return job_map.get(weak_elem, "기획")
+
+    wealth_items = [f"1. **{prefix_str}, {t}**" for t in w_tips]
+    wealth_items[1] = f"2. **{prefix_str}, {custom_wealth_item()}**"
+    interleave_wealth_gaps = [wealth_gap1, wealth_gap2]
+    wealth_tips_md = interleave(wealth_items, interleave_wealth_gaps)
+
+    career_items = [f"- **{prefix_str}, {j}**" for j in c_jobs]
+    career_items[1] = f"- **{prefix_str}, {custom_career_item()}**"
+    career_jobs_md = interleave(career_items, [career_gap1, career_gap2])
+
+    workplace_tip_md = interleave([l for l in workplace_tip_md.split("\n") if l.strip()], [workplace_gap])
+    relation_tip_md = interleave([l for l in relation_tip_md.split("\n") if l.strip()], [love_gap])
+    daewon_strategy_md = interleave([l for l in daewon_strategy_md.split("\n") if l.strip()], [daewon_gap1, daewon_gap2])
+
+    # 마음 개운법 보강
+    mind_weak = f"{mind_weak}\n{strength_gap()}\n{season_gap()}\n{hour_gap()}"
+
     return f"""## 📜 {final_name} 선비님의 사주 총평 요약
 {final_name} 선비님은 타고난 일간이 **{meta['name']}** 기운으로, “{desc}”의 웅장한 명식을 품고 계시옵니다. 사주 원국의 오행 분포는 {elem_count_list()}로 이루어져 있으며, 특히 **{strong_elem} 기운**이 왕성하게 자리 잡아 삶의 큰 줄기를 주도하고 계시옵니다. 현재 선비님은 능력을 쌓아 올린 기반 위에서 본격적인 도약을 앞둔 운명의 분기점에 서 계시며, 다가오는 대운의 승부수를 정확히 활용하신다면 평생의 대업과 거대한 부를 실현하실 수 있는 매우 귀한 명조이옵니다.
 
@@ -692,9 +935,13 @@ def build_personalized_emergency_report(name: str, saju_data: dict) -> str:
 
 ### 👤 {final_name} 선비님의 본연의 성향과 잠재력 (일간 + 월지 중심)
 
-{nature_text}
+{season_nature} {strength_nature}
+
+{nature_head}
 
 사주 원국에서 가장 큰 세력을 형성한 것은 **{strong_elem} 기운**이며, 이는 곧 {strong_desc}에 해당하는 선비님만의 핵심 원동력이옵니다. 반면 상대적으로 **{weak_elem} 기운**이 결핍되거나 유약하여, {weak_desc}이 부족한 탓에 뜻은 분명하나 가끔은 온전히 물꼬를 트지 못해 답답함을 느끼시고는 하옵니다. {balance_advice} 위기 상황에서도 침착하게 대안을 찾아내는 선비님만의 저력은 그 어떤 시련 앞에서도 굳건한 디딤돌이 될 것이옵니다.
+
+{nature_tail}
 
 💡 **마음 개운법**
 - **본원({day_master}) 심신 수련:** {mind_base}
@@ -702,18 +949,26 @@ def build_personalized_emergency_report(name: str, saju_data: dict) -> str:
 
 ### 💰 {final_name} 선비님의 재물과 자산의 흐름 (재성, 식상 중심)
 
-{wealth_text}
+{season_wealth} {hour_wealth}
+
+{wealth_head}
 
 선비님은 일확천금을 노리는 도박꾼의 사주가 아니오라, 선비님의 지혜와 결단은 {strong_elem} 기운의 {economy_advice}와 함께 시간의 복리를 타고 거대한 황금의 숲을 이루는 구조를 지니셨사옵니다. 특히 {weak_elem} 기운이 자리한 영역이 곧 가장 새어 나가기 쉬운 물꼬이오니, 밑 빠진 독처럼 소득을 갉아먹는 사소한 낭비 요소와 무계획한 지출을 차단하고 자산의 통로를 일원화하시면, 머지않아 세상 사람들이 우러러보는 알부자의 자리에 오르실 것이옵니다.
+
+{wealth_tail}
 
 💡 **3가지 맞춤 재테크 솔루션**
 {wealth_tips_md}
 
 ### 💼 {final_name} 선비님의 직업과 사회생활 (관성, 인성 중심)
 
-{career_text}
+{season_career} {hour_career}
 
-선비님은 남에게 맹목적으로 복종하기보다 선비님의 전문성과 기획력으로 조직의 중심에 서야만 신명이 나는 명식이옵니다. {weak_elem} 기운이 취약한 선비님께 특히 경계하셔야 할 곳은 {care_advice}이옵니다. 그러한 지반에서는 선비님의 {strong_elem} 기운이 짓눌려 아무리 큰 재주라도 빛을 발하지 못하오니, 주체성이 뚜렷하게 발휘되는 영역을 스스로 골라 그곳에서 성과를 이뤄, 윗사람과 아랫사람 모두가 선비님의 혜안에 의지하게 하시옵소서.
+{career_head}
+
+선비님은 남에게 맹목적으로 복종하기보다 선비님의 전문성과 기획력으로 조직의 중심에 서야만 신명이 나는 명식이옵니다. 다만 {weak_elem} 기운이 취약한 선비님께 특히 경계하셔야 할 곳은 {care_advice}이옵니다. 그러한 지반에서는 선비님의 {strong_elem} 기운이 짓눌려 아무리 큰 재주라도 빛을 발하지 못하오니, 주체성이 뚜렷하게 발휘되는 영역을 스스로 골라 그곳에서 성과를 이뤄, 윗사람과 아랫사람 모두가 선비님의 혜안에 의지하게 하시옵소서.
+
+{career_tail}
 
 💡 **추천 현대 직업군 3가지**
 {career_jobs_md}
@@ -723,27 +978,41 @@ def build_personalized_emergency_report(name: str, saju_data: dict) -> str:
 
 ### ❤️ {final_name} 선비님의 연애와 인간관계
 
-{love_gender_prefix}{love_text}
+{season_love}
 
-얕은 인간관계를 여럿 두기보다, {love_advice} 영혼의 온도를 나눌 수 있는 극소수의 귀인에게 마음을 쏟으실 때 평생을 지켜줄 든든한 백년가약과 동지를 얻으실 수 있사옵니다. 다만 선비님 명조는 마음을 다 주었다가 실망하는 순간 급격히 문을 닫아 버리는 성향이 있사오니, 기대를 처음부터 크게 걸기보다 단계적으로 신뢰를 쌓으시고, 마음의 빗장을 반 치쯤 열고 먼저 따스한 온기를 건네는 연습이 관계의 격을 한 단계 높여줄 것이옵니다.
+{love_gender_prefix}{love_head}
+
+{love_pull} {love_hour}
+
+{love_tail}
+
+얕은 인간관계를 여럿 두기보다, {love_advice} 영혼의 온도를 나눌 수 있는 극소수의 귀인에게 마음을 쏟으실 때 평생을 지켜줄 든든한 백년가약과 동지를 얻으실 수 있사옵니다. {love_weak}
 
 💡 **관계 개운법**
 {relation_tip_md}
 
 ### 🛤️ {final_name} 선비님의 현재 대운 흐름 (10년 대운 분석)
 
-{daewon_text}
+{daewon_season}
 
-지금의 시기는 그동안 축적해 온 내공과 지식을 현실의 구체적인 권력과 부로 전환해야 하는 일생일대의 골든타임이옵니다. {daewon_advice} 단기적인 일희일비에 흔들리지 마시고, 선비님의 왕성한 {strong_elem} 기운이 절정에 이르는 3년 뒤의 정상을 바라보며 묵묵히 활시위를 당기시옵소서.
+{daewon_head}
+
+지금의 시기는 그동안 축적해 온 내공과 지식을 현실의 구체적인 권력과 부로 전환해야 하는 일생일대의 골든타임이옵니다. {daewon_strength} {daewon_hour}
+
+{daewon_tail}
+
+단기적인 일희일비에 흔들리지 마시고, 선비님의 왕성한 {strong_elem} 기운이 절정에 이르는 3년 뒤의 정상을 바라보며 묵묵히 활시위를 당기시옵소서.
 
 💡 **대운 승부수**
 {daewon_strategy_md}
 
 ### 🌟 {final_name} 선비님을 위한 종합 카운슬링
 
-{counseling_text}
+{counseling_head}
 
 {closing_advice}
+
+{counseling_tail}
 """
 
 def build_dynamic_gemini_prompt(final_name: str, saju_json_data: dict) -> str:
@@ -1213,3 +1482,625 @@ def build_personalized_tojeong_report(name: str, saju_data: dict, year_info: dic
 > **“운(運)은 하늘에 달렸으나 성(成)은 사람의 정성에 달렸도다.”**
 
 바위틈을 뚫고 솟아오르는 소나무처럼 굳센 절개를 지키고 스스로의 양심에 부끄러움이 없다면, 올해는 선비의 일생에서 가장 눈부신 금자탑을 쌓는 영광의 한 해가 될 것이로다. 부디 지혜의 등불을 밝혀 천하를 호령하시게."""
+
+
+# ==============================================================================
+# 5. [재회운 (reunion)] 전용 시스템 프롬프트 및 동적 생성기
+# ==============================================================================
+
+ELEM_GEN = {"목": "화", "화": "토", "토": "금", "금": "수", "수": "목"}
+ELEM_KILL = {"목": "토", "토": "수", "수": "화", "화": "금", "금": "목"}
+ELEM_PARENT = {"목": "수", "화": "목", "토": "화", "금": "토", "수": "금"}
+
+ELEM_CONTACT_MONTHS = {
+    "목": "3월 중순에서 5월 초(음력 2~3월)",
+    "화": "6월 초에서 7월 중순(음력 5~6월)",
+    "토": "7월 말에서 9월 초(음력 6~7월)",
+    "금": "9월 중순에서 11월 초(음력 8~9월)",
+    "수": "11월 중순에서 다음 해 1월(음력 10~11월)"
+}
+
+ELEM_PROFILE = {
+    "목": "키가 크고 목소리가 낮으며, 말보다 행동으로 신뢰를 쌓는 사람",
+    "화": "웃음이 밝고 분위기를 끌어올리며, 감정 표현이 솔직한 사람",
+    "토": "약속을 잘 지키고 생활이 안정된, 든든한 울타리 같은 사람",
+    "금": "선이 분명하고 정돈된 취향을 지닌, 예의와 책임감이 강한 사람",
+    "수": "이야기를 깊게 들어주고 유연하게 흐르는, 지적인 사람"
+}
+
+ELEM_ACTION = {
+    "목": "새로운 산책길을 걷거나 초록 식물을 한 그루 들이는 것",
+    "화": "햇빛을 오래 쬐고 몸을 따뜻하게 하는 것",
+    "토": "식사 시간을 규칙적으로 지키고 방을 정돈하는 것",
+    "금": "미뤄둔 서류와 약속을 정리하고 경계를 세우는 것",
+    "수": "물을 충분히 마시고 혼자만의 조용한 시간을 갖는 것"
+}
+
+ELEM_LOVE_STRENGTH = {
+    "목": "한번 마음을 주면 곧게 밀고 나가는 추진력",
+    "화": "상대를 밝게 만드는 열정과 솔직한 표현력",
+    "토": "변치 않는 안정감과 넉넉한 포용력",
+    "금": "약속을 지키는 의리와 흔들리지 않는 결단력",
+    "수": "상대의 감정을 읽는 섬세한 공감력"
+}
+
+ELEM_LOVE_MISTAKE = {
+    "목": "해결하려고만 들어서 상대의 감정을 먼저 달래지 못한 것",
+    "화": "감정이 올라온 순간의 말이 상대에게 오래 남았다는 것",
+    "토": "침묵으로 버티다 상대가 먼저 포기하게 만든 것",
+    "금": "옳고 그름을 따지느라 상대의 서운함을 놓친 것",
+    "수": "혼자 결론을 내리고 상대에게 확인하지 않은 것"
+}
+
+ELEM_MISSED_SIGNAL = {
+    "목": "헤어지기 전 “요즘 네가 예전 같지 않다”고 흘린 말을 흘려들었던 것",
+    "화": "갑자기 약속을 미루고 답장이 짧아진 것을 ‘바쁜가 보다’로 넘긴 것",
+    "토": "평소 같으면 참았을 일에 유난히 예민하게 반응한 것을 지나친 것",
+    "금": "정리하자는 말을 꺼내기 전 혼자 짐을 정리하듯 조용해진 것을 놓친 것",
+    "수": "연락은 하면서도 깊은 이야기를 피하고 “괜찮다”만 반복한 것을 놓친 것"
+}
+
+ELEM_MEMORY = {
+    "목": "함께 걸었던 나무가 많은 길을 혼자 지날 때",
+    "화": "내가 즐겨 듣던 노래가 늦은 밤에 흘러나올 때",
+    "토": "익숙한 식당의 같은 자리에 앉았을 때",
+    "금": "정돈된 서랍에서 예전에 받은 작은 물건을 발견할 때",
+    "수": "비 오는 날 창가에 앉아 멍하니 물소리를 들을 때"
+}
+
+ELEM_SEASON_DESC = {
+    "목": "싹을 틔우듯 먼저 다가가고 싶은 사람",
+    "화": "뜨겁게 타오르고 즉시 확인받고 싶은 사람",
+    "토": "천천히 익어가며 안정된 결실을 기다리는 사람",
+    "금": "결실을 확인하며 신중하게 거리를 재는 사람",
+    "수": "깊이 저장하고 좀처럼 속을 드러내지 않는 사람"
+}
+
+
+def _reunion_seed(*parts) -> int:
+    raw = "|".join(str(p) for p in parts)
+    return int(hashlib.sha256(raw.encode("utf-8")).hexdigest()[:12], 16)
+
+
+def _rpick(seed: int, salt: int, options):
+    if not options:
+        return ""
+    return options[(seed + salt * 97 + salt * salt * 13) % len(options)]
+
+
+def _reunion_relation(e1: str, e2: str) -> str:
+    if ELEM_GEN.get(e1) == e2:
+        return "gen12"
+    if ELEM_GEN.get(e2) == e1:
+        return "gen21"
+    if ELEM_KILL.get(e1) == e2:
+        return "kill12"
+    if ELEM_KILL.get(e2) == e1:
+        return "kill21"
+    return "same"
+
+
+def _elem_extremes(counts: dict):
+    order = [("목", 0), ("화", 0), ("토", 0), ("금", 0), ("수", 0)]
+    safe = {k: int((counts or {}).get(k, 0) or 0) for k, _ in order}
+    ordered = sorted(order, key=lambda x: safe.get(x[0], 0))
+    weak = ordered[0][0]
+    strong = ordered[-1][0]
+    return strong, weak
+
+
+def _season_desc(season: str) -> str:
+    if "봄" in season:
+        return ELEM_SEASON_DESC["목"]
+    if "여름" in season:
+        return ELEM_SEASON_DESC["화"]
+    if "가을" in season:
+        return ELEM_SEASON_DESC["금"]
+    if "겨울" in season:
+        return ELEM_SEASON_DESC["수"]
+    return ELEM_SEASON_DESC["토"]
+
+
+def estimate_reunion_score(u1_saju: dict, u2_saju: dict) -> int:
+    """두 사람의 일간·오행·강약을 대조해 재회 가능성 지수(42~92)를 결정적으로 산출한다."""
+    s1 = (u1_saju or {}).get("day_master", "甲")
+    s2 = (u2_saju or {}).get("day_master", "己")
+    m1 = DAY_MASTER_META.get(s1, DAY_MASTER_META["甲"])
+    m2 = DAY_MASTER_META.get(s2, DAY_MASTER_META["己"])
+    e1, e2 = m1["element"], m2["element"]
+    c1 = (u1_saju or {}).get("elements_count", {}) or {}
+    c2 = (u2_saju or {}).get("elements_count", {}) or {}
+
+    base_map = {"gen12": 80, "gen21": 84, "kill12": 63, "kill21": 60, "same": 71}
+    score = base_map.get(_reunion_relation(e1, e2), 70)
+
+    strong1, weak1 = _elem_extremes(c1)
+    strong2, weak2 = _elem_extremes(c2)
+
+    if strong2 == weak1:
+        score += 4
+    if strong1 == weak2:
+        score += 3
+    if strong1 == strong2 and strong1 in (e1, e2):
+        score -= 3
+
+    strength1 = str((u1_saju or {}).get("day_strength", "중화"))
+    strength2 = str((u2_saju or {}).get("day_strength", "중화"))
+    if "신강" in strength1 and "신강" in strength2:
+        score -= 4
+    if "신약" in strength1 and "신약" in strength2:
+        score += 1
+    if s1 == s2:
+        score -= 2
+
+    name1 = ((u1_saju or {}).get("user_info", {}) or {}).get("name", "")
+    name2 = ((u2_saju or {}).get("user_info", {}) or {}).get("name", "")
+    seed = _reunion_seed(name1, s1, sorted(c1.items()), name2, s2, sorted(c2.items()))
+    score += (seed % 9) - 4
+
+    return max(42, min(92, int(score)))
+
+
+SYSTEM_REUNION_PROMPT = """당신은 조선 왕실의 국사(國師)이자 이별한 두 사람의 인연의 끈을 살피던 최고위 도사이옵니다.
+의뢰인과 헤어진 상대방의 사주 원국·일간·오행을 정밀 대조하여, 이별의 구조와 상대의 속마음, 연락 타이밍, 재회 가능성과 다음 인연을 조선 선비/도사 특유의 고풍스럽고 품격 있는 어투(~하오이다, ~하오니, ~하시옵소서, ~하옵니다 등)로 풀이하시오.
+
+[엄격한 작성 지침 - 10장 구성]
+1. 두 사람이 어디서 어긋났는지, 이별의 시점과 반복된 다툼의 패턴을 사주의 합(合)·충(沖)·오행 강약으로 짚으시오.
+2. 두 사람의 일간과 오행 분포를 비교하여 처음 끌렸던 이유와 서로 어긋난 지점을 구체적으로 밝히시오.
+3. 의뢰인 자신의 연애 방식과 이별 앞에서 드러난 약점, 무의식적으로 반복한 실수를 솔직하게 짚으시오.
+4. 상대방의 이별 당시 속마음과 의뢰인이 놓친 신호, 지금 정말 끝난 것인지를 판별하시오.
+5. 연락이 닿을 구체적인 시기(달)와 먼저 연락해도 되는 조건, 하면 안 되는 말, 연락의 형식을 제시하시오.
+6. 상대방의 현재 마음(미련의 정도, 새 연애 가능성, 의뢰인을 떠올리는 순간)을 풀이하시오.
+7. 재회 가능성을 0에서 100 사이의 숫자로 반드시 산정하여 본문에 '[재회점수: XX점]' 형태로 명확히 기재하고, 끌림·소통·타이밍·회복력 지수와 재회의 문이 열리는 시기를 제시하시오.
+8. 재회 후 같은 이유로 다시 헤어지지 않기 위한 3가지 관계 비책과 다시 흔들릴 때의 신호를 제시하시오.
+9. 다음 인연이 오는 시기와 그 사람의 인상, 이번엔 놓치지 않는 법을 제시하시오.
+10. 마지막에 의뢰인이 지금 해야 할 한 가지와 내려놓아도 되는 것을 담은 편지를 남기시오.
+11. 호칭은 '의뢰인(이름)'과 '그 사람(상대방 이름)'으로 하며, 모든 풀이는 두 사람의 실제 일간·오행·강약 데이터에 기반하여 100% 개별화하시오. 미사여구로 분량을 채우지 말고, 같은 문장을 반복하지 마시오.
+12. 마크다운 규격: 각 장은 반드시 '### ' 머릿글로 시작하여 카드로 분리될 수 있게 하시오."""
+
+
+def build_reunion_gemini_prompt(u1_name: str, u1_saju: dict, u2_name: str, u2_saju: dict) -> str:
+    u1_stem = u1_saju.get("day_master", "甲")
+    u2_stem = u2_saju.get("day_master", "己")
+    u1_meta = DAY_MASTER_META.get(u1_stem, DAY_MASTER_META["甲"])
+    u2_meta = DAY_MASTER_META.get(u2_stem, DAY_MASTER_META["己"])
+    u1_counts = u1_saju.get("elements_count", {}) or {}
+    u2_counts = u2_saju.get("elements_count", {}) or {}
+    score = estimate_reunion_score(u1_saju, u2_saju)
+
+    return f"""[재회운 감정 의뢰 데이터]
+1. 의뢰인(第一人): {u1_name} 님
+   - 일간(본원): {u1_stem} ({u1_meta['name']}, {u1_meta['metaphor']})
+   - 오행 분포: 목({u1_counts.get('목',0)}), 화({u1_counts.get('화',0)}), 토({u1_counts.get('토',0)}), 금({u1_counts.get('금',0)}), 수({u1_counts.get('수',0)})
+   - 사주 강약: {u1_saju.get('day_strength', '중화')}
+   - 태어난 계절: {u1_saju.get('season_str', '환절기')}
+
+2. 상대방(第二人): {u2_name} 님
+   - 일간(본원): {u2_stem} ({u2_meta['name']}, {u2_meta['metaphor']})
+   - 오행 분포: 목({u2_counts.get('목',0)}), 화({u2_counts.get('화',0)}), 토({u2_counts.get('토',0)}), 금({u2_counts.get('금',0)}), 수({u2_counts.get('수',0)})
+   - 사주 강약: {u2_saju.get('day_strength', '중화')}
+   - 태어난 계절: {u2_saju.get('season_str', '환절기')}
+
+[역학 참고값]
+- 두 사람의 오행 관계를 기준으로 산출한 참고 재회 지수는 {score}점이옵니다. 본문에서는 이 값을 중심으로 ±5점 범위에서 조정하되, 반드시 '[재회점수: XX점]' 형식으로 기재하시오.
+- 연락 타이밍과 다음 인연 시기는 반드시 구체적인 달(월)로 제시하시오.
+
+[작성 지침]
+위 데이터를 바탕으로 10개 장을 빠짐없이, 각 장마다 최소 3문단 이상으로 작성하시오. 같은 문장이나 같은 비유를 반복하지 말고, 두 사람의 일간·오행·강약에 따라 달라지는 구체적인 장면을 쓰시오.
+어투는 조선 도사의 고풍스럽고 묵직한 하오체/하게체를 엄수하시오:
+
+### 🌧️ 어디서 어긋났을까 — 이별의 구조와 반복된 다툼
+### 🪞 두 사람의 기운 비교 — 끌렸던 이유와 어긋난 지점
+### 💌 나의 연애 방식 — 이별 앞에서 나는 어떤 사람이었나
+### 🔍 몰랐던 이별의 이유 — 그 사람의 속마음
+### 📱 연락이 닿을 타이밍 — 언제, 어떻게 닿을까
+### 🌙 그 사람의 지금 마음 — 미련인가, 정리인가
+### 🧵 재회 가능성 — 재회 지수와 문이 열리는 시기
+### 🛡️ 재회 후 관계 지키기 — 같은 이유로 다시 헤어지지 않으려면
+### 🌱 다음 인연이 오는 시기 — 이번엔 놓치지 않는 법
+### ✉️ 마지막 편지 — 지금 해야 할 한 가지"""
+
+
+def build_personalized_reunion_report(u1_name: str, u1_saju: dict, u2_name: str, u2_saju: dict) -> str:
+    """AI 쿼터 소진 시에도 두 사람의 사주 데이터로 100% 개별화되는 재회운 비전서."""
+    u1 = u1_name or "선비"
+    u2 = u2_name or "그 사람"
+    s1 = u1_saju.get("day_master", "甲")
+    s2 = u2_saju.get("day_master", "己")
+    m1 = DAY_MASTER_META.get(s1, DAY_MASTER_META["甲"])
+    m2 = DAY_MASTER_META.get(s2, DAY_MASTER_META["己"])
+    e1, e2 = m1["element"], m2["element"]
+    c1 = u1_saju.get("elements_count", {}) or {}
+    c2 = u2_saju.get("elements_count", {}) or {}
+    strong1, weak1 = _elem_extremes(c1)
+    strong2, weak2 = _elem_extremes(c2)
+    strength1 = str(u1_saju.get("day_strength", "중화(中和)"))
+    strength2 = str(u2_saju.get("day_strength", "중화(中和)"))
+    season1 = str(u1_saju.get("season_str", "환절기"))
+    season2 = str(u2_saju.get("season_str", "환절기"))
+    rel = _reunion_relation(e1, e2)
+    score = estimate_reunion_score(u1_saju, u2_saju)
+
+    seed = _reunion_seed(
+        u1, s1, sorted(c1.items()), strength1, season1,
+        u2, s2, sorted(c2.items()), strength2, season2
+    )
+
+    counts1_text = " · ".join(f"{k} {int(c1.get(k, 0) or 0)}" for k in ("목", "화", "토", "금", "수"))
+    counts2_text = " · ".join(f"{k} {int(c2.get(k, 0) or 0)}" for k in ("목", "화", "토", "금", "수"))
+    thread_count = int(c1.get(e2, 0) or 0) + int(c2.get(e1, 0) or 0)
+
+    # ---------------------------------------------------------------
+    # 관계 구조 및 이별의 뇌관
+    # ---------------------------------------------------------------
+    if rel == "gen12":
+        rel_type = f"{m1['name']}이 {m2['name']}을 생(生)하는 상생 — {u1} 님이 먼저 베푸는 구조"
+        break_opening = _rpick(seed, 1, [
+            f"{u1} 님이 {u2} 님에게 쏟아부은 온기가 처음에는 구원이었으나, 시간이 지나면서 {u2} 님에게는 숨 쉴 틈이 사라졌사옵니다. 베푸는 쪽은 사랑이라 믿었고, 받는 쪽은 빚이라 느낀 순간 두 사람의 온도가 어긋났사옵니다.",
+            f"{u1} 님의 넉넉한 {e1} 기운이 {u2} 님의 메마른 자리를 채워주었사옵니다. 그러나 채워주는 일이 반복되면 상대의 부족함만 보이게 되고, {u2} 님은 고마우면서도 자존심이 상해 말을 아끼게 되었사옵니다."
+        ])
+        avoid_words = "“내가 너에게 얼마나 해줬는데”라는 말"
+        boost_extra = "더 이상 베풀어서 붙잡으려 하지 말고, 상대가 먼저 다가올 여백을 남기는 것"
+    elif rel == "gen21":
+        rel_type = f"{m2['name']}이 {m1['name']}을 생(生)하는 상생 — {u2} 님이 먼저 채워주는 구조"
+        break_opening = _rpick(seed, 1, [
+            f"{u2} 님의 헌신이 {u1} 님의 삶을 떠받쳤으나, {u1} 님이 그것을 당연하게 여긴 순간이 있었사옵니다. 사랑은 소진되면 조용히 멀어지나니, {u2} 님은 마지막까지 말보다 행동으로 마음을 보였으나 {u1} 님이 그 신호를 읽지 못하였사옵니다.",
+            f"{u2} 님이 먼저 손을 내밀고 먼저 맞춰주는 관계가 오래 이어졌사옵니다. 그러나 한쪽만 걷는 길은 결국 다리가 아프게 마련이니, {u2} 님이 지친 것이 이별의 진짜 이유였사옵니다."
+        ])
+        avoid_words = "“너는 항상 나만큼 해주지 않았다”는 말"
+        boost_extra = "받은 것을 세지 말고, 상대가 무엇에 지쳐 있었는지 먼저 말로 확인하는 것"
+    elif rel == "kill12":
+        rel_type = f"{m1['name']}이 {m2['name']}을 극(剋)하는 상극 — {u1} 님의 기준이 강하게 작동하는 구조"
+        break_opening = _rpick(seed, 1, [
+            f"{u1} 님의 기준과 추진력이 {u2} 님의 속도를 눌렀고, {u2} 님은 말없이 물러서다 마음의 문을 닫았사옵니다. 이별은 갑자기 온 것이 아니라, {u2} 님이 더 이상 설명하지 않기로 결심한 날 완성된 것이옵니다.",
+            f"{m1['name']}의 곧은 기운이 {m2['name']}을 다그치는 형국이었사옵니다. {u1} 님은 끌어올리려 했다지만 {u2} 님은 인정받지 못한다고 느꼈고, 그 서운함이 쌓여 이별의 벽이 되었사옵니다."
+        ])
+        avoid_words = "“네가 그렇게 하니까 헤어진 거야”라는 말"
+        boost_extra = "상대를 바꾸려는 마음을 내려놓고, 내 기준을 한 번만 낮춰 말하는 것"
+    elif rel == "kill21":
+        rel_type = f"{m2['name']}이 {m1['name']}을 극(剋)하는 상극 — {u2} 님의 기세가 관계를 흔드는 구조"
+        break_opening = _rpick(seed, 1, [
+            f"{u2} 님의 기세와 고집이 {u1} 님의 자존심을 건드렸고, 사소한 말다툼이 자존심 싸움으로 번졌사옵니다. 두 사람 모두 물러서지 않았기에, 이별은 감정의 끝이 아니라 자존심의 결말로 찾아온 것이옵니다.",
+            f"{m2['name']}의 강한 기운이 {u1} 님을 압박하는 순간이 있었사옵니다. {u1} 님은 겉으로는 괜찮은 척했으나 속으로는 계속 긴장하고 있었고, 그 긴장이 어느 날 폭발하여 관계를 끊어버렸사옵니다."
+        ])
+        avoid_words = "“이번엔 네가 맞춰야 해”라는 말"
+        boost_extra = "누가 이기는 싸움을 끝내고, 상대의 말투가 아니라 그 말 뒤의 두려움을 듣는 것"
+    else:
+        rel_type = f"같은 {e1} 기운을 나눈 비화(比和) — 거울처럼 닮아 서로를 비추는 구조"
+        break_opening = _rpick(seed, 1, [
+            f"두 사람은 너무 닮아서 상대의 아픔을 알아차리면서도, 똑같은 방식으로 상처를 주고받았사옵니다. 같은 {e1} 기운은 이해가 빠른 대신 거리 두기가 어려워, 서로의 결핍까지 정확히 찌르게 되나이다.",
+            f"{u1} 님과 {u2} 님은 거울을 보듯 서로를 읽었사옵니다. 그러나 거울은 상대의 장점만 비추지 않기에, 두 사람은 자신이 가장 감추고 싶은 약점을 서로에게서 발견하고 견디지 못한 것이옵니다."
+        ])
+        avoid_words = "“우린 역시 안 맞았어”라는 말"
+        boost_extra = "닮은 점을 확인하려 하지 말고, 서로 다른 속도와 취향을 인정하는 것"
+
+    if "신강" in strength1 and "신강" in strength2:
+        conflict_line = f"두 분 모두 강한 기운을 타고나 옳고 그름을 가리는 순간 양보가 사라졌사옵니다. 특히 {u1} 님의 {m1['name']} 기운과 {u2} 님의 {m2['name']} 기운이 동시에 세워질 때, 대화는 해결이 아니라 승부가 되었사옵니다."
+    elif "신약" in strength1 and "신약" in strength2:
+        conflict_line = "두 분 모두 상대의 기분을 살피느라 정작 해야 할 말을 삼켰사옵니다. 서운함이 쌓인 줄도 모른 채 웃어넘기다가, 어느 날 작은 일에 크게 무너진 것이 반복된 다툼의 정체이옵니다."
+    elif "신강" in strength1:
+        conflict_line = f"{u1} 님의 단호한 기준이 {u2} 님에게는 통보처럼 들렸고, {u2} 님은 반박 대신 침묵으로 저항하였사옵니다. 침묵은 사라진 것이 아니라 쌓인 것이었사옵니다."
+    else:
+        conflict_line = f"{u2} 님의 기세가 올라갈 때 {u1} 님이 먼저 물러서는 패턴이 반복되었사옵니다. 문제는 물러섬이 이해가 아니라 회피로 바뀌면서, {u1} 님의 마음에도 벽이 생겼다는 것이옵니다."
+
+    if season1 == season2:
+        season_line = f"두 분 모두 {season1}의 기운을 함께 타고나 계절의 언어는 통하나, 그 농도와 속도가 달라 서로를 오해한 순간이 있었사옵니다."
+    else:
+        season_line = f"{u1} 님은 {season1}의 기운으로 {_season_desc(season1)}, {u2} 님은 {season2}의 기운으로 {_season_desc(season2)}. 사랑의 온도가 다르면 같은 말도 다르게 들리는 법이옵니다."
+
+    break_point = _rpick(seed, 3, [
+        f"{u1} 님이 부족한 {weak1} 기운을 {u2} 님에게서 채우려 했으나, {u2} 님도 자기 {weak2} 기운에 지쳐 있었사옵니다. 서로가 서로에게 기대는 방식이 어긋난 순간이었사옵니다.",
+        f"결정적인 이별은 다툼 그 자체가 아니라, 다툰 뒤 {u2} 님이 “이제 됐다”고 말한 순간이었사옵니다. 그 말은 감정이 아니라 오래 쌓인 {weak2}의 피로가 터진 것이었사옵니다.",
+        f"두 사람 사이의 마지막 대화는 {strong1} 기운과 {strong2} 기운이 정면으로 부딪힌 자리였사옵니다. 한쪽은 해결을 원했고 다른 쪽은 이해를 원했으나, 끝내 같은 문을 열지 못하였사옵니다."
+    ])
+
+    if thread_count >= 2:
+        remaining_thread = f"{u2} 님의 {e2} 기운이 {u1} 님의 명식에 {int(c1.get(e2, 0) or 0)}개, {u1} 님의 {e1} 기운이 {u2} 님의 명식에 {int(c2.get(e1, 0) or 0)}개 남아 있사옵니다. 인연의 끈이 두 겹으로 남아 있으니, 겉으로 끊긴 것과 실제로 끊긴 것은 다르옵니다."
+    elif thread_count == 1:
+        remaining_thread = f"두 사람의 명식에 서로의 기운이 한 가닥씩 남아 있사옵니다. 강한 끈은 아니나 완전히 사라진 것도 아니어서, 계기 하나에 다시 이어질 여지는 있사옵니다."
+    else:
+        remaining_thread = f"두 사람의 명식에는 서로의 기운이 거의 남아 있지 않사옵니다. 이는 인연이 얇다는 뜻이 아니라, 억지로 붙잡는 방식으로는 이어지기 어렵다는 뜻으로 읽어야 하옵니다."
+
+    # ---------------------------------------------------------------
+    # 2장: 기운 비교
+    # ---------------------------------------------------------------
+    if rel in ("gen12", "gen21"):
+        attraction_line = _rpick(seed, 5, [
+            f"처음 끌림은 한쪽이 다른 쪽의 빈자리를 자연스럽게 채워주는 데서 시작되었사옵니다. {u1} 님은 {u2} 님에게서 {e2}의 결을, {u2} 님은 {u1} 님에게서 {e1}의 온기를 처음 느꼈사옵니다.",
+            f"두 사람이 가까워진 것은 서로의 오행이 만들어낸 온기 때문이었사옵니다. 함께 있으면 말하지 않아도 편안했던 순간이 있었으나, 그 편안함이 오래되면서 서로의 노력을 당연하게 여긴 것이 화근이었사옵니다."
+        ])
+    elif rel in ("kill12", "kill21"):
+        attraction_line = _rpick(seed, 5, [
+            f"처음에는 서로가 가진 결이 달라 오히려 강하게 끌렸사옵니다. {e1}의 기운과 {e2}의 기운이 부딪히며 긴장감을 만들었고, 그 긴장감을 두 사람은 설렘으로 착각하였사옵니다.",
+            f"두 사람 사이에는 설명하기 어려운 긴장과 끌림이 동시에 있었사옵니다. 다름이 매력이었으나, 가까워질수록 그 다름이 서로를 다그치는 언어로 변한 것이 아쉬움이옵니다."
+        ])
+    else:
+        attraction_line = _rpick(seed, 5, [
+            f"처음에는 말이 통한다는 것이 가장 큰 끌림이었사옵니다. 같은 {e1} 기운을 나눈 두 사람은 취향과 리듬이 닮아 빨리 가까워졌으나, 닮은 만큼 서로의 약점도 빨리 발견하였사옵니다.",
+            f"두 사람은 거울을 마주한 듯 서로를 이해했사옵니다. 그러나 이해가 깊어질수록 기대도 커졌고, 그 기대가 어긋날 때 실망도 배로 커진 것이 이별의 씨앗이었사옵니다."
+        ])
+
+    if strong1 == strong2:
+        clash_line = f"두 사람 모두 {strong1} 기운이 강하여, 같은 방식으로 자존심을 세우는 순간이 문제였사옵니다. 한쪽이 한 발 물러서면 풀릴 일도, 둘 다 버티면 산이 되어 돌아왔사옵니다."
+    elif ELEM_KILL.get(strong1) == strong2:
+        clash_line = f"{u1} 님의 강한 {strong1} 기운이 {u2} 님의 {strong2} 기운을 누르는 형국이었사옵니다. {u1} 님은 이끌었다고 생각했으나 {u2} 님은 눌렸다고 느꼈고, 그 차이가 말투에 배어났사옵니다."
+    elif ELEM_KILL.get(strong2) == strong1:
+        clash_line = f"{u2} 님의 강한 {strong2} 기운이 {u1} 님의 {strong1} 기운을 압박하는 순간이 있었사옵니다. {u1} 님은 맞서기보다 지쳐갔고, 그 피로가 관계를 멀어지게 하였사옵니다."
+    else:
+        clash_line = f"{u1} 님은 {strong1}이 강하고 {weak1}이 약하며, {u2} 님은 {strong2}이 강하고 {weak2}이 약하옵니다. 서로의 강한 기운이 겹치는 자리에서는 충돌하고, 약한 기운이 겹치는 자리에서는 서로를 이해하지 못하였사옵니다."
+
+    if strong2 == weak1 and strong1 == weak2:
+        balance_line = "서로의 빈자리를 정확히 채워주는 보기 드문 구조이옵니다. 다만 채워주는 일이 반복되면 한쪽이 지치므로, 받는 쪽도 자기 그릇을 넓혀야 오래가옵니다."
+    elif strong2 == weak1:
+        balance_line = f"{u2} 님의 강한 {strong2} 기운이 {u1} 님의 부족한 {weak1}을 채워주는 구조이옵니다. {u1} 님이 이 관계에서 편안함을 느낀 이유가 여기에 있사옵니다."
+    elif strong1 == weak2:
+        balance_line = f"{u1} 님의 강한 {strong1} 기운이 {u2} 님의 부족한 {weak2}를 채워주는 구조이옵니다. {u2} 님이 처음 끌린 이유도 그 든든함이었사옵니다."
+    else:
+        balance_line = f"서로의 부족한 기운이 정확히 맞물리지는 않사옵니다. 그래서 두 사람은 사랑만으로 부족한 부분을 메우려 했고, 그 노력이 때로는 서로에게 부담이 되었사옵니다."
+
+    # ---------------------------------------------------------------
+    # 3장: 나의 연애 방식
+    # ---------------------------------------------------------------
+    if "신강" in strength1:
+        love_weakness = "내 기준이 상대의 속도보다 앞서는 순간, 사랑이 아니라 훈육처럼 보였다는 점"
+        love_advice = f"{u1} 님이 다음 사랑에서 바꿔야 할 것은 ‘먼저 확인하는 습관’이옵니다. 부족한 {weak1} 기운을 상대에게만 기대지 말고, {ELEM_ACTION[weak1]}으로 스스로를 채우시오."
+    elif "신약" in strength1:
+        love_weakness = "상대의 기분에 맞추다 정작 내 마음을 숨겨, 상대가 내 진심을 끝까지 알지 못했다는 점"
+        love_advice = f"{u1} 님은 사랑할수록 자기 자리를 잃지 않도록 조심해야 하옵니다. 부족한 {weak1} 기운을 채우는 일을 상대에게 맡기지 말고, {ELEM_ACTION[weak1]}으로 자기 중심을 먼저 세우시오."
+    else:
+        love_weakness = "괜찮은 척하다 결정적 순간에 말을 미뤄, 상대가 먼저 지치게 만든 점"
+        love_advice = f"{u1} 님은 균형을 지키려 애쓰지만, 사랑에서는 때로 균형보다 솔직함이 필요하옵니다. 부족한 {weak1} 기운을 의식하여 {ELEM_ACTION[weak1]}을 일상에 들이시오."
+
+    # ---------------------------------------------------------------
+    # 4장: 상대의 속마음
+    # ---------------------------------------------------------------
+    if "신강" in strength2:
+        partner_mind = f"{u2} 님은 겉으로는 쿨하게 정리한 척하나, 자존심이 상한 기억과 {u1} 님에 대한 후회를 동시에 품고 있사옵니다. 먼저 연락하기는 싫지만, {u1} 님이 완전히 잊었다고 느끼면 오히려 마음이 흔들릴 것이옵니다."
+    elif "신약" in strength2:
+        partner_mind = f"{u2} 님은 그리움이 크지만 다시 상처받을까 두려워 문을 반쯤만 열어두고 있사옵니다. {u1} 님이 다그치면 닫히고, 기다려주면 조금씩 열리는 문이옵니다."
+    else:
+        partner_mind = f"{u2} 님은 이성적으로는 정리했다고 믿으면서도, 익숙한 계기 앞에서는 마음이 흔들리는 상태이옵니다. 지금은 감정보다 안전을 택하는 시기이므로, {u1} 님이 조급해지면 오히려 멀어지옵니다."
+
+    if score >= 80:
+        is_it_over = "아직 끝난 것이 아니옵니다. 다만 기다림의 방식이 틀렸을 뿐, 인연의 문이 완전히 닫힌 것은 아니옵니다."
+    elif score >= 65:
+        is_it_over = "완전히 끝났다고 단정할 수 없사옵니다. 문은 열려 있으나, 억지로 밀면 잠기고 때를 기다리면 열리는 문이옵니다."
+    elif score >= 50:
+        is_it_over = "지금은 문이 반쯤 닫혀 있사옵니다. 상대의 마음보다 {u1} 님 자신의 마음을 먼저 정리해야 다시 열릴 수 있사옵니다."
+    else:
+        is_it_over = "지금은 끝났다고 보는 것이 냉정하나 진실에 가깝사옵니다. 다만 끝난 인연에서 배운 것을 다음 인연으로 가져가는 것이 하늘의 뜻이옵니다."
+
+    # ---------------------------------------------------------------
+    # 5장: 연락 타이밍
+    # ---------------------------------------------------------------
+    contact_month = ELEM_CONTACT_MONTHS.get(e2, "11월 중순에서 다음 해 1월")
+    second_month = ELEM_CONTACT_MONTHS.get(ELEM_PARENT.get(e1, "수"), "3월 중순에서 5월 초")
+    if score >= 75:
+        contact_condition = f"상대가 먼저 안부를 묻거나, 두 사람이 공유한 일로 연락이 닿을 때가 기회이옵니다. {u1} 님이 먼저 연락하더라도 짧고 가벼운 안부 한 줄이면 충분하옵니다."
+    elif score >= 55:
+        contact_condition = f"상대가 {u1} 님의 소식을 자연스럽게 접한 뒤, 부담 없는 계기로 연락이 닿을 때이옵니다. 용건을 만들어 붙이지 말고, 안부만 남기고 답을 재촉하지 마시오."
+    else:
+        contact_condition = f"최소 한 달은 기다리시오. 지금의 연락은 상대에게 확인받으려는 압박으로 읽히옵니다. {u1} 님이 일상을 회복한 뒤에야 연락이 대화로 이어질 수 있사옵니다."
+
+    contact_style = _rpick(seed, 9, [
+        "짧은 문자 한 통이 가장 좋사옵니다. 길게 쓰면 상대는 읽기 전에 부담부터 느끼옵니다.",
+        "전화보다 문자로 시작하시오. 목소리는 준비되지 않은 상대에게는 침범으로 들리옵니다.",
+        "공통된 지인을 통한 자연스러운 안부가 안전하옵니다. 다만 소문을 내려는 의도는 없어야 하옵니다.",
+        "우연한 계기를 만들되, 거짓말은 하지 마시오. 상대는 그 거짓을 오래 기억하옵니다."
+    ])
+
+    # ---------------------------------------------------------------
+    # 6장: 지금 마음
+    # ---------------------------------------------------------------
+    regret_pct = max(12, min(96, score + (seed % 11) - 5))
+    new_love_pct = max(6, min(88, 100 - regret_pct - 8 + ((seed >> 4) % 9)))
+    current_mind_para = _rpick(seed, 11, [
+        f"{u2} 님의 마음속에는 아직 {u1} 님의 목소리와 습관이 남아 있사옵니다. 다만 그리움과 재회는 다른 것이어서, 그리움이 곧 돌아옴을 뜻하지는 않사옵니다.",
+        f"{u2} 님은 {u1} 님과의 기억을 지우려 애쓰고 있사옵니다. 그러나 지우려는 노력 자체가 아직 마음이 붙어 있다는 증거이옵니다.",
+        f"{u2} 님은 지금 새로운 일상에 적응하는 중이옵니다. {u1} 님을 미워서가 아니라, 흔들리지 않기 위해 일부러 떠올리지 않는 것일 수 있사옵니다."
+    ])
+
+    # ---------------------------------------------------------------
+    # 7장: 재회 가능성
+    # ---------------------------------------------------------------
+    if score >= 80:
+        score_comment = "인연의 끈이 아직 두껍게 남아 있사옵니다. 지금 필요한 것은 밀어붙임이 아니라 상대가 안심하고 다가올 수 있는 여백이옵니다."
+    elif score >= 65:
+        score_comment = "가능성은 열려 있으나 조건이 필요하옵니다. 그 조건은 상대를 바꾸는 것이 아니라, 두 사람이 싸우던 방식을 바꾸는 것이옵니다."
+    elif score >= 50:
+        score_comment = "쉽지 않으나 완전히 닫히지는 않았사옵니다. 다만 지금은 재회보다 {u1} 님 자신을 회복하는 일이 먼저이옵니다."
+    else:
+        score_comment = "지금은 놓아주는 것이 두 사람 모두에게 이롭사옵니다. 집착으로 붙잡은 인연은 다시 와도 같은 상처를 남기옵니다."
+
+    pull_idx = max(20, min(98, score + 4 + (seed % 5)))
+    talk_idx = max(20, min(98, score - 3 + ((seed >> 3) % 7)))
+    timing_idx = max(20, min(98, score - 6 + ((seed >> 6) % 9)))
+    heal_idx = max(20, min(98, score + 1 + ((seed >> 9) % 6)))
+
+    def _idx_comment(v):
+        if v >= 75:
+            return "매우 강함"
+        if v >= 60:
+            return "아직 남아 있음"
+        if v >= 45:
+            return "약하지만 여지 있음"
+        return "거의 소진됨"
+
+    reunion_window = f"{contact_month}이 첫 번째 문이오니, 이 시기에는 부담 없는 안부로 시작하시오. 두 번째 문은 {second_month}에 열리나, 그때는 이미 마음의 정리가 끝난 뒤라 결과가 달라질 수 있사옵니다."
+
+    boost1 = f"{u1} 님의 부족한 {weak1} 기운을 {ELEM_ACTION[weak1]}으로 먼저 채우시오. 상대에게 기대어 채우려 하면 같은 갈증이 반복되옵니다."
+    boost2 = f"{boost_extra}."
+    boost3 = _rpick(seed, 13, [
+        "상대의 SNS를 하루에 몇 번씩 확인하는 습관을 끊으시오. 확인할수록 {u1} 님의 마음은 조급해지고, 그 조급함은 연락의 말투에 그대로 배어납니다.",
+        "공통 지인에게 두 사람의 소식을 캐묻지 마시오. 소문은 반드시 상대의 귀에 들어가고, 그 순간 신뢰는 회복하기 어려워집니다.",
+        "재회를 목표로 삼지 말고, 오늘 하루를 온전히 사는 연습을 하시오. 그 여유가 생길 때 상대도 {u1} 님을 다시 보게 됩니다."
+    ])
+
+    # ---------------------------------------------------------------
+    # 8장: 재회 후 관계 지키기
+    # ---------------------------------------------------------------
+    if score >= 65:
+        reunion_caution = f"다시 만나는 것이 끝이 아니라 시작이옵니다. 두 사람이 헤어진 이유를 말로 확인하지 않으면, 같은 자리에서 다시 넘어지옵니다."
+    else:
+        reunion_caution = f"재회가 이루어지더라도 서두르지 마시오. 관계를 다시 세우는 데는 헤어진 시간만큼의 인내가 필요하옵니다."
+
+    rule1 = f"다시 만나면 먼저 ‘우리가 싸울 때 지킬 규칙’을 정하시오. {conflict_line} 이 규칙이 없으면 같은 장면이 반복되옵니다."
+    rule2 = f"싸움의 언어를 바꾸시오. {avoid_words} 대신 “나는 그때 이렇게 느꼈어”라고 감정을 말하시오. 상대를 공격하는 말은 사실이어도 관계를 회복시키지 못하옵니다."
+    rule3 = f"각자의 빈자리를 스스로 채우시오. {u1} 님은 {weak1}, {u2} 님은 {weak2}의 기운이 약하옵니다. 서로에게 그것을 요구하는 대신, 각자 {ELEM_ACTION[weak1]}과 {ELEM_ACTION[weak2]}을 일상에 들이시오."
+
+    signal = _rpick(seed, 15, [
+        f"연락이 뜸해지고 “바빠서”라는 말이 반복되면 위험 신호이옵니다. 그 말은 바쁨이 아니라 회피의 시작일 수 있사옵니다.",
+        f"사소한 일에 예민해지고 대화가 줄어들면, 두 사람이 예전의 패턴으로 돌아가고 있다는 신호이옵니다. 그때는 문제를 미루지 말고 그 자리에서 다루시오.",
+        f"상대가 “괜찮다”고만 말하고 속마음을 말하지 않으면, 이미 마음의 문이 반쯤 닫힌 것이옵니다. 조용히 기다리되, 먼저 다가갈 때는 반드시 말로 확인하시오."
+    ])
+
+    # ---------------------------------------------------------------
+    # 9장: 다음 인연
+    # ---------------------------------------------------------------
+    parent_elem = ELEM_PARENT.get(e1, "수")
+    next_window = ELEM_CONTACT_MONTHS.get(parent_elem, "11월 중순에서 다음 해 1월")
+    next_profile = ELEM_PROFILE.get(parent_elem, "이야기를 깊게 들어주는 사람")
+
+    if score >= 70:
+        next_love_intro = f"재회가 이루어지더라도 다음 인연의 문은 함께 열려 있사옵니다. 이는 {u1} 님이 양다리를 걸치라는 뜻이 아니라, 어떤 선택을 하든 스스로를 잃지 말라는 뜻이옵니다."
+    else:
+        next_love_intro = f"이번 인연을 놓아주는 연습이 다음 인연을 부르는 씨앗이 되옵니다. {u1} 님의 명식에는 {parent_elem}의 기운이 다음 인연을 데려올 자리가 비어 있사옵니다."
+
+    next_advice = _rpick(seed, 17, [
+        f"다음 사람에게도 {u1} 님의 방식대로 사랑하되, 이번에는 {weak1} 기운을 채우는 일을 상대에게만 맡기지 마시오. {ELEM_ACTION[weak1]}을 먼저 실천하는 사람이 좋은 인연을 부릅니다.",
+        f"다음 인연이 올 때, {u1} 님은 지난 이별에서 배운 ‘확인하는 용기’를 가져가시오. 좋을 때보다 어긋날 때 먼저 말하는 사람이 오래가는 사랑을 만듭니다.",
+        f"다음 사람을 만나면 첫 달에 모든 것을 쏟아붓지 마시오. {u1} 님의 {e1} 기운은 빠르게 타오르지만, 오래 타려면 불을 조절하는 지혜가 필요하옵니다."
+    ])
+    next_close = _rpick(seed, 19, [
+        f"다음 인연은 {u1} 님이 스스로를 아끼기 시작할 때 가장 자연스럽게 찾아오옵니다.",
+        f"좋은 인연은 쫓아가서 잡는 것이 아니라, {u1} 님이 제자리에 서 있을 때 걸어 들어오는 것이옵니다.",
+        f"{u1} 님의 빈자리를 두려워하지 마시오. 그 빈자리가 있어야 다음 사람이 들어올 수 있사옵니다."
+    ])
+
+    # ---------------------------------------------------------------
+    # 10장: 마지막 편지
+    # ---------------------------------------------------------------
+    letter_open = _rpick(seed, 21, [
+        f"이 편지는 {u2} 님에게 보내는 글이 아니라, {u1} 님 자신에게 보내는 글이옵니다. 사랑을 잃었다고 해서 {u1} 님이 사랑할 자격을 잃은 것은 아니옵니다.",
+        f"{u1} 님은 지금 답을 찾으려 애쓰고 있사옵니다. 그러나 모든 답을 오늘 알 필요는 없사옵니다. 시간은 답을 늦게 주지만, 정확한 답을 주옵니다.",
+        f"{u1} 님의 마음이 무거운 것은 아직 사랑이 남아 있기 때문이옵니다. 그 사랑을 부정하지 마시오. 다만 그 사랑이 {u1} 님 자신을 삼키게 두지는 마시오."
+    ])
+    let_go = _rpick(seed, 23, [
+        f"상대의 모든 행동을 해석하려는 마음을 내려놓으시오. 해석은 확인이 아니며, 확인하지 않은 해석은 {u1} 님을 더 불안하게 만들 뿐이옵니다.",
+        f"“내가 조금만 더 참았더라면”이라는 가정을 내려놓으시오. 그 가정은 {u1} 님을 과거에 붙잡아 두고 현재를 살지 못하게 하옵니다.",
+        f"상대가 나를 어떻게 생각하는지에 대한 답을 지금 당장 얻으려는 마음을 내려놓으시오. 그 답은 {u1} 님이 흔들릴수록 더 멀어지옵니다."
+    ])
+    self_talk = _rpick(seed, 25, [
+        "나는 잃은 사람이 아니라, 아직 사랑할 줄 아는 사람이다.",
+        "지금의 아픔은 끝이 아니라, 더 나은 사랑을 배우는 과정이다.",
+        "나는 붙잡지 않아도 사랑받을 자격이 있는 사람이다.",
+        "놓아주는 용기가, 결국 나를 지키는 힘이 된다."
+    ])
+    letter_close = _rpick(seed, 27, [
+        f"오늘은 {ELEM_ACTION[weak1]}부터 시작하시오. 작은 회복이 쌓여 {u1} 님의 기운을 다시 세울 것이옵니다. 부디 자신을 미워하지 마시고, 천천히 걸어가시오.",
+        f"{u1} 님의 명식에는 분명 다시 빛날 자리가 있사옵니다. 지금은 그 자리를 비워두고, {ELEM_ACTION[weak1]}으로 몸과 마음을 돌보시오. 때가 오면 인연은 스스로 문을 두드릴 것이옵니다.",
+        f"사랑은 끝난 것이 아니라 모양을 바꾸는 중이옵니다. {u1} 님이 자신을 아끼는 만큼, 다음 인연의 그릇도 커질 것이옵니다. 부디 조급해하지 마시오."
+    ])
+
+    return f"""### 🌧️ 어디서 어긋났을까 — 이별의 구조와 반복된 다툼
+
+{break_opening}
+
+두 사람의 계절은 {u1} 님이 **{season1}**, {u2} 님이 **{season2}**에 태어난 기운으로 엇갈려 있사옵니다. {season_line}
+
+* **반복된 다툼의 뇌관:** {conflict_line}
+* **결정적 이별의 순간:** {break_point}
+* **아직 남은 인연의 끈:** {remaining_thread}
+
+### 🪞 두 사람의 기운 비교 — 끌렸던 이유와 어긋난 지점
+
+* **{u1} 님의 본원:** {s1} ({m1['name']}) — {m1['title']}
+* **{u2} 님의 본원:** {s2} ({m2['name']}) — {m2['title']}
+* **두 사람의 관계 구조:** {rel_type}
+
+{attraction_line}
+
+{clash_line}
+
+* **오행 분포 비교:** {u1} 님은 {counts1_text}, {u2} 님은 {counts2_text}. {balance_line}
+
+### 💌 나의 연애 방식 — 이별 앞에서 나는 어떤 사람이었나
+
+{u1} 님은 **{m1['name']}**의 기운을 타고난 분으로, {m1['core_nature']}
+
+* **사랑할 때의 강점:** {ELEM_LOVE_STRENGTH.get(e1, '상대를 깊이 품는 힘')}
+* **이별 앞에서 드러난 약점:** {love_weakness}
+* **무의식적으로 반복한 실수:** {ELEM_LOVE_MISTAKE.get(e1, '상대의 마음을 확인하지 않고 혼자 결론을 내린 것')}
+
+{love_advice}
+
+### 🔍 몰랐던 이별의 이유 — 그 사람의 속마음
+
+{u2} 님은 **{m2['name']}**의 기운으로, {m2['core_nature']}
+
+* **이별 당시 그 사람의 마음:** {partner_mind}
+* **내가 놓친 신호:** {ELEM_MISSED_SIGNAL.get(e2, '평소와 다른 침묵과 짧아진 답장을 흘려들었던 것')}
+* **정말 끝난 걸까:** {is_it_over}
+
+### 📱 연락이 닿을 타이밍 — 언제, 어떻게 닿을까
+
+* **연락이 닿기 쉬운 시기:** **{contact_month}**
+* **먼저 연락해도 되는 조건:** {contact_condition}
+* **지금은 피해야 할 말:** {avoid_words}
+* **연락의 형식:** {contact_style}
+
+### 🌙 그 사람의 지금 마음 — 미련인가, 정리인가
+
+* **미련의 정도:** {regret_pct}%
+* **새 연애 가능성:** {new_love_pct}%
+* **지금 나를 떠올리는 순간:** {ELEM_MEMORY.get(e2, '익숙한 장소와 노래를 마주할 때')}
+
+{current_mind_para}
+
+### 🧵 재회 가능성 — 재회 지수와 문이 열리는 시기
+
+두 사람의 재회 가능성은 **{score}%** [재회점수: {score}점]로 산출되었사옵니다. {score_comment}
+
+* **끌림 지수:** {pull_idx}% — {_idx_comment(pull_idx)}
+* **소통 지수:** {talk_idx}% — {_idx_comment(talk_idx)}
+* **타이밍 지수:** {timing_idx}% — {_idx_comment(timing_idx)}
+* **회복력 지수:** {heal_idx}% — {_idx_comment(heal_idx)}
+
+**재회의 문이 열리는 시기:** {reunion_window}
+
+**가능성을 높이는 세 가지 비책:**
+1. {boost1}
+2. {boost2}
+3. {boost3}
+
+### 🛡️ 재회 후 관계 지키기 — 같은 이유로 다시 헤어지지 않으려면
+
+{reunion_caution}
+
+* **첫째, 다시 만나면 규칙부터 세우시오:** {rule1}
+* **둘째, 싸움의 언어를 바꾸시오:** {rule2}
+* **셋째, 각자의 빈자리를 스스로 채우시오:** {rule3}
+
+**다시 흔들릴 때의 신호:** {signal}
+
+### 🌱 다음 인연이 오는 시기 — 이번엔 놓치지 않는 법
+
+{next_love_intro}
+
+* **다음 인연이 오는 시기:** **{next_window}**
+* **다음 인연의 인상:** {next_profile}
+* **이번엔 놓치지 않는 법:** {next_advice}
+
+{next_close}
+
+### ✉️ 마지막 편지 — 지금 해야 할 한 가지
+
+{u1} 님께,
+
+{letter_open}
+
+* **오늘 당장 할 한 가지:** {ELEM_ACTION[weak1]}
+* **잠시 내려놓아도 되는 것:** {let_go}
+* **스스로에게 해줄 말:** “{self_talk}”
+
+{letter_close}"""

@@ -1,10 +1,18 @@
 import os
+import secrets
+import base64
+import hashlib
+import hmac
+import json
+import time
 from datetime import datetime
-from fastapi import FastAPI, HTTPException, Depends, Header
+from urllib.parse import urlparse
+from fastapi import FastAPI, HTTPException, Depends, Header, Request
 from fastapi.responses import FileResponse
 from typing import Optional
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 import re
+import httpx
 import google.generativeai as genai
 from lunar_python import Solar, Lunar  # 만세력 라이브러리
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,7 +33,11 @@ from saju_counseling_engine import (
     extract_today_fortune_data,
     SYSTEM_TOJEONG_PROMPT,
     build_tojeong_gemini_prompt,
-    build_personalized_tojeong_report
+    build_personalized_tojeong_report,
+    SYSTEM_REUNION_PROMPT,
+    build_reunion_gemini_prompt,
+    build_personalized_reunion_report,
+    estimate_reunion_score
 )
 
 # -------------------------------------------------------------
@@ -43,6 +55,21 @@ else:
 PORTONE_API_KEY = os.getenv("PORTONE_API_KEY", "")
 PORTONE_API_SECRET = os.getenv("PORTONE_API_SECRET", "")
 PORTONE_STORE_ID = os.getenv("PORTONE_STORE_ID", "")
+
+# 토스페이(Toss Pay) 결제 연동 환경변수
+# ⚠️ API Key는 서버에서만 사용합니다. 프론트엔드/깃에 절대 노출하지 마세요.
+TOSS_PAY_API_KEY = os.getenv("TOSS_PAY_API_KEY", "").strip()
+TOSS_PAY_API_BASE = "https://pay.toss.im/api/v2"
+PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "").strip().rstrip("/")
+
+# 서버가 신뢰하는 카테고리별 결제 금액 (클라이언트 금액은 절대 신뢰하지 않음)
+PAYMENT_PRODUCTS = {
+    "saju": {"amount": 7900, "desc": "평생 심층 운명서 리포트"},
+    "gunghap": {"amount": 4900, "desc": "두 사람의 백년해로 궁합 심층 비전"},
+    "reunion": {"amount": 2900, "desc": "두 사람의 재회 가능성 심층 비전"},
+    "tojeong": {"amount": 7900, "desc": "올 한 해 토정비결 신수 심층 비결서"},
+    "today": {"amount": 2200, "desc": "금일 하루 일진 및 승부 비책 리포트"},
+}
 
 # -------------------------------------------------------------
 # 1. 데이터베이스 세팅 (SQLite & SQLAlchemy)
@@ -76,6 +103,21 @@ class SajuHistory(Base):
     birth_type = Column(String(10), nullable=False)
     ai_interpretation = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.now)
+
+# SQLAlchemy PaymentOrder 모델 정의 (토스페이 주문/결제 상태)
+class PaymentOrder(Base):
+    __tablename__ = "payment_orders"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    order_no = Column(String(50), unique=True, index=True, nullable=False)
+    category = Column(String(20), nullable=False)
+    amount = Column(Integer, nullable=False)
+    pay_token = Column(String(50), nullable=True)
+    pay_method = Column(String(20), nullable=True)
+    # CREATED: 결제 생성됨, PAID: 결제 완료, FAILED: 생성 실패, CANCELLED: 취소
+    status = Column(String(20), nullable=False, default="CREATED")
+    created_at = Column(DateTime, default=datetime.now)
+    paid_at = Column(DateTime, nullable=True)
 
 # 테이블 자동 생성 (서버리스 환경에서 예외 발생 시 서비스 중단 방지)
 try:
@@ -437,7 +479,7 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
         saju_json_data["user_info"]["name"] = final_name
 
         category = (user_input.category or "saju").strip().lower()
-        if category not in ("saju", "gunghap", "today", "tojeong"):
+        if category not in ("saju", "gunghap", "today", "tojeong", "reunion"):
             category = "saju"
 
         print(f"[CATEGORY ROUTE] User: '{final_name}', Category parsed: '{category}'")
@@ -473,6 +515,29 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
             prompt = build_gunghap_gemini_prompt(final_name, saju_json_data, partner_name, partner_saju_data)
             current_sys_prompt = SYSTEM_GUNGHAP_PROMPT
             fallback_fn = lambda: build_personalized_gunghap_report(final_name, saju_json_data, partner_name, partner_saju_data)
+
+        elif category == "reunion":
+            print(f"[CATEGORY ROUTE] -> Selected REUNION prompt & system prompt")
+            partner = user_input.partner or PartnerInput()
+            partner_name = (partner.name or "그 사람").strip() or "그 사람"
+            partner.name = partner_name
+            partner_saju_data = calculate_saju_engine(partner)
+            partner_saju_data["user_info"]["name"] = partner_name
+
+            partner_resp_info = {
+                "name": partner_name,
+                "gender": partner.gender,
+                "birth_date": partner.birth_date,
+                "birth_time": partner.birth_time,
+                "birth_type": partner.birth_type
+            }
+            partner_pillars_detail = partner_saju_data.get("pillars_detail", {})
+            partner_elements_count = partner_saju_data.get("elements_count", {})
+            partner_day_master = partner_saju_data.get("day_master", "己")
+
+            prompt = build_reunion_gemini_prompt(final_name, saju_json_data, partner_name, partner_saju_data)
+            current_sys_prompt = SYSTEM_REUNION_PROMPT
+            fallback_fn = lambda: build_personalized_reunion_report(final_name, saju_json_data, partner_name, partner_saju_data)
 
         elif category == "today":
             print(f"[CATEGORY ROUTE] -> Selected TODAY prompt & system prompt")
@@ -573,7 +638,6 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
         # 궁합 점수 (0~100) 추출 또는 역학 기반 산출
         gunghap_score = None
         if category == "gunghap":
-            import re
             m = re.search(r'\[궁합점수:\s*(\d{1,3})\s*점?\]', interpretation_text)
             if not m:
                 m = re.search(r'궁합\s*점수[는은]?\s*(\d{1,3})\s*점', interpretation_text)
@@ -608,11 +672,34 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
                 else:
                     gunghap_score = 86
 
+        # 재회 점수 (0~100) 추출 또는 역학 기반 산출
+        reunion_score = None
+        if category == "reunion":
+            m = re.search(r'\[재회점수:\s*(\d{1,3})\s*점?\]', interpretation_text)
+            if not m:
+                m = re.search(r'재회\s*(?:가능성|지수|점수)[는은이]?\s*(\d{1,3})\s*(?:점|%)', interpretation_text)
+            if m:
+                try:
+                    val = int(m.group(1))
+                    if 0 <= val <= 100:
+                        reunion_score = val
+                except Exception:
+                    pass
+
+            if reunion_score is None:
+                partner_saju_for_score = {
+                    "day_master": partner_day_master or "己",
+                    "elements_count": partner_elements_count or {},
+                    "day_strength": "중화(中和)"
+                }
+                reunion_score = estimate_reunion_score(saju_json_data, partner_saju_for_score)
+
         return {
             "status": "success",
             "category": category,
             "interpretation": interpretation_text,
             "gunghap_score": gunghap_score,
+            "reunion_score": reunion_score,
             "elements_count": saju_json_data.get("elements_count", {}),
             "pillars_detail": saju_json_data.get("pillars_detail", {}),
             "day_master": saju_json_data.get("day_master", "甲"),
@@ -642,6 +729,7 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
             fallback_partner_elements = {}
             fallback_partner_dm = "己"
             fallback_gh_score = None
+            fallback_reunion_score = None
 
             if req_cat == "gunghap":
                 partner_fallback = getattr(user_input, "partner", None) or PartnerInput()
@@ -658,9 +746,25 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
                 fallback_partner_elements = partner_fallback_saju.get("elements_count", {})
                 fallback_partner_dm = partner_fallback_saju.get("day_master", "己")
                 fallback_text = build_personalized_gunghap_report(u_name, fallback_saju, p_name, partner_fallback_saju)
-                import re
                 m = re.search(r'\[궁합점수:\s*(\d{1,3})\s*점?\]', fallback_text)
                 fallback_gh_score = int(m.group(1)) if m else 88
+            elif req_cat == "reunion":
+                partner_fallback = getattr(user_input, "partner", None) or PartnerInput()
+                p_name = partner_fallback.name or "그 사람"
+                partner_fallback_saju = calculate_saju_engine(partner_fallback)
+                fallback_partner_info = {
+                    "name": p_name,
+                    "gender": partner_fallback.gender,
+                    "birth_date": partner_fallback.birth_date,
+                    "birth_time": partner_fallback.birth_time,
+                    "birth_type": partner_fallback.birth_type
+                }
+                fallback_partner_pillars = partner_fallback_saju.get("pillars_detail", {})
+                fallback_partner_elements = partner_fallback_saju.get("elements_count", {})
+                fallback_partner_dm = partner_fallback_saju.get("day_master", "己")
+                fallback_text = build_personalized_reunion_report(u_name, fallback_saju, p_name, partner_fallback_saju)
+                m = re.search(r'\[재회점수:\s*(\d{1,3})\s*점?\]', fallback_text)
+                fallback_reunion_score = int(m.group(1)) if m else estimate_reunion_score(fallback_saju, partner_fallback_saju)
             elif req_cat == "today":
                 now = datetime.now()
                 solar_today = Solar.fromYmdHms(now.year, now.month, now.day, 12, 0, 0)
@@ -690,6 +794,7 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
                 "category": req_cat,
                 "interpretation": fallback_text,
                 "gunghap_score": fallback_gh_score,
+                "reunion_score": fallback_reunion_score,
                 "elements_count": fallback_saju.get("elements_count", {}),
                 "pillars_detail": fallback_saju.get("pillars_detail", {}),
                 "day_master": fallback_saju.get("day_master", "甲"),
@@ -748,6 +853,372 @@ async def get_saju_history(db: Session = Depends(get_db), _admin: None = Depends
         raise HTTPException(status_code=500, detail=str(e))
 
 # -------------------------------------------------------------
+# 5-B. 토스페이(Toss Pay) 결제 연동 API
+# -------------------------------------------------------------
+class TossPaymentCreateInput(BaseModel):
+    category: str = Field("saju", description="리포트 카테고리 (saju, gunghap, reunion, tojeong, today)")
+
+
+class TossPaymentConfirmInput(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    order_no: str = Field(..., alias="orderNo", description="결제 생성 시 발급된 주문번호")
+    payment_token: str = Field("", alias="paymentToken", description="서버가 서명한 결제 검증 토큰")
+
+
+def _public_base_url(request: Request) -> str:
+    """토스페이가 콜백/복귀에 사용할 공개 URL을 결정합니다."""
+    if PUBLIC_BASE_URL:
+        return PUBLIC_BASE_URL
+    forwarded_proto = (request.headers.get("x-forwarded-proto") or "").split(",")[0].strip()
+    forwarded_host = (request.headers.get("x-forwarded-host") or "").split(",")[0].strip()
+    proto = forwarded_proto or request.url.scheme or "https"
+    host = forwarded_host or request.headers.get("host") or request.url.netloc
+    return f"{proto}://{host}".rstrip("/")
+
+
+def _is_local_or_private_url(url: str) -> bool:
+    """localhost/사설 IP 여부를 판별합니다. 토스페이 콜백은 외부 공개 URL만 허용합니다."""
+    host = (urlparse(url).hostname or "").strip().lower()
+    if host in ("localhost", "127.0.0.1", "::1", "0.0.0.0"):
+        return True
+    if host.endswith(".local"):
+        return True
+    if host.startswith("192.168.") or host.startswith("10."):
+        return True
+    if host.startswith("172."):
+        try:
+            second = int(host.split(".")[1])
+            if 16 <= second <= 31:
+                return True
+        except (IndexError, ValueError):
+            pass
+    return False
+
+
+def _toss_result_callback_url(base_url: str) -> str:
+    """로컬 개발에서는 토스가 사설 URL을 거부하므로 데모 콜백으로 대체합니다.
+    (로컬에서도 복귀 후 /confirm 상태 조회로 결제를 검증하므로 잠금 해제는 정상 동작)
+    """
+    if _is_local_or_private_url(base_url):
+        return "https://pay.toss.im/payfront/demo/callback"
+    return f"{base_url}/api/payments/toss/callback"
+
+
+def _payment_token_secret() -> str:
+    return os.getenv("PAYMENT_TOKEN_SECRET", "").strip() or TOSS_PAY_API_KEY
+
+
+def _b64url_encode(raw: bytes) -> str:
+    return base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
+
+
+def _b64url_decode(text: str) -> bytes:
+    padding = "=" * (-len(text) % 4)
+    return base64.urlsafe_b64decode(text + padding)
+
+
+def _create_payment_token(order_no: str, category: str, amount: int) -> str:
+    """주문번호/카테고리/금액을 서버 비밀키로 서명해 위변조를 막습니다."""
+    payload = {
+        "o": order_no,
+        "c": category,
+        "a": int(amount),
+        "t": int(time.time()),
+    }
+    body = _b64url_encode(json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8"))
+    signature = hmac.new(
+        _payment_token_secret().encode("utf-8"), body.encode("ascii"), hashlib.sha256
+    ).digest()
+    return f"{body}.{_b64url_encode(signature)}"
+
+
+def _verify_payment_token(token: str) -> Optional[dict]:
+    if not token or "." not in token:
+        return None
+    body, signature = token.split(".", 1)
+    expected = hmac.new(
+        _payment_token_secret().encode("utf-8"), body.encode("ascii"), hashlib.sha256
+    ).digest()
+    try:
+        provided = _b64url_decode(signature)
+    except Exception:
+        return None
+    if not hmac.compare_digest(expected, provided):
+        return None
+    try:
+        payload = json.loads(_b64url_decode(body).decode("utf-8"))
+    except Exception:
+        return None
+    if not isinstance(payload, dict):
+        return None
+    # 결제 검증 토큰 유효기간: 24시간
+    try:
+        issued_at = int(payload.get("t", 0))
+    except Exception:
+        return None
+    if issued_at < int(time.time()) - 86400:
+        return None
+    return payload
+
+
+def _toss_api_request(path: str, payload: dict) -> dict:
+    if not TOSS_PAY_API_KEY:
+        raise HTTPException(status_code=500, detail="토스페이 API Key가 서버에 설정되지 않았습니다.")
+    try:
+        with httpx.Client(timeout=15.0) as client:
+            response = client.post(f"{TOSS_PAY_API_BASE}{path}", json=payload)
+    except httpx.HTTPError as exc:
+        print(f"[TOSS PAY] HTTP error on {path}: {exc}")
+        raise HTTPException(status_code=502, detail="토스페이 서버와 통신하지 못했습니다. 잠시 후 다시 시도해 주세요.")
+
+    try:
+        data = response.json()
+    except ValueError:
+        raise HTTPException(
+            status_code=502,
+            detail=f"토스페이 응답을 해석하지 못했습니다. (HTTP {response.status_code})",
+        )
+    if not isinstance(data, dict):
+        raise HTTPException(status_code=502, detail="토스페이 응답 형식이 올바르지 않습니다.")
+    return data
+
+
+def _toss_status(pay_token: Optional[str] = None, order_no: Optional[str] = None) -> dict:
+    payload = {"apiKey": TOSS_PAY_API_KEY}
+    if pay_token:
+        payload["payToken"] = pay_token
+    elif order_no:
+        payload["orderNo"] = order_no
+    else:
+        raise HTTPException(status_code=400, detail="결제 상태 조회에 필요한 주문 정보가 없습니다.")
+
+    data = _toss_api_request("/status", payload)
+    if data.get("code") != 0:
+        message = data.get("msg") or data.get("errorCode") or "결제 상태를 확인하지 못했습니다."
+        raise HTTPException(status_code=502, detail=f"토스페이 상태 조회 실패: {message}")
+    return data
+
+
+def _safe_commit(db: Session, context: str) -> bool:
+    """서버리스/잠금 환경에서 DB 저장 실패가 결제 흐름을 막지 않도록 best-effort로 커밋합니다."""
+    try:
+        db.commit()
+        return True
+    except Exception as exc:
+        db.rollback()
+        print(f"[TOSS PAY] DB commit skipped ({context}): {exc}")
+        return False
+
+
+def _mark_order_paid(db: Session, order: PaymentOrder, toss_data: dict) -> None:
+    order.status = "PAID"
+    order.paid_at = datetime.now()
+    if toss_data.get("payToken"):
+        order.pay_token = str(toss_data.get("payToken"))[:50]
+    if toss_data.get("payMethod"):
+        order.pay_method = str(toss_data.get("payMethod"))[:20]
+    _safe_commit(db, "mark paid")
+
+
+@app.post("/api/payments/toss/create")
+def create_toss_payment(
+    payload: TossPaymentCreateInput,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """서버가 가격을 결정하고 토스페이 결제를 생성합니다. API Key는 응답에 포함하지 않습니다."""
+    if not TOSS_PAY_API_KEY:
+        raise HTTPException(status_code=500, detail="결제 설정이 완료되지 않았습니다. 관리자에게 문의해 주세요.")
+
+    category = (payload.category or "saju").strip().lower()
+    product = PAYMENT_PRODUCTS.get(category)
+    if not product:
+        raise HTTPException(status_code=400, detail="지원하지 않는 리포트 카테고리입니다.")
+
+    amount = int(product["amount"])
+    order_no = f"SAJU-{datetime.now().strftime('%Y%m%d%H%M%S')}-{secrets.token_hex(4)}"
+    base_url = _public_base_url(request)
+
+    order = PaymentOrder(
+        order_no=order_no,
+        category=category,
+        amount=amount,
+        status="CREATED",
+        created_at=datetime.now(),
+    )
+    db.add(order)
+    _safe_commit(db, "create order")
+
+    toss_payload = {
+        "apiKey": TOSS_PAY_API_KEY,
+        "orderNo": order_no,
+        "productDesc": product["desc"],
+        "retUrl": f"{base_url}/?toss=return&orderNo={order_no}",
+        "retCancelUrl": f"{base_url}/?toss=cancel&orderNo={order_no}",
+        "amount": amount,
+        "amountTaxFree": 0,
+        "autoExecute": True,
+        "resultCallback": _toss_result_callback_url(base_url),
+        "callbackVersion": "V2",
+    }
+
+    try:
+        toss_data = _toss_api_request("/payments", toss_payload)
+    except HTTPException:
+        order.status = "FAILED"
+        _safe_commit(db, "mark create failed")
+        raise
+
+    if toss_data.get("code") != 0 or not toss_data.get("checkoutPage"):
+        order.status = "FAILED"
+        _safe_commit(db, "mark create failed")
+        message = toss_data.get("msg") or toss_data.get("errorCode") or "결제 생성에 실패했습니다."
+        print(f"[TOSS PAY] create failed: {toss_data}")
+        raise HTTPException(status_code=502, detail=f"토스페이 결제 생성 실패: {message}")
+
+    order.pay_token = str(toss_data.get("payToken") or "")[:50] or None
+    _safe_commit(db, "save pay token")
+
+    return {
+        "status": "success",
+        "orderNo": order_no,
+        "category": category,
+        "amount": amount,
+        "checkoutPage": toss_data.get("checkoutPage"),
+        "paymentToken": _create_payment_token(order_no, category, amount),
+    }
+
+
+@app.post("/api/payments/toss/confirm")
+def confirm_toss_payment(payload: TossPaymentConfirmInput, db: Session = Depends(get_db)):
+    """복귀한 구매자의 결제를 토스 상태 조회로 검증한 뒤 완료 처리합니다. (멱등)"""
+    order_no = (payload.order_no or "").strip()
+    token_payload = _verify_payment_token(payload.payment_token)
+    if not token_payload or token_payload.get("o") != order_no:
+        raise HTTPException(status_code=400, detail="결제 검증 정보가 유효하지 않습니다.")
+
+    category = str(token_payload.get("c") or "")
+    product = PAYMENT_PRODUCTS.get(category)
+    try:
+        token_amount = int(token_payload.get("a") or 0)
+    except Exception:
+        token_amount = 0
+    if not product or int(product["amount"]) != token_amount:
+        raise HTTPException(status_code=400, detail="결제 금액 정보가 유효하지 않습니다.")
+
+    order = db.query(PaymentOrder).filter(PaymentOrder.order_no == order_no).first()
+    if order and order.category != category:
+        raise HTTPException(status_code=400, detail="주문 카테고리가 일치하지 않습니다.")
+    if order and int(order.amount) != token_amount:
+        raise HTTPException(status_code=400, detail="주문 금액이 일치하지 않습니다.")
+
+    if order and order.status == "PAID":
+        return {
+            "status": "success",
+            "paid": True,
+            "orderNo": order_no,
+            "category": order.category,
+            "amount": order.amount,
+            "alreadyPaid": True,
+        }
+
+    toss_data = _toss_status(pay_token=(order.pay_token if order else None), order_no=order_no)
+    pay_status = toss_data.get("payStatus")
+    if pay_status != "PAY_COMPLETE":
+        return {
+            "status": "pending",
+            "paid": False,
+            "orderNo": order_no,
+            "category": category,
+            "amount": token_amount,
+            "payStatus": pay_status,
+        }
+
+    if str(toss_data.get("orderNo") or "") != order_no:
+        raise HTTPException(status_code=400, detail="토스페이 주문번호가 일치하지 않습니다.")
+    try:
+        paid_total = int(toss_data.get("amount") or 0)
+    except Exception:
+        paid_total = 0
+    if paid_total != token_amount:
+        print(f"[TOSS PAY] amount mismatch: order={order_no} expected={token_amount} paid={paid_total}")
+        raise HTTPException(status_code=400, detail="결제 금액이 주문 금액과 일치하지 않습니다.")
+
+    if not order:
+        # 서버리스 환경에서 DB가 초기화된 경우에도 검증된 결제는 기록을 복구합니다.
+        order = PaymentOrder(
+            order_no=order_no,
+            category=category,
+            amount=token_amount,
+            status="CREATED",
+            created_at=datetime.now(),
+        )
+        db.add(order)
+        _safe_commit(db, "restore order")
+
+    _mark_order_paid(db, order, toss_data)
+
+    return {
+        "status": "success",
+        "paid": True,
+        "orderNo": order_no,
+        "category": order.category,
+        "amount": order.amount,
+        "payMethod": order.pay_method,
+    }
+
+
+@app.post("/api/payments/toss/callback")
+async def toss_payment_callback(request: Request, db: Session = Depends(get_db)):
+    """토스페이 서버가 보내는 결제 완료 콜백. 상태 조회로 재검증한 뒤 완료 처리합니다."""
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    if not isinstance(body, dict):
+        body = {}
+
+    order_no = str(body.get("orderNo") or "").strip()
+    if not order_no:
+        return {"code": 0, "status": "ignored"}
+
+    order = db.query(PaymentOrder).filter(PaymentOrder.order_no == order_no).first()
+    if not order:
+        print(f"[TOSS PAY] callback for unknown order: {order_no}")
+        return {"code": 0, "status": "ignored"}
+
+    if order.status == "PAID":
+        return {"code": 0, "status": "already_paid"}
+
+    if body.get("status") != "PAY_COMPLETE":
+        return {"code": 0, "status": "ignored"}
+
+    try:
+        toss_data = _toss_status(
+            pay_token=str(body.get("payToken") or order.pay_token or "") or None,
+            order_no=order_no,
+        )
+    except HTTPException as exc:
+        print(f"[TOSS PAY] callback verify failed: {exc.detail}")
+        return {"code": 0, "status": "verify_failed"}
+
+    if toss_data.get("payStatus") != "PAY_COMPLETE":
+        return {"code": 0, "status": "not_complete"}
+    if str(toss_data.get("orderNo") or "") != order_no:
+        return {"code": 0, "status": "order_mismatch"}
+    try:
+        paid_total = int(toss_data.get("amount") or 0)
+    except Exception:
+        paid_total = 0
+    if paid_total != int(order.amount):
+        print(f"[TOSS PAY] callback amount mismatch: order={order_no} expected={order.amount} paid={paid_total}")
+        return {"code": 0, "status": "amount_mismatch"}
+
+    _mark_order_paid(db, order, toss_data)
+    return {"code": 0, "status": "success"}
+
+# -------------------------------------------------------------
 # 5. 프론트엔드 정적 파일 서빙
 # -------------------------------------------------------------
 @app.get("/")
@@ -771,6 +1242,26 @@ async def serve_saju_master():
     if os.path.exists(gif_file):
         return FileResponse(gif_file)
     return FileResponse(os.path.join(BASE_DIR, "emblem.png"))
+
+# 프론트엔드에서 사용하는 정적 이미지 (로컬 uvicorn 구동 시 404 방지)
+STATIC_ASSET_FILES = {
+    "bg.png",
+    "icon_saju_new.png",
+    "icon_gunghap.png",
+    "icon_today_new.png",
+    "icon_tojeong.png",
+    "loading_brush_new.png",
+    "emblem.png",
+    "bg-image.png"
+}
+
+@app.get("/{filename}")
+async def serve_static_asset(filename: str):
+    if filename in STATIC_ASSET_FILES:
+        asset_path = os.path.join(BASE_DIR, filename)
+        if os.path.isfile(asset_path):
+            return FileResponse(asset_path)
+    raise HTTPException(status_code=404, detail="Not found")
 
 if __name__ == "__main__":
     import uvicorn
