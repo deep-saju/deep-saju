@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>명리학연구소 · 관리자</title>
+<style>
+    :root {
+        --bg: #0c0a08;
+        --bg-soft: #14110d;
+        --card: #191510;
+        --border: rgba(223, 183, 56, 0.28);
+        --border-soft: rgba(255, 255, 255, 0.08);
+        --gold: #dfb738;
+        --gold-light: #f3d98a;
+        --text: #f3ece0;
+        --text-sub: #c8bda8;
+        --text-muted: #8d8272;
+        --jade: #4f9e7f;
+        --red: #d9695f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+            radial-gradient(circle at 15% 0%, rgba(223, 183, 56, 0.10), transparent 45%),
+            radial-gradient(circle at 85% 100%, rgba(168, 43, 43, 0.12), transparent 45%),
+            var(--bg);
+        color: var(--text);
+        font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    button, input { font-family: inherit; }
+
+    /* ---------- 로그인 ---------- */
+    .login-wrap {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+    }
+
+    .login-card {
+        width: 100%;
+        max-width: 380px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 32px 28px 28px;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.75);
+    }
+
+    .login-stamp {
+        display: inline-block;
+        background: #a82b2b;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        padding: 3px 9px;
+        border-radius: 2px;
+        border: 1px solid var(--border);
+        margin-bottom: 14px;
+    }
+
+    .login-title {
+        margin: 0 0 6px;
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--gold-light);
+    }
+
+    .login-sub {
+        margin: 0 0 24px;
+        font-size: 12.5px;
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+
+    .field { margin-bottom: 14px; }
+
+    .field label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-sub);
+        margin-bottom: 7px;
+    }
+
+    .input {
+        width: 100%;
+        background: rgba(0, 0, 0, 0.45);
+        border: 1px solid var(--border-soft);
+        border-radius: 9px;
+        padding: 12px 14px;
+        color: var(--text);
+        font-size: 14px;
+    }
+
+    .input:focus {
+        outline: none;
+        border-color: var(--gold);
+        box-shadow: 0 0 0 3px rgba(223, 183, 56, 0.12);
+    }
+
+    .btn {
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, rgba(223, 183, 56, 0.28), rgba(223, 183, 56, 0.12));
+        color: var(--gold-light);
+        font-weight: 800;
+        font-size: 14px;
+        border-radius: 9px;
+        padding: 12px 18px;
+        cursor: pointer;
+        transition: filter 0.15s ease, transform 0.15s ease;
+    }
+
+    .btn:hover { filter: brightness(1.12); }
+    .btn:active { transform: translateY(1px); }
+    .btn:disabled { opacity: 0.6; cursor: wait; }
+
+    .btn.full { width: 100%; }
+
+    .btn.ghost {
+        background: transparent;
+        border-color: var(--border-soft);
+        color: var(--text-sub);
+        font-weight: 700;
+        font-size: 12.5px;
+        padding: 8px 14px;
+    }
+
+    .login-error {
+        margin: 12px 0 0;
+        min-height: 18px;
+        font-size: 12.5px;
+        line-height: 1.6;
+        color: var(--red);
+    }
+
+    /* ---------- 대시보드 ---------- */
+    .app { display: none; max-width: 1180px; margin: 0 auto; padding: 22px 20px 60px; }
+    .app.ready { display: block; }
+
+    .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 20px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+
+    .brand-stamp {
+        background: #a82b2b;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        padding: 4px 9px;
+        border-radius: 2px;
+        border: 1px solid var(--border);
+    }
+
+    .brand-title { font-size: 17px; font-weight: 800; color: var(--gold-light); line-height: 1.2; }
+    .brand-sub { font-size: 11.5px; color: var(--text-muted); }
+
+    .topbar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .db-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 5px 12px;
+        border: 1px solid var(--border-soft);
+        color: var(--text-sub);
+    }
+
+    .db-badge .dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: var(--text-muted);
+    }
+
+    .db-badge.ok { border-color: rgba(79, 158, 127, 0.5); color: #9ad6bb; }
+    .db-badge.ok .dot { background: var(--jade); box-shadow: 0 0 8px rgba(79, 158, 127, 0.8); }
+    .db-badge.warn { border-color: rgba(217, 105, 95, 0.5); color: #f0a9a2; }
+    .db-badge.warn .dot { background: var(--red); }
+
+    .alert {
+        display: none;
+        margin-bottom: 18px;
+        padding: 13px 16px;
+        border-radius: 10px;
+        font-size: 12.5px;
+        line-height: 1.65;
+        border: 1px solid rgba(217, 105, 95, 0.45);
+        background: rgba(217, 105, 95, 0.10);
+        color: #f2b6b0;
+    }
+
+    .alert.show { display: block; }
+
+    .alert strong { color: #ffd3ce; }
+
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .card {
+        background: var(--card);
+        border: 1px solid var(--border-soft);
+        border-radius: 12px;
+        padding: 16px 18px;
+    }
+
+    .card-label { font-size: 11.5px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.4px; }
+    .card-value { margin-top: 8px; font-size: 24px; font-weight: 800; color: var(--gold-light); line-height: 1.1; }
+    .card-value small { font-size: 13px; font-weight: 700; color: var(--text-sub); margin-left: 3px; }
+    .card-sub { margin-top: 6px; font-size: 11.5px; color: var(--text-muted); }
+
+    .panel {
+        background: var(--card);
+        border: 1px solid var(--border-soft);
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    .tabs {
+        display: flex;
+        gap: 4px;
+        padding: 8px 10px 0;
+        border-bottom: 1px solid var(--border-soft);
+        overflow-x: auto;
+    }
+
+    .tab {
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        font-size: 13px;
+        font-weight: 700;
+        padding: 10px 14px;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .tab:hover { color: var(--text-sub); }
+    .tab.active { color: var(--gold-light); border-bottom-color: var(--gold); }
+
+    .tab-body { padding: 6px 0 0; }
+
+    .table-scroll { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; min-width: 720px; }
+
+    th {
+        text-align: left;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--text-muted);
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border-soft);
+        white-space: nowrap;
+        background: rgba(255, 255, 255, 0.015);
+    }
+
+    td {
+        font-size: 12.5px;
+        color: var(--text-sub);
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+        vertical-align: top;
+        line-height: 1.55;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    td.mono { font-family: Consolas, 'Courier New', monospace; font-size: 11.5px; word-break: break-all; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    td.nowrap { white-space: nowrap; }
+
+    .pill {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 999px;
+        border: 1px solid var(--border-soft);
+        color: var(--text-muted);
+        white-space: nowrap;
+    }
+
+    .pill.paid { color: #9ad6bb; border-color: rgba(79, 158, 127, 0.45); background: rgba(79, 158, 127, 0.10); }
+    .pill.created { color: #e7c97a; border-color: rgba(223, 183, 56, 0.4); background: rgba(223, 183, 56, 0.08); }
+    .pill.failed, .pill.cancelled { color: #f0a9a2; border-color: rgba(217, 105, 95, 0.45); background: rgba(217, 105, 95, 0.10); }
+
+    .empty {
+        padding: 34px 18px;
+        text-align: center;
+        font-size: 12.5px;
+        color: var(--text-muted);
+        line-height: 1.7;
+    }
+
+    .preview {
+        max-width: 360px;
+        color: var(--text-muted);
+        font-size: 11.5px;
+        line-height: 1.55;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .foot-note {
+        margin-top: 16px;
+        font-size: 11.5px;
+        color: var(--text-muted);
+        line-height: 1.7;
+        text-align: center;
+    }
+
+    .spin {
+        display: inline-block;
+        width: 13px; height: 13px;
+        border: 2px solid rgba(223, 183, 56, 0.3);
+        border-top-color: var(--gold);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        vertical-align: -2px;
+        margin-right: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 640px) {
+        .app { padding: 16px 12px 44px; }
+        .brand-title { font-size: 15px; }
+        .brand-sub { display: none; }
+        .card-value { font-size: 20px; }
+    }
+</style>
+</head>
+<body>
+
+<!-- 로그인 -->
+<div class="login-wrap" id="login-view">
+    <div class="login-card">
+        <span class="login-stamp">硏究所</span>
+        <h1 class="login-title">관리자 전용</h1>
+        <p class="login-sub">명리학연구소 운영자만 접속할 수 있습니다.<br>비밀번호를 입력해 주세요.</p>
+        <form id="login-form" autocomplete="off">
+            <div class="field">
+                <label for="admin-password">관리자 비밀번호</label>
+                <input class="input" type="password" id="admin-password" placeholder="비밀번호" autocomplete="current-password" required>
+            </div>
+            <button class="btn full" type="submit" id="login-btn">로그인</button>
+        </form>
+        <p class="login-error" id="login-error"></p>
+    </div>
+</div>
+
+<!-- 대시보드 -->
+<div class="app" id="app-view">
+    <div class="topbar">
+        <div class="brand">
+            <span class="brand-stamp">硏究所</span>
+            <div>
+                <div class="brand-title">명리학연구소 관리자</div>
+                <div class="brand-sub">결제 · 분석 · 구매 보관함 통합 대시보드</div>
+            </div>
+        </div>
+        <div class="topbar-actions">
+            <span class="db-badge" id="db-badge"><span class="dot"></span><span id="db-badge-text">DB 확인 중</span></span>
+            <button class="btn ghost" type="button" id="refresh-btn">새로고침</button>
+            <button class="btn ghost" type="button" id="logout-btn">로그아웃</button>
+        </div>
+    </div>
+
+    <div class="alert" id="db-alert"></div>
+
+    <div class="cards">
+        <div class="card">
+            <div class="card-label">오늘 매출</div>
+            <div class="card-value" id="today-revenue">0<small>원</small></div>
+            <div class="card-sub" id="today-count">오늘 0건</div>
+        </div>
+        <div class="card">
+            <div class="card-label">전체 매출</div>
+            <div class="card-value" id="total-revenue">0<small>원</small></div>
+            <div class="card-sub" id="total-count">누적 0건</div>
+        </div>
+        <div class="card">
+            <div class="card-label">구매 보관함</div>
+            <div class="card-value" id="purchase-count">0<small>건</small></div>
+            <div class="card-sub">결제 후 1년 재열람 리포트</div>
+        </div>
+        <div class="card">
+            <div class="card-label">최근 7일</div>
+            <div class="card-value" id="week-revenue">0<small>원</small></div>
+            <div class="card-sub" id="week-count">0건</div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="tabs">
+            <button class="tab active" type="button" data-tab="orders">결제 내역</button>
+            <button class="tab" type="button" data-tab="reports">분석 기록</button>
+            <button class="tab" type="button" data-tab="purchases">구매 보관함</button>
+            <button class="tab" type="button" data-tab="daily">일별 매출</button>
+        </div>
+        <div class="tab-body">
+            <div class="table-scroll" id="tab-orders"></div>
+            <div class="table-scroll" id="tab-reports" style="display:none;"></div>
+            <div class="table-scroll" id="tab-purchases" style="display:none;"></div>
+            <div class="table-scroll" id="tab-daily" style="display:none;"></div>
+        </div>
+    </div>
+
+    <p class="foot-note" id="server-time"></p>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    var CATEGORY_LABELS = {
+        saju: '평생 심층 운명서',
+        gunghap: '인연과 궁합',
+        reunion: '재회운',
+        today: '오늘의 운세'
+    };
+
+    var loginView = document.getElementById('login-view');
+    var appView = document.getElementById('app-view');
+    var loginForm = document.getElementById('login-form');
+    var loginBtn = document.getElementById('login-btn');
+    var loginError = document.getElementById('login-error');
+    var passwordInput = document.getElementById('admin-password');
+    var refreshBtn = document.getElementById('refresh-btn');
+    var logoutBtn = document.getElementById('logout-btn');
+    var dbBadge = document.getElementById('db-badge');
+    var dbBadgeText = document.getElementById('db-badge-text');
+    var dbAlert = document.getElementById('db-alert');
+    var serverTime = document.getElementById('server-time');
+
+    function esc(value) {
+        return String(value == null ? '' : value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function won(value) {
+        return Number(value || 0).toLocaleString('ko-KR');
+    }
+
+    function showLogin(message) {
+        appView.classList.remove('ready');
+        loginView.style.display = 'flex';
+        if (message) loginError.textContent = message;
+        setTimeout(function () { passwordInput.focus(); }, 60);
+    }
+
+    function showApp() {
+        loginView.style.display = 'none';
+        appView.classList.add('ready');
+    }
+
+    function statusPill(status) {
+        var raw = String(status || '-');
+        var cls = 'pill';
+        if (raw === 'PAID') cls += ' paid';
+        else if (raw === 'CREATED') cls += ' created';
+        else if (raw === 'FAILED' || raw === 'CANCELLED') cls += ' failed';
+        return '<span class="' + cls + '">' + esc(raw) + '</span>';
+    }
+
+    function categoryName(key) {
+        return CATEGORY_LABELS[key] || (key || '-');
+    }
+
+    function renderOrders(orders) {
+        var el = document.getElementById('tab-orders');
+        if (!orders || !orders.length) {
+            el.innerHTML = '<div class="empty">아직 결제 내역이 없습니다.</div>';
+            return;
+        }
+        var rows = orders.map(function (o) {
+            return '<tr>' +
+                '<td class="mono">' + esc(o.orderNo) + '</td>' +
+                '<td class="nowrap">' + esc(categoryName(o.category)) + '</td>' +
+                '<td class="num">' + won(o.amount) + '원</td>' +
+                '<td>' + statusPill(o.status) + '</td>' +
+                '<td class="nowrap">' + esc(o.payMethod || '-') + '</td>' +
+                '<td class="nowrap">' + esc(o.createdAt || '-') + '</td>' +
+                '<td class="nowrap">' + esc(o.paidAt || '-') + '</td>' +
+            '</tr>';
+        }).join('');
+        el.innerHTML = '<table><thead><tr>' +
+            '<th>주문번호</th><th>상품</th><th>금액</th><th>상태</th><th>결제수단</th><th>생성일시</th><th>결제일시</th>' +
+            '</tr></thead><tbody>' + rows + '</tbody></table>';
+    }
+
+    function renderReports(reports) {
+        var el = document.getElementById('tab-reports');
+        if (!reports || !reports.length) {
+            el.innerHTML = '<div class="empty">아직 분석 기록이 없습니다.</div>';
+            return;
+        }
+        var rows = reports.map(function (r) {
+            return '<tr>' +
+                '<td class="num">' + esc(r.id) + '</td>' +
+                '<td class="nowrap">' + esc(r.name || '-') + '</td>' +
+                '<td class="nowrap">' + esc(r.gender === 'F' ? '여' : (r.gender === 'M' ? '남' : '-')) + '</td>' +
+                '<td class="nowrap">' + esc(r.birthDate || '-') + '</td>' +
+                '<td class="nowrap">' + esc(r.birthTime || '-') + '</td>' +
+                '<td class="nowrap">' + esc(r.birthType || '-') + '</td>' +
+                '<td class="num">' + won(r.length) + '자</td>' +
+                '<td><div class="preview">' + esc(r.preview || '') + '</div></td>' +
+                '<td class="nowrap">' + esc(r.createdAt || '-') + '</td>' +
+            '</tr>';
+        }).join('');
+        el.innerHTML = '<table><thead><tr>' +
+            '<th>#</th><th>성함</th><th>성별</th><th>생년월일</th><th>시간</th><th>양/음력</th><th>분량</th><th>미리보기</th><th>분석일시</th>' +
+            '</tr></thead><tbody>' + rows + '</tbody></table>';
+    }
+
+    function renderPurchases(purchases) {
+        var el = document.getElementById('tab-purchases');
+        if (!purchases || !purchases.length) {
+            el.innerHTML = '<div class="empty">아직 보관된 구매 리포트가 없습니다.<br>결제가 완료되면 이곳에 자동으로 보관됩니다.</div>';
+            return;
+        }
+        var rows = purchases.map(function (p) {
+            return '<tr>' +
+                '<td class="mono">' + esc(p.orderNo) + '</td>' +
+                '<td class="nowrap">' + esc(categoryName(p.category)) + '</td>' +
+                '<td class="num">' + won(p.amount) + '원</td>' +
+                '<td class="nowrap">' + esc(p.name || '-') + '</td>' +
+                '<td class="num">' + won(p.length) + '자</td>' +
+                '<td class="nowrap">' + esc(p.createdAt || '-') + '</td>' +
+                '<td class="nowrap">' + esc(p.expiresAt || '-') + '</td>' +
+            '</tr>';
+        }).join('');
+        el.innerHTML = '<table><thead><tr>' +
+            '<th>주문번호</th><th>상품</th><th>금액</th><th>성함</th><th>분량</th><th>보관일</th><th>열람 만료</th>' +
+            '</tr></thead><tbody>' + rows + '</tbody></table>';
+    }
+
+    function renderDaily(daily) {
+        var el = document.getElementById('tab-daily');
+        if (!daily || !daily.length) {
+            el.innerHTML = '<div class="empty">최근 7일 매출 데이터가 없습니다.</div>';
+            return;
+        }
+        var maxRevenue = daily.reduce(function (max, d) { return Math.max(max, Number(d.revenue || 0)); }, 0);
+        var rows = daily.map(function (d) {
+            var ratio = maxRevenue > 0 ? Math.round((Number(d.revenue || 0) / maxRevenue) * 100) : 0;
+            return '<tr>' +
+                '<td class="nowrap">' + esc(d.date) + '</td>' +
+                '<td class="num">' + won(d.count) + '건</td>' +
+                '<td class="num">' + won(d.revenue) + '원</td>' +
+                '<td><div style="height:8px;border-radius:999px;background:rgba(255,255,255,0.07);overflow:hidden;min-width:120px;">' +
+                '<div style="height:100%;width:' + ratio + '%;background:linear-gradient(90deg,#dfb738,#f3d98a);"></div></div></td>' +
+            '</tr>';
+        }).join('');
+        el.innerHTML = '<table><thead><tr><th>날짜</th><th>건수</th><th>매출</th><th>비중</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    }
+
+    function updateDatabaseBadge(database) {
+        var persistent = !!(database && database.persistent);
+        var driver = (database && database.driver) || 'unknown';
+        dbBadge.classList.remove('ok', 'warn');
+        dbBadge.classList.add(persistent ? 'ok' : 'warn');
+        dbBadgeText.textContent = persistent ? ('영구 저장 · ' + driver.toUpperCase()) : ('임시 저장 · ' + driver.toUpperCase());
+
+        if (persistent) {
+            dbAlert.classList.remove('show');
+            dbAlert.innerHTML = '';
+        } else {
+            dbAlert.classList.add('show');
+            dbAlert.innerHTML = '<strong>⚠ 영구 데이터베이스가 연결되지 않았습니다.</strong><br>' +
+                '현재 서버가 재시작되면 결제·분석·보관함 데이터가 초기화됩니다. ' +
+                'Vercel 프로젝트에 Neon(Postgres)을 연결하고 <code>DATABASE_URL</code> 환경변수가 주입되었는지 확인해 주세요.';
+        }
+    }
+
+    function applyOverview(payload) {
+        showApp();
+        updateDatabaseBadge(payload.database);
+
+        var stats = payload.stats || {};
+        document.getElementById('today-revenue').innerHTML = won(stats.todayRevenue) + '<small>원</small>';
+        document.getElementById('today-count').textContent = '오늘 ' + won(stats.todayCount) + '건';
+        document.getElementById('total-revenue').innerHTML = won(stats.totalRevenue) + '<small>원</small>';
+        document.getElementById('total-count').textContent = '누적 ' + won(stats.totalCount) + '건';
+        document.getElementById('purchase-count').innerHTML = won((payload.purchases || []).length) + '<small>건</small>';
+
+        var week = stats.last7Days || [];
+        var weekRevenue = week.reduce(function (sum, d) { return sum + Number(d.revenue || 0); }, 0);
+        var weekCount = week.reduce(function (sum, d) { return sum + Number(d.count || 0); }, 0);
+        document.getElementById('week-revenue').innerHTML = won(weekRevenue) + '<small>원</small>';
+        document.getElementById('week-count').textContent = '최근 7일 ' + won(weekCount) + '건';
+
+        renderOrders(payload.orders);
+        renderReports(payload.reports);
+        renderPurchases(payload.purchases);
+        renderDaily(week);
+
+        serverTime.textContent = '서버 시간 ' + (payload.serverTime || '-') + ' · 결제 내역 최근 100건 / 분석 30건 / 보관함 50건 표시';
+    }
+
+    async function loadOverview() {
+        refreshBtn.disabled = true;
+        var originalText = refreshBtn.textContent;
+        refreshBtn.innerHTML = '<span class="spin"></span>불러오는 중';
+        try {
+            var response = await fetch('/admin/api/overview', {
+                credentials: 'same-origin',
+                cache: 'no-store'
+            });
+            if (response.status === 401) {
+                showLogin('');
+                return;
+            }
+            var payload = await response.json().catch(function () { return {}; });
+            if (!response.ok) {
+                throw new Error(payload.detail || ('조회 실패 (HTTP ' + response.status + ')'));
+            }
+            applyOverview(payload);
+        } catch (error) {
+            if (appView.classList.contains('ready')) {
+                serverTime.textContent = '데이터를 불러오지 못했습니다: ' + error.message;
+            } else {
+                showLogin(error.message);
+            }
+        } finally {
+            refreshBtn.disabled = false;
+            refreshBtn.textContent = originalText;
+        }
+    }
+
+    loginForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        loginError.textContent = '';
+        var password = passwordInput.value;
+        if (!password) return;
+
+        loginBtn.disabled = true;
+        var originalText = loginBtn.textContent;
+        loginBtn.innerHTML = '<span class="spin"></span>확인 중';
+        try {
+            var response = await fetch('/admin/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ password: password })
+            });
+            var payload = await response.json().catch(function () { return {}; });
+            if (!response.ok) {
+                throw new Error(payload.detail || '로그인에 실패했습니다.');
+            }
+            passwordInput.value = '';
+            await loadOverview();
+        } catch (error) {
+            loginError.textContent = error.message;
+            passwordInput.select();
+        } finally {
+            loginBtn.disabled = false;
+            loginBtn.textContent = originalText;
+        }
+    });
+
+    logoutBtn.addEventListener('click', async function () {
+        try {
+            await fetch('/admin/api/logout', { method: 'POST', credentials: 'same-origin' });
+        } catch (e) { /* noop */ }
+        appView.classList.remove('ready');
+        showLogin('');
+        loginError.textContent = '';
+    });
+
+    refreshBtn.addEventListener('click', loadOverview);
+
+    document.querySelectorAll('.tab').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            document.querySelectorAll('.tab').forEach(function (item) {
+                item.classList.remove('active');
+            });
+            tab.classList.add('active');
+            ['orders', 'reports', 'purchases', 'daily'].forEach(function (key) {
+                var el = document.getElementById('tab-' + key);
+                if (el) el.style.display = (key === tab.getAttribute('data-tab')) ? 'block' : 'none';
+            });
+        });
+    });
+
+    loadOverview();
+})();
+</script>
+</body>
+</html>

@@ -3,6 +3,18 @@
     {
       "source": "/api/(.*)",
       "destination": "/api/index.py"
+    },
+    {
+      "source": "/admin/api/(.*)",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/admin",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/api/index.py"
     }
   ]
 }

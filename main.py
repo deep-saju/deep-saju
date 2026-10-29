@@ -5,10 +5,10 @@ import hashlib
 import hmac
 import json
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import urlparse
-from fastapi import FastAPI, HTTPException, Depends, Header, Request
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, Depends, Header, Request, Response
+from fastapi.responses import FileResponse, PlainTextResponse
 from typing import Optional
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 import re
@@ -68,22 +68,40 @@ PAYMENT_PRODUCTS = {
 }
 
 # -------------------------------------------------------------
-# 1. 데이터베이스 세팅 (SQLite & SQLAlchemy)
+# 1. 데이터베이스 세팅 (SQLAlchemy)
 # -------------------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Vercel / AWS Lambda 등 서버리스 환경(읽기 전용 파일시스템) 대응:
-# VERCEL 환경변수가 있거나 BASE_DIR에 쓰기 권한이 없는 경우 /tmp에 DB 생성
-if os.getenv("VERCEL") or not os.access(BASE_DIR, os.W_OK):
-    DB_PATH = os.path.join("/tmp", "saju_database.db")
+# 운영(Vercel)에서는 영구 저장을 위해 외부 Postgres(DATABASE_URL)를 사용한다.
+# DATABASE_URL이 없으면 로컬 SQLite를 사용하고, 서버리스에서는 /tmp에 생성한다(재시작 시 초기화).
+_RAW_DATABASE_URL = (
+    os.getenv("DATABASE_URL")
+    or os.getenv("POSTGRES_URL")
+    or os.getenv("NEON_DATABASE_URL")
+    or ""
+).strip()
+
+if _RAW_DATABASE_URL:
+    DATABASE_URL = _RAW_DATABASE_URL
+    for _prefix in ("postgres://", "postgresql://"):
+        if DATABASE_URL.startswith(_prefix):
+            DATABASE_URL = "postgresql+psycopg://" + DATABASE_URL[len(_prefix):]
+            break
+    engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_recycle=300)
+    DB_DRIVER = "postgres"
+    DB_PERSISTENT = True
 else:
-    DB_PATH = os.path.join(BASE_DIR, "saju_database.db")
+    if os.getenv("VERCEL") or not os.access(BASE_DIR, os.W_OK):
+        DB_PATH = os.path.join("/tmp", "saju_database.db")
+    else:
+        DB_PATH = os.path.join(BASE_DIR, "saju_database.db")
+    DATABASE_URL = f"sqlite:///{DB_PATH}"
+    engine = create_engine(
+        DATABASE_URL, connect_args={"check_same_thread": False}
+    )
+    DB_DRIVER = "sqlite"
+    DB_PERSISTENT = not bool(os.getenv("VERCEL"))
 
-DATABASE_URL = f"sqlite:///{DB_PATH}"
-
-engine = create_engine(
-    DATABASE_URL, connect_args={"check_same_thread": False}
-)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -115,19 +133,102 @@ class PaymentOrder(Base):
     created_at = Column(DateTime, default=datetime.now)
     paid_at = Column(DateTime, nullable=True)
 
+# SQLAlchemy PurchasedReport 모델 정의 (결제 완료된 리포트 보관함 / 1년 재열람)
+class PurchasedReport(Base):
+    __tablename__ = "purchased_reports"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    order_no = Column(String(50), unique=True, index=True, nullable=False)
+    access_key = Column(String(80), unique=True, index=True, nullable=False)
+    category = Column(String(20), nullable=False)
+    amount = Column(Integer, nullable=False)
+    customer_name = Column(String(50), nullable=True)
+    birth_date = Column(String(20), nullable=True)
+    report_text = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.now)
+    expires_at = Column(DateTime, nullable=True)
+
 # 테이블 자동 생성 (서버리스 환경에서 예외 발생 시 서비스 중단 방지)
 try:
     Base.metadata.create_all(bind=engine)
 except Exception as db_init_err:
     print(f"[WARNING] Database initialization skipped or failed: {db_init_err}")
 
-ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "")
+ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "").strip()
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "").strip()
+ADMIN_SESSION_SECRET = (
+    os.getenv("ADMIN_SESSION_SECRET", "").strip()
+    or os.getenv("PAYMENT_TOKEN_SECRET", "").strip()
+    or "saju-admin-session-fallback-secret"
+)
+ADMIN_COOKIE_NAME = "saju_admin_session"
+ADMIN_SESSION_HOURS = 12
+ADMIN_LOGIN_WINDOW = 600
+ADMIN_LOGIN_MAX_ATTEMPTS = 5
+_admin_login_attempts = {}
 
-# 관리자 인증 의존성
+# 관리자 인증 의존성 (API 키 방식 - 외부 스크립트용)
 def verify_admin(x_api_key: Optional[str] = Header(None)):
     """ADMIN_API_KEY 환경변수가 설정된 경우에만 API 키 인증 요구"""
     if ADMIN_API_KEY and x_api_key != ADMIN_API_KEY:
         raise HTTPException(status_code=401, detail="관리자 인증이 필요합니다.")
+
+
+def _admin_session_token(expires_at: int) -> str:
+    raw = str(expires_at).encode("utf-8")
+    signature = hmac.new(ADMIN_SESSION_SECRET.encode("utf-8"), raw, hashlib.sha256).hexdigest()
+    return f"{expires_at}.{signature}"
+
+
+def _admin_session_valid(token: str) -> bool:
+    if not token or "." not in token:
+        return False
+    expires_raw, signature = token.split(".", 1)
+    try:
+        expires_at = int(expires_raw)
+    except (TypeError, ValueError):
+        return False
+    if expires_at < int(time.time()):
+        return False
+    expected = hmac.new(
+        ADMIN_SESSION_SECRET.encode("utf-8"), expires_raw.encode("utf-8"), hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(expected, signature)
+
+
+def _request_is_https(request: Request) -> bool:
+    proto = (request.headers.get("x-forwarded-proto") or request.url.scheme or "").split(",")[0].strip()
+    return proto == "https"
+
+
+def require_admin(request: Request) -> None:
+    """관리자 세션 쿠키가 유효한지 검사합니다."""
+    if not ADMIN_PASSWORD:
+        raise HTTPException(
+            status_code=503,
+            detail="관리자 비밀번호(ADMIN_PASSWORD)가 서버에 설정되지 않았습니다.",
+        )
+    token = request.cookies.get(ADMIN_COOKIE_NAME) or ""
+    if not _admin_session_valid(token):
+        raise HTTPException(status_code=401, detail="관리자 로그인이 필요합니다.")
+
+
+def require_admin_or_key(request: Request, x_api_key: Optional[str] = Header(None)) -> None:
+    """관리자 세션 또는 API 키 중 하나로 인증합니다."""
+    if ADMIN_API_KEY and x_api_key and hmac.compare_digest(x_api_key, ADMIN_API_KEY):
+        return
+    require_admin(request)
+
+
+def _check_admin_login_rate(ip: str) -> bool:
+    now = time.time()
+    attempts = [t for t in _admin_login_attempts.get(ip, []) if now - t < ADMIN_LOGIN_WINDOW]
+    _admin_login_attempts[ip] = attempts
+    return len(attempts) < ADMIN_LOGIN_MAX_ATTEMPTS
+
+
+def _record_admin_login_failure(ip: str) -> None:
+    _admin_login_attempts.setdefault(ip, []).append(time.time())
 
 # DB 세션 의존성 주입 (Dependency)
 def get_db():
@@ -800,7 +901,7 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
 @app.get("/v1/saju-history")
 @app.get("/api/saju-history")
 @app.get("/saju-history")
-async def get_saju_history(db: Session = Depends(get_db), _admin: None = Depends(verify_admin)):
+async def get_saju_history(db: Session = Depends(get_db), _admin: None = Depends(require_admin_or_key)):
     """
     DB에 영구 저장된 사주 분석 기록 중 최근 10건을 최신순으로 조회합니다.
     """
@@ -1198,12 +1299,281 @@ async def toss_payment_callback(request: Request, db: Session = Depends(get_db))
     return {"code": 0, "status": "success"}
 
 # -------------------------------------------------------------
+# 5-C. 구매 리포트 보관함 (결제 후 1년 재열람) API
+# -------------------------------------------------------------
+PURCHASE_RETENTION_DAYS = 365
+
+
+class PurchaseClaimInput(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    order_no: str = Field(..., alias="orderNo")
+    payment_token: str = Field("", alias="paymentToken")
+    name: str = Field("", max_length=50)
+    birth_date: str = Field("", alias="birthDate", max_length=20)
+    report: str = Field("", max_length=300000)
+
+
+class PurchaseLookupInput(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    order_no: str = Field(..., alias="orderNo")
+    name: str = Field("", max_length=50)
+
+
+def _purchase_payload(purchase: PurchasedReport) -> dict:
+    return {
+        "status": "success",
+        "orderNo": purchase.order_no,
+        "accessKey": purchase.access_key,
+        "category": purchase.category,
+        "amount": purchase.amount,
+        "name": purchase.customer_name,
+        "birthDate": purchase.birth_date,
+        "report": purchase.report_text,
+        "createdAt": purchase.created_at.strftime("%Y-%m-%d %H:%M:%S") if purchase.created_at else None,
+        "expiresAt": purchase.expires_at.strftime("%Y-%m-%d") if purchase.expires_at else None,
+    }
+
+
+@app.post("/api/purchases/claim")
+def claim_purchase(payload: PurchaseClaimInput, db: Session = Depends(get_db)):
+    """결제 검증 토큰으로 본인 확인 후 리포트를 보관함에 저장합니다. (멱등)"""
+    order_no = (payload.order_no or "").strip()
+    token_payload = _verify_payment_token(payload.payment_token)
+    if not token_payload or token_payload.get("o") != order_no:
+        raise HTTPException(status_code=400, detail="결제 검증 정보가 유효하지 않습니다.")
+
+    order = db.query(PaymentOrder).filter(PaymentOrder.order_no == order_no).first()
+    if not order or order.status != "PAID":
+        raise HTTPException(status_code=400, detail="결제 완료된 주문이 아닙니다.")
+
+    report_text = (payload.report or "").strip()
+    if not report_text:
+        raise HTTPException(status_code=400, detail="저장할 리포트 내용이 없습니다.")
+
+    purchase = db.query(PurchasedReport).filter(PurchasedReport.order_no == order_no).first()
+    if not purchase:
+        purchase = PurchasedReport(
+            order_no=order_no,
+            access_key=secrets.token_urlsafe(32),
+            category=order.category,
+            amount=int(order.amount),
+            created_at=datetime.now(),
+            expires_at=datetime.now() + timedelta(days=PURCHASE_RETENTION_DAYS),
+        )
+        db.add(purchase)
+
+    purchase.report_text = report_text
+    purchase.customer_name = (payload.name or "").strip()[:50] or purchase.customer_name
+    purchase.birth_date = (payload.birth_date or "").strip()[:20] or purchase.birth_date
+    if not purchase.expires_at:
+        purchase.expires_at = datetime.now() + timedelta(days=PURCHASE_RETENTION_DAYS)
+
+    try:
+        db.commit()
+    except Exception as exc:
+        db.rollback()
+        print(f"[PURCHASE] claim failed: {exc}")
+        raise HTTPException(status_code=500, detail="리포트 보관함 저장에 실패했습니다.")
+
+    db.refresh(purchase)
+    return _purchase_payload(purchase)
+
+
+@app.get("/api/purchases/{access_key}")
+def get_purchase(access_key: str, db: Session = Depends(get_db)):
+    """보관함 링크(access key)로 리포트를 다시 열람합니다."""
+    purchase = db.query(PurchasedReport).filter(PurchasedReport.access_key == access_key).first()
+    if not purchase:
+        raise HTTPException(status_code=404, detail="보관된 리포트를 찾을 수 없습니다.")
+    if purchase.expires_at and purchase.expires_at < datetime.now():
+        raise HTTPException(status_code=410, detail="열람 기간(1년)이 만료된 리포트입니다.")
+    return _purchase_payload(purchase)
+
+
+@app.post("/api/purchases/lookup")
+def lookup_purchase(payload: PurchaseLookupInput, db: Session = Depends(get_db)):
+    """주문번호 + 이름으로 다른 기기에서도 보관된 리포트를 찾습니다."""
+    order_no = (payload.order_no or "").strip()
+    name = (payload.name or "").strip()
+    if not order_no or not name:
+        raise HTTPException(status_code=400, detail="주문번호와 이름을 모두 입력해 주세요.")
+
+    purchase = db.query(PurchasedReport).filter(PurchasedReport.order_no == order_no).first()
+    if not purchase or (purchase.customer_name or "").strip() != name:
+        raise HTTPException(status_code=404, detail="일치하는 구매 내역을 찾을 수 없습니다.")
+    if purchase.expires_at and purchase.expires_at < datetime.now():
+        raise HTTPException(status_code=410, detail="열람 기간(1년)이 만료된 리포트입니다.")
+    return _purchase_payload(purchase)
+
+
+# -------------------------------------------------------------
+# 5-D. 관리자 페이지 인증 및 조회 API
+# -------------------------------------------------------------
+class AdminLoginInput(BaseModel):
+    password: str = Field("", max_length=200)
+
+
+@app.post("/admin/api/login")
+def admin_login(payload: AdminLoginInput, request: Request, response: Response):
+    if not ADMIN_PASSWORD:
+        raise HTTPException(
+            status_code=503,
+            detail="관리자 비밀번호(ADMIN_PASSWORD)가 서버에 설정되지 않았습니다. Vercel 환경변수를 확인해 주세요.",
+        )
+
+    ip = request.client.host if request.client else "unknown"
+    if not _check_admin_login_rate(ip):
+        raise HTTPException(status_code=429, detail="로그인 시도가 너무 많습니다. 10분 후 다시 시도해 주세요.")
+
+    if not hmac.compare_digest(
+        (payload.password or "").encode("utf-8"), ADMIN_PASSWORD.encode("utf-8")
+    ):
+        _record_admin_login_failure(ip)
+        raise HTTPException(status_code=401, detail="비밀번호가 올바르지 않습니다.")
+
+    _admin_login_attempts.pop(ip, None)
+    expires_at = int(time.time()) + ADMIN_SESSION_HOURS * 3600
+    response.set_cookie(
+        key=ADMIN_COOKIE_NAME,
+        value=_admin_session_token(expires_at),
+        max_age=ADMIN_SESSION_HOURS * 3600,
+        httponly=True,
+        samesite="lax",
+        secure=_request_is_https(request),
+        path="/",
+    )
+    return {"status": "success", "expiresAt": expires_at}
+
+
+@app.post("/admin/api/logout")
+def admin_logout(response: Response):
+    response.delete_cookie(ADMIN_COOKIE_NAME, path="/")
+    return {"status": "success"}
+
+
+@app.get("/admin/api/overview")
+def admin_overview(db: Session = Depends(get_db), _admin: None = Depends(require_admin)):
+    """관리자 대시보드용 요약/결제/분석/보관함 데이터를 반환합니다."""
+    now = datetime.now()
+    today_start = datetime(now.year, now.month, now.day)
+    week_start = today_start - timedelta(days=6)
+
+    try:
+        orders = db.query(PaymentOrder).order_by(PaymentOrder.id.desc()).limit(100).all()
+        paid_orders = (
+            db.query(PaymentOrder)
+            .filter(PaymentOrder.status == "PAID")
+            .order_by(PaymentOrder.id.desc())
+            .limit(5000)
+            .all()
+        )
+        reports = db.query(SajuHistory).order_by(SajuHistory.id.desc()).limit(30).all()
+        purchases = db.query(PurchasedReport).order_by(PurchasedReport.id.desc()).limit(50).all()
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"DB 조회 실패: {exc}")
+
+    today_paid = [o for o in paid_orders if o.paid_at and o.paid_at >= today_start]
+    total_revenue = sum(int(o.amount or 0) for o in paid_orders)
+
+    by_category = {}
+    for order in paid_orders:
+        bucket = by_category.setdefault(order.category, {"count": 0, "revenue": 0})
+        bucket["count"] += 1
+        bucket["revenue"] += int(order.amount or 0)
+
+    daily = {}
+    for offset in range(7):
+        day = (week_start + timedelta(days=offset)).date().isoformat()
+        daily[day] = {"date": day, "count": 0, "revenue": 0}
+    for order in paid_orders:
+        if not order.paid_at:
+            continue
+        key = order.paid_at.date().isoformat()
+        if key in daily:
+            daily[key]["count"] += 1
+            daily[key]["revenue"] += int(order.amount or 0)
+
+    return {
+        "status": "success",
+        "serverTime": now.strftime("%Y-%m-%d %H:%M:%S"),
+        "database": {
+            "driver": DB_DRIVER,
+            "persistent": DB_PERSISTENT,
+        },
+        "stats": {
+            "todayRevenue": sum(int(o.amount or 0) for o in today_paid),
+            "todayCount": len(today_paid),
+            "totalRevenue": total_revenue,
+            "totalCount": len(paid_orders),
+            "byCategory": by_category,
+            "last7Days": list(daily.values()),
+        },
+        "orders": [
+            {
+                "orderNo": o.order_no,
+                "category": o.category,
+                "amount": o.amount,
+                "status": o.status,
+                "payMethod": o.pay_method,
+                "createdAt": o.created_at.strftime("%Y-%m-%d %H:%M:%S") if o.created_at else None,
+                "paidAt": o.paid_at.strftime("%Y-%m-%d %H:%M:%S") if o.paid_at else None,
+            }
+            for o in orders
+        ],
+        "reports": [
+            {
+                "id": r.id,
+                "name": r.name,
+                "gender": r.gender,
+                "birthDate": r.birth_date,
+                "birthTime": r.birth_time,
+                "birthType": r.birth_type,
+                "createdAt": r.created_at.strftime("%Y-%m-%d %H:%M:%S") if r.created_at else None,
+                "length": len(r.ai_interpretation or ""),
+                "preview": (r.ai_interpretation or "")[:120],
+            }
+            for r in reports
+        ],
+        "purchases": [
+            {
+                "orderNo": p.order_no,
+                "category": p.category,
+                "amount": p.amount,
+                "name": p.customer_name,
+                "createdAt": p.created_at.strftime("%Y-%m-%d %H:%M:%S") if p.created_at else None,
+                "expiresAt": p.expires_at.strftime("%Y-%m-%d") if p.expires_at else None,
+                "length": len(p.report_text or ""),
+            }
+            for p in purchases
+        ],
+    }
+
+
+# -------------------------------------------------------------
 # 5. 프론트엔드 정적 파일 서빙
 # -------------------------------------------------------------
 @app.get("/")
 async def serve_index():
     index_file = os.path.join(BASE_DIR, "index.html")
     return FileResponse(index_file)
+
+@app.get("/admin")
+async def serve_admin():
+    admin_file = os.path.join(BASE_DIR, "admin.html")
+    if not os.path.exists(admin_file):
+        raise HTTPException(status_code=404, detail="관리자 페이지가 준비되지 않았습니다.")
+    return FileResponse(
+        admin_file,
+        headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow"},
+    )
+
+
+@app.get("/robots.txt")
+async def serve_robots():
+    return PlainTextResponse("User-agent: *\nDisallow: /admin\nDisallow: /api/\n")
+
 
 @app.get("/bg-image.png")
 async def serve_bg():
