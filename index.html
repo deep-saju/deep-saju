@@ -3233,8 +3233,8 @@
         <div class="home-notice">
             <p class="home-notice-title">이용 안내</p>
             <ul class="home-notice-list">
-                <li><strong>제공 방식</strong> 결제 즉시 웹에서 열람 · ‘내 리포트’에서 재열람 및 PDF 저장</li>
-                <li><strong>제공 기간</strong> 결제 승인 후 5분 이내 제공 · 결제일로부터 1년간 열람 가능</li>
+                <li><strong>제공 방식</strong> 결제 즉시 웹에서 열람 · ‘내 리포트’에서 재열람 및 PDF 다운로드</li>
+                <li><strong>제공 기간</strong> 결제 승인 후 5분 이내 제공 · 결제일로부터 7일간 재열람 가능 (PDF는 다운로드 후 직접 보관)</li>
                 <li><strong>환불</strong> 열람 후 단순변심 환불 제한 · 판매자 귀책 시 결제일로부터 7일 이내 전액 환불</li>
             </ul>
             <button type="button" class="home-notice-link" onclick="openLegal('refund')">서비스 제공·환불 안내 자세히 보기 →</button>
@@ -4073,7 +4073,7 @@
                         <ul class="purchase-guide-list">
                             <li><strong>제공 방식</strong> — 결제 완료 즉시 이 화면에서 리포트 전문을 웹으로 열람하실 수 있습니다. 상단의 <strong>‘내 리포트’</strong>에서 다시 열람하거나, 리포트 화면의 <strong>‘PDF 파일로 저장’</strong> 버튼으로 <strong>PDF 파일을 다운로드</strong>하실 수 있습니다.</li>
                             <li><strong>제공 시점</strong> — 토스페이 결제 승인 직후 자동으로 제공되며, 통상 <strong>결제 후 5분 이내</strong>에 열람이 완료됩니다. (시스템 점검 시 최대 24시간 이내 제공)</li>
-                            <li><strong>열람·다운로드 가능 기간</strong> — 결제일로부터 <strong>1년간</strong> ‘내 리포트’에서 무제한 다시 열람 및 PDF 저장이 가능합니다.</li>
+                            <li><strong>열람·다운로드 가능 기간</strong> — 결제일로부터 <strong>7일간</strong> ‘내 리포트’에서 다시 열람 및 PDF 다운로드가 가능합니다. 이후에는 다운로드한 PDF로 보관해 주세요.</li>
                             <li><strong>단순변심 환불</strong> — 디지털 콘텐츠 특성상 결제 후 리포트를 열람한 경우에는 단순변심에 의한 청약철회 및 환불이 제한됩니다.</li>
                             <li><strong>판매자 귀책 환불</strong> — 시스템 오류, 콘텐츠 미제공, 표시·광고 내용과 다른 제공 등 판매자 귀책 사유가 있는 경우에는 <strong>결제일로부터 7일 이내</strong> 전액 환불해 드립니다.</li>
                         </ul>
@@ -4174,12 +4174,13 @@
             <button type="button" class="mypage-close" aria-label="닫기" onclick="closeMyReports()">✕</button>
         </div>
         <div class="mypage-body">
-            <p class="mypage-desc">결제하신 리포트는 <strong>결제일로부터 1년간</strong> 다시 열람하실 수 있습니다. 이 기기에서 결제한 내역은 아래에 자동으로 표시됩니다.</p>
+            <p class="mypage-desc">결제하신 리포트는 <strong>결제일로부터 7일간</strong> 다시 열람하실 수 있습니다. 이 기기에서 결제한 내역은 아래에 자동으로 표시되며, 다른 기기에서는 주문번호와 성함으로 찾으실 수 있습니다.</p>
 
             <div class="mypage-list" id="mypage-list"></div>
 
             <h3 class="mypage-section-title">다른 기기에서 구매한 리포트 찾기</h3>
-            <p class="mypage-desc">결제 완료 후 안내된 주문번호와 결제 시 입력한 성함을 입력해 주세요.</p>
+            <p class="mypage-desc">결제 완료 후 안내된 주문번호와 결제 시 입력한 성함을 입력해 주세요. 주문번호는 결제 완료 화면, ‘내 리포트’ 목록, 저장하신 PDF 파일에서 확인하실 수 있습니다.</p>
+            <p class="mypage-desc">주문번호를 잊으셨다면 토스페이 결제 내역을 확인하시거나 고객센터(010-4620-9496 / ekdekekd@naver.com)로 문의해 주세요.</p>
             <div class="mypage-lookup-row">
                 <div class="mypage-field">
                     <label for="mypage-order">주문번호</label>
@@ -4226,8 +4227,8 @@
 
             <h3>3. 열람 및 다운로드 가능 기간</h3>
             <ul>
-                <li>결제일로부터 <strong>1년간</strong> ‘내 리포트’에서 무제한 다시 열람 및 PDF 저장이 가능합니다.</li>
-                <li>1년이 경과한 리포트는 열람이 종료되며, 종료 전 PDF로 저장하실 것을 권장합니다.</li>
+                <li>결제일로부터 <strong>7일간</strong> ‘내 리포트’에서 다시 열람 및 PDF 다운로드가 가능합니다.</li>
+                <li>7일이 경과한 리포트는 웹 열람이 종료되며, 종료 전 PDF로 다운로드하여 보관하실 것을 권장합니다.</li>
             </ul>
 
             <h3>4. 환불 가능 기간 및 기준</h3>
@@ -4301,7 +4302,7 @@
             <h3>제6조 (대금의 결제 및 청약철회·환불)</h3>
             <ol>
                 <li>유료 콘텐츠의 대금은 회사가 정한 결제수단(신용카드, 간편결제 등)으로 지급합니다.</li>
-                <li>회사는 결제 완료 즉시 웹 페이지에서 유료 콘텐츠의 열람을 제공하며, 이용자는 상단 ‘내 리포트’에서 결제일로부터 <strong>1년간</strong> 다시 열람하거나 PDF로 저장·다운로드할 수 있습니다.</li>
+                <li>회사는 결제 완료 즉시 웹 페이지에서 유료 콘텐츠의 열람을 제공하며, 이용자는 상단 ‘내 리포트’에서 결제일로부터 <strong>7일간</strong> 다시 열람하거나 PDF로 다운로드할 수 있습니다.</li>
                 <li>이용자는 결제일로부터 7일 이내에 청약철회를 할 수 있습니다. 다만 「전자상거래 등에서의 소비자보호에 관한 법률」 제17조 제2항에 따라, 이용자가 유료 콘텐츠의 제공을 개시받아 이를 열람·이용한 경우에는 단순변심에 의한 청약철회가 제한됩니다.</li>
                 <li>회사의 귀책사유(시스템 오류, 콘텐츠 미제공, 표시·광고한 내용과 다르게 제공된 경우 등)로 콘텐츠가 정상적으로 제공되지 않은 경우에는 <strong>결제일로부터 7일 이내</strong> 전액 환불합니다.</li>
                 <li>환불 요청은 주문번호와 성함을 기재하여 이메일(ekdekekd@naver.com) 또는 전화(010-4620-9496)로 접수할 수 있으며, 회사는 확인 후 3영업일 이내에 처리합니다.</li>
@@ -4471,6 +4472,7 @@
     // 결제/리포트 복원 상태
     const PAYMENT_PENDING_KEY = 'saju_pending_payment_v1';
     const PURCHASES_KEY = 'saju_purchases_v1';
+    const PENDING_CLAIM_KEY = 'saju_pending_claim_v1';
 
     // 결제 전 상세페이지에 항상 노출되는 제공 방식·기간·환불 안내 (토스페이 심사 요건)
     const PURCHASE_GUIDE_HTML = `
@@ -4479,7 +4481,7 @@
             <ul class="purchase-guide-list">
                 <li><strong>제공 방식</strong> — 결제 완료 즉시 이 화면에서 리포트 전문을 웹으로 열람하실 수 있습니다. 상단의 <strong>‘내 리포트’</strong>에서 다시 열람하거나, 리포트 화면의 <strong>‘PDF 파일로 저장’</strong> 버튼으로 <strong>PDF 파일을 다운로드</strong>하실 수 있습니다.</li>
                 <li><strong>제공 시점</strong> — 토스페이 결제 승인 직후 자동으로 제공되며, 통상 <strong>결제 후 5분 이내</strong>에 열람이 완료됩니다. (시스템 점검 시 최대 24시간 이내 제공)</li>
-                <li><strong>열람·다운로드 가능 기간</strong> — 결제일로부터 <strong>1년간</strong> ‘내 리포트’에서 무제한 다시 열람 및 PDF 저장이 가능합니다.</li>
+                <li><strong>열람·다운로드 가능 기간</strong> — 결제일로부터 <strong>7일간</strong> ‘내 리포트’에서 다시 열람 및 PDF 다운로드가 가능합니다. 이후에는 다운로드한 PDF로 보관해 주세요.</li>
                 <li><strong>단순변심 환불</strong> — 디지털 콘텐츠 특성상 결제 후 리포트를 열람한 경우에는 단순변심에 의한 청약철회 및 환불이 제한됩니다.</li>
                 <li><strong>판매자 귀책 환불</strong> — 시스템 오류, 콘텐츠 미제공, 표시·광고 내용과 다른 제공 등 판매자 귀책 사유가 있는 경우에는 <strong>결제일로부터 7일 이내</strong> 전액 환불해 드립니다.</li>
             </ul>
@@ -5715,7 +5717,7 @@
     }
 
     /* ============================================================
-       내 리포트(구매 보관함) - 결제일로부터 1년 재열람
+       내 리포트(구매 보관함) - 결제일로부터 7일 재열람
        ============================================================ */
     const CATEGORY_LABELS = {
         saju: '평생 심층 운명서',
@@ -5750,26 +5752,93 @@
         } catch (e) { /* 저장 공간 부족 시 무시 */ }
     }
 
+    function getPendingClaim() {
+        try {
+            const raw = localStorage.getItem(PENDING_CLAIM_KEY);
+            const item = raw ? JSON.parse(raw) : null;
+            return item && item.orderNo && item.paymentToken ? item : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function savePendingClaim(claim) {
+        try {
+            localStorage.setItem(PENDING_CLAIM_KEY, JSON.stringify({
+                orderNo: claim.orderNo,
+                paymentToken: claim.paymentToken,
+                name: claim.name || '',
+                birthDate: claim.birthDate || '',
+                report: claim.report || '',
+                category: claim.category || 'saju',
+                savedAt: new Date().toISOString()
+            }));
+        } catch (e) { /* 저장 공간 부족 시 무시 */ }
+    }
+
+    function clearPendingClaim() {
+        try { localStorage.removeItem(PENDING_CLAIM_KEY); } catch (e) { /* 무시 */ }
+    }
+
+    function buildClaimPayload(pending) {
+        const userInfo = (pending.data && pending.data.user_info) || {};
+        return {
+            orderNo: pending.orderNo,
+            paymentToken: pending.paymentToken,
+            name: userInfo.name || pending.name || '',
+            birthDate: userInfo.birth_date || pending.birthDate || '',
+            report: (pending.data && pending.data.interpretation) || pending.report || '',
+            category: (pending.data && pending.data.category) || pending.category || 'saju'
+        };
+    }
+
+    async function submitPurchaseClaim(claim) {
+        const response = await fetch('/api/purchases/claim', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                orderNo: claim.orderNo,
+                paymentToken: claim.paymentToken,
+                name: claim.name,
+                birthDate: claim.birthDate,
+                report: claim.report
+            })
+        });
+        if (!response.ok) {
+            const error = new Error('claim failed');
+            error.status = response.status;
+            throw error;
+        }
+        return response.json();
+    }
+
     async function claimPurchasedReport(pending) {
         if (!pending || !pending.orderNo || !pending.paymentToken) return null;
+        const claim = buildClaimPayload(pending);
+        if (!claim.report) return null;
         try {
-            const userInfo = (pending.data && pending.data.user_info) || {};
-            const response = await fetch('/api/purchases/claim', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    orderNo: pending.orderNo,
-                    paymentToken: pending.paymentToken,
-                    name: userInfo.name || '',
-                    birthDate: userInfo.birth_date || '',
-                    report: (pending.data && pending.data.interpretation) || ''
-                })
-            });
-            if (!response.ok) return null;
-            const purchase = await response.json();
+            const purchase = await submitPurchaseClaim(claim);
             rememberPurchase(purchase);
+            clearPendingClaim();
             return purchase;
         } catch (e) {
+            // 네트워크 오류·서버 오류일 때만 다음 방문을 위해 남겨둔다. (400/404는 재시도 무의미)
+            if (!e.status || e.status >= 500) savePendingClaim(claim);
+            return null;
+        }
+    }
+
+    async function retryPendingClaim() {
+        const claim = getPendingClaim();
+        if (!claim || !claim.report) return null;
+        try {
+            const purchase = await submitPurchaseClaim(claim);
+            rememberPurchase(purchase);
+            clearPendingClaim();
+            renderMyPurchases();
+            return purchase;
+        } catch (e) {
+            if (e.status && e.status < 500) clearPendingClaim();
             return null;
         }
     }
@@ -5785,6 +5854,8 @@
         if (overlay) overlay.classList.add('open');
         const status = document.getElementById('mypage-status');
         if (status) status.textContent = '';
+        // 저장에 실패했던 구매가 있으면 조용히 다시 보관함에 저장한다.
+        retryPendingClaim();
     }
 
     function closeMyReports() {
@@ -5797,12 +5868,17 @@
         if (!listEl) return;
         const purchases = getMyPurchases();
         if (!purchases.length) {
-            listEl.innerHTML = '<div class="mypage-empty">아직 이 기기에서 결제한 리포트가 없습니다.<br>결제 완료 후 이곳에 자동으로 보관됩니다.</div>';
+            listEl.innerHTML = '<div class="mypage-empty">아직 이 기기에서 결제한 리포트가 없습니다.<br>다른 기기에서 결제하셨다면 아래에서 주문번호와 성함으로 찾아보세요.</div>';
             return;
         }
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         listEl.innerHTML = purchases.map((item) => {
             const label = CATEGORY_LABELS[item.category] || '사주 리포트';
-            const expires = item.expiresAt ? ` · 열람 만료 ${item.expiresAt}` : '';
+            const expired = !!(item.expiresAt && item.expiresAt < today);
+            const expires = item.expiresAt
+                ? (expired ? ` · 열람 만료 ${item.expiresAt}` : ` · 열람 가능 ~${item.expiresAt}`)
+                : '';
             return `
                 <div class="mypage-item">
                     <div class="mypage-item-head">
@@ -5813,13 +5889,14 @@
                         결제일 ${formatPurchaseDate(item.createdAt) || '-'}${expires}
                     </div>
                     <div class="mypage-item-actions">
-                        <button type="button" class="mypage-btn" data-access-key="${item.accessKey}">다시 열람</button>
+                        <button type="button" class="mypage-btn" data-access-key="${item.accessKey}" ${expired ? 'disabled' : ''}>${expired ? '열람 기간 만료' : '다시 열람'}</button>
                     </div>
+                    ${expired ? '<div class="mypage-item-meta">열람 기간이 지났습니다. 저장하신 PDF 파일을 이용해 주세요.</div>' : ''}
                 </div>
             `;
         }).join('');
 
-        listEl.querySelectorAll('button[data-access-key]').forEach((btn) => {
+        listEl.querySelectorAll('button[data-access-key]:not([disabled])').forEach((btn) => {
             btn.addEventListener('click', () => openArchivedReport(btn.getAttribute('data-access-key')));
         });
     }
@@ -6001,7 +6078,7 @@
             <div class="pdf-rule"></div>
             <div class="pdf-meta">성함: ${name} · 생년월일: ${userInfo.birth_date || '-'} · 발급일: ${dateLabel}</div>
             <div class="pdf-body">${bodyHtml}</div>
-            <div class="pdf-footer">명리학연구소 · 결제일로부터 1년간 ‘내 리포트’에서 다시 열람하실 수 있습니다.<br>문의 ekdekekd@naver.com / 010-4620-9496</div>
+            <div class="pdf-footer">명리학연구소 · 결제일로부터 7일간 ‘내 리포트’에서 다시 열람하실 수 있습니다. 이후에는 이 PDF 파일로 보관해 주세요.${lastOrderNo ? `<br>주문번호 ${lastOrderNo}` : ''}<br>문의 ekdekekd@naver.com / 010-4620-9496</div>
         `;
         document.body.appendChild(root);
 
@@ -6098,7 +6175,7 @@
             if (lastOrderNo) {
                 lockBanner.insertAdjacentHTML(
                     'beforeend',
-                    `<p class="purchase-guide-foot" style="text-align:center;">주문번호 <strong>${lastOrderNo}</strong> · 결제일로부터 1년간 ‘내 리포트’에서 다시 열람하실 수 있습니다.</p>`
+                    `<p class="purchase-guide-foot" style="text-align:center;">주문번호 <strong>${lastOrderNo}</strong> · 결제일로부터 7일간 ‘내 리포트’에서 다시 열람하실 수 있습니다.<br>PDF로 저장해 두시면 7일 이후에도 보실 수 있습니다.</p>`
                 );
             }
         }
@@ -6162,7 +6239,7 @@
                         sessionStorage.removeItem(PAYMENT_PENDING_KEY);
                         lastOrderNo = pending.orderNo || '';
                         unlockReportContent();
-                        claimPurchasedReport(pending);
+                        await claimPurchasedReport(pending);
                         showPaymentToast('이미 완료된 결제를 확인했습니다. 심층 리포트가 열렸습니다.', 'success', 5000);
                         return;
                     }
@@ -6264,7 +6341,7 @@
                 sessionStorage.removeItem(PAYMENT_PENDING_KEY);
                 lastOrderNo = orderNo;
                 unlockReportContent();
-                claimPurchasedReport(pending);
+                await claimPurchasedReport(pending);
                 showPaymentToast('결제가 완료되었습니다. 심층 리포트가 열렸습니다. (주문번호 ' + orderNo + ')', 'success', 7000);
             } else if (result && result.paid) {
                 showPaymentToast('결제 카테고리가 현재 리포트와 일치하지 않습니다. 고객센터에 문의해 주세요.', 'error', 7000);
@@ -6850,6 +6927,13 @@
         document.addEventListener('DOMContentLoaded', handlePaymentReturn);
     } else {
         handlePaymentReturn();
+    }
+
+    // 보관함 저장에 실패했던 구매가 있으면 페이지 로드 시 한 번 더 시도한다.
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => { retryPendingClaim(); });
+    } else {
+        retryPendingClaim();
     }
 </script>
 

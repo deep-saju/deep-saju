@@ -133,7 +133,7 @@ class PaymentOrder(Base):
     created_at = Column(DateTime, default=datetime.now)
     paid_at = Column(DateTime, nullable=True)
 
-# SQLAlchemy PurchasedReport 모델 정의 (결제 완료된 리포트 보관함 / 1년 재열람)
+# SQLAlchemy PurchasedReport 모델 정의 (결제 완료된 리포트 보관함 / 7일 재열람)
 class PurchasedReport(Base):
     __tablename__ = "purchased_reports"
 
@@ -1299,9 +1299,9 @@ async def toss_payment_callback(request: Request, db: Session = Depends(get_db))
     return {"code": 0, "status": "success"}
 
 # -------------------------------------------------------------
-# 5-C. 구매 리포트 보관함 (결제 후 1년 재열람) API
+# 5-C. 구매 리포트 보관함 (결제 후 7일 재열람) API
 # -------------------------------------------------------------
-PURCHASE_RETENTION_DAYS = 365
+PURCHASE_RETENTION_DAYS = 7
 
 
 class PurchaseClaimInput(BaseModel):
@@ -1321,7 +1321,15 @@ class PurchaseLookupInput(BaseModel):
     name: str = Field("", max_length=50)
 
 
+def _purchase_expires_at(purchase: PurchasedReport):
+    """열람 만료 시각은 결제일(created_at) 기준 7일로 계산한다. (과거에 저장된 리포트에도 동일 적용)"""
+    if purchase.created_at:
+        return purchase.created_at + timedelta(days=PURCHASE_RETENTION_DAYS)
+    return purchase.expires_at
+
+
 def _purchase_payload(purchase: PurchasedReport) -> dict:
+    expires_at = _purchase_expires_at(purchase)
     return {
         "status": "success",
         "orderNo": purchase.order_no,
@@ -1332,7 +1340,7 @@ def _purchase_payload(purchase: PurchasedReport) -> dict:
         "birthDate": purchase.birth_date,
         "report": purchase.report_text,
         "createdAt": purchase.created_at.strftime("%Y-%m-%d %H:%M:%S") if purchase.created_at else None,
-        "expiresAt": purchase.expires_at.strftime("%Y-%m-%d") if purchase.expires_at else None,
+        "expiresAt": expires_at.strftime("%Y-%m-%d") if expires_at else None,
     }
 
 
@@ -1387,8 +1395,9 @@ def get_purchase(access_key: str, db: Session = Depends(get_db)):
     purchase = db.query(PurchasedReport).filter(PurchasedReport.access_key == access_key).first()
     if not purchase:
         raise HTTPException(status_code=404, detail="보관된 리포트를 찾을 수 없습니다.")
-    if purchase.expires_at and purchase.expires_at < datetime.now():
-        raise HTTPException(status_code=410, detail="열람 기간(1년)이 만료된 리포트입니다.")
+    expires_at = _purchase_expires_at(purchase)
+    if expires_at and expires_at < datetime.now():
+        raise HTTPException(status_code=410, detail="열람 기간(7일)이 만료된 리포트입니다. 저장하신 PDF 파일을 이용해 주세요.")
     return _purchase_payload(purchase)
 
 
@@ -1403,8 +1412,9 @@ def lookup_purchase(payload: PurchaseLookupInput, db: Session = Depends(get_db))
     purchase = db.query(PurchasedReport).filter(PurchasedReport.order_no == order_no).first()
     if not purchase or (purchase.customer_name or "").strip() != name:
         raise HTTPException(status_code=404, detail="일치하는 구매 내역을 찾을 수 없습니다.")
-    if purchase.expires_at and purchase.expires_at < datetime.now():
-        raise HTTPException(status_code=410, detail="열람 기간(1년)이 만료된 리포트입니다.")
+    expires_at = _purchase_expires_at(purchase)
+    if expires_at and expires_at < datetime.now():
+        raise HTTPException(status_code=410, detail="열람 기간(7일)이 만료된 리포트입니다. 저장하신 PDF 파일을 이용해 주세요.")
     return _purchase_payload(purchase)
 
 
@@ -1545,7 +1555,7 @@ def admin_overview(db: Session = Depends(get_db), _admin: None = Depends(require
                 "amount": p.amount,
                 "name": p.customer_name,
                 "createdAt": p.created_at.strftime("%Y-%m-%d %H:%M:%S") if p.created_at else None,
-                "expiresAt": p.expires_at.strftime("%Y-%m-%d") if p.expires_at else None,
+                "expiresAt": (_purchase_expires_at(p).strftime("%Y-%m-%d") if _purchase_expires_at(p) else None),
                 "length": len(p.report_text or ""),
             }
             for p in purchases
