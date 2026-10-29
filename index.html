@@ -4497,6 +4497,7 @@
     let reportUnlocked = false;
     let paymentToastTimer = null;
     let analysisRunId = 0;
+    let lastOrderNo = '';
 
     /* ============================================================
        화면 전환 단일화
@@ -5844,6 +5845,7 @@
         };
         lastAnalysisData = data;
         lastResultText = purchase.report;
+        lastOrderNo = purchase.orderNo || '';
         currentCategory = purchase.category || 'saju';
         const catInput = document.getElementById('selected_category');
         if (catInput) catInput.value = currentCategory;
@@ -5984,6 +5986,12 @@
             `;
             lockBanner.style.borderColor = 'var(--text-gold)';
             lockBanner.style.background = 'rgba(20, 16, 12, 0.95)';
+            if (lastOrderNo) {
+                lockBanner.insertAdjacentHTML(
+                    'beforeend',
+                    `<p class="purchase-guide-foot" style="text-align:center;">주문번호 <strong>${lastOrderNo}</strong> · 결제일로부터 1년간 ‘내 리포트’에서 다시 열람하실 수 있습니다.</p>`
+                );
+            }
         }
 
         if (inlineBtn) {
@@ -6043,6 +6051,7 @@
                     const existing = await confirmTossPayment(pending.orderNo, pending.paymentToken);
                     if (existing && existing.paid && existing.category === category) {
                         sessionStorage.removeItem(PAYMENT_PENDING_KEY);
+                        lastOrderNo = pending.orderNo || '';
                         unlockReportContent();
                         claimPurchasedReport(pending);
                         showPaymentToast('이미 완료된 결제를 확인했습니다. 심층 리포트가 열렸습니다.', 'success', 5000);
@@ -6144,6 +6153,7 @@
             const result = await confirmTossPayment(orderNo, pending.paymentToken);
             if (result && result.paid && result.category === category) {
                 sessionStorage.removeItem(PAYMENT_PENDING_KEY);
+                lastOrderNo = orderNo;
                 unlockReportContent();
                 claimPurchasedReport(pending);
                 showPaymentToast('결제가 완료되었습니다. 심층 리포트가 열렸습니다. (주문번호 ' + orderNo + ')', 'success', 7000);
@@ -6485,6 +6495,7 @@
         // 새 리포트를 시작하므로 이전 결제/복원 상태를 정리한다.
         lastAnalysisData = null;
         lastResultText = '';
+        lastOrderNo = '';
         paymentInProgress = false;
         reportUnlocked = false;
         const unlockBtnAfterReset = document.getElementById('btn-unlock-inline');
