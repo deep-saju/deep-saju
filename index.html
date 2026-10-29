@@ -14,6 +14,8 @@
     <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
     <!-- DOMPurify (XSS 보안 필터) -->
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+<!-- html2pdf.js (PDF 파일 즉시 저장) -->
+<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 
     <style>
         /* ==========================================================================
@@ -2059,19 +2061,6 @@
             min-height: 18px;
         }
 
-        @media print {
-            .top-gnb-bar,
-            .site-footer,
-            .sticky-paywall-bar,
-            .result-footer-actions,
-            .btn-back,
-            .paywall-lock-banner,
-            .mypage-overlay,
-            .payment-toast {
-                display: none !important;
-            }
-        }
-
         .result-deep-report.teaser-mode {
             max-height: 480px;
             overflow: hidden;
@@ -4076,7 +4065,7 @@
                     <div class="purchase-guide" id="purchase-guide">
                         <p class="purchase-guide-title">📌 서비스 제공 방식 · 제공 기간 · 환불 안내</p>
                         <ul class="purchase-guide-list">
-                            <li><strong>제공 방식</strong> — 결제 완료 즉시 이 화면에서 리포트 전문을 웹으로 열람하실 수 있습니다. 상단의 <strong>‘내 리포트’</strong>에서 다시 열람하거나 브라우저 인쇄 기능으로 <strong>PDF 파일로 저장·다운로드</strong>할 수 있습니다.</li>
+                            <li><strong>제공 방식</strong> — 결제 완료 즉시 이 화면에서 리포트 전문을 웹으로 열람하실 수 있습니다. 상단의 <strong>‘내 리포트’</strong>에서 다시 열람하거나, 리포트 화면의 <strong>‘PDF 파일로 저장’</strong> 버튼으로 <strong>PDF 파일을 다운로드</strong>하실 수 있습니다.</li>
                             <li><strong>제공 시점</strong> — 토스페이 결제 승인 직후 자동으로 제공되며, 통상 <strong>결제 후 5분 이내</strong>에 열람이 완료됩니다. (시스템 점검 시 최대 24시간 이내 제공)</li>
                             <li><strong>열람·다운로드 가능 기간</strong> — 결제일로부터 <strong>1년간</strong> ‘내 리포트’에서 무제한 다시 열람 및 PDF 저장이 가능합니다.</li>
                             <li><strong>단순변심 환불</strong> — 디지털 콘텐츠 특성상 결제 후 리포트를 열람한 경우에는 단순변심에 의한 청약철회 및 환불이 제한됩니다.</li>
@@ -4097,8 +4086,8 @@
             <button type="button" class="action-btn secondary" onclick="copyResult()">
                 <span>📋 리포트 전문 복사</span>
             </button>
-            <button type="button" class="action-btn secondary" onclick="printReport()">
-                <span>🖨️ PDF 저장 / 인쇄</span>
+            <button type="button" class="action-btn secondary" id="btn-save-pdf" onclick="downloadReportPdf()">
+                <span>📄 PDF 파일로 저장</span>
             </button>
             <button type="button" class="action-btn primary" onclick="resetForm()">
                 <span>✨ 다른 사주 읽어보기</span>
@@ -4219,7 +4208,7 @@
             <h3>1. 서비스 제공 방식</h3>
             <ul>
                 <li>결제가 완료되면 <strong>즉시</strong> 해당 리포트 화면의 잠금이 해제되어 <strong>웹 페이지에서 전문을 열람</strong>하실 수 있습니다.</li>
-                <li>상단 <strong>‘내 리포트’</strong> 메뉴에서 구매한 리포트를 다시 열람하거나, 브라우저의 인쇄 기능을 이용해 <strong>PDF 파일로 저장·다운로드</strong>하실 수 있습니다.</li>
+                <li>상단 <strong>‘내 리포트’</strong> 메뉴에서 구매한 리포트를 다시 열람하거나, 리포트 화면의 <strong>‘PDF 파일로 저장’</strong> 버튼으로 <strong>PDF 파일을 다운로드</strong>하실 수 있습니다.</li>
                 <li>별도의 실물 상품 배송은 없으며, 이메일 발송을 통한 제공은 하지 않습니다.</li>
             </ul>
 
@@ -4482,7 +4471,7 @@
         <div class="purchase-guide" id="purchase-guide">
             <p class="purchase-guide-title">📌 서비스 제공 방식 · 제공 기간 · 환불 안내</p>
             <ul class="purchase-guide-list">
-                <li><strong>제공 방식</strong> — 결제 완료 즉시 이 화면에서 리포트 전문을 웹으로 열람하실 수 있습니다. 상단의 <strong>‘내 리포트’</strong>에서 다시 열람하거나 브라우저 인쇄 기능으로 <strong>PDF 파일로 저장·다운로드</strong>할 수 있습니다.</li>
+                <li><strong>제공 방식</strong> — 결제 완료 즉시 이 화면에서 리포트 전문을 웹으로 열람하실 수 있습니다. 상단의 <strong>‘내 리포트’</strong>에서 다시 열람하거나, 리포트 화면의 <strong>‘PDF 파일로 저장’</strong> 버튼으로 <strong>PDF 파일을 다운로드</strong>하실 수 있습니다.</li>
                 <li><strong>제공 시점</strong> — 토스페이 결제 승인 직후 자동으로 제공되며, 통상 <strong>결제 후 5분 이내</strong>에 열람이 완료됩니다. (시스템 점검 시 최대 24시간 이내 제공)</li>
                 <li><strong>열람·다운로드 가능 기간</strong> — 결제일로부터 <strong>1년간</strong> ‘내 리포트’에서 무제한 다시 열람 및 PDF 저장이 가능합니다.</li>
                 <li><strong>단순변심 환불</strong> — 디지털 콘텐츠 특성상 결제 후 리포트를 열람한 경우에는 단순변심에 의한 청약철회 및 환불이 제한됩니다.</li>
@@ -5896,43 +5885,155 @@
         }
     }
 
-    function printReport() {
+    function buildPdfBodyHtml(rawMarkdown) {
+        const raw = String(rawMarkdown || '');
+        let html = '';
+        try {
+            if (typeof marked !== 'undefined' && typeof marked.parse === 'function') {
+                html = marked.parse(raw);
+            } else {
+                html = raw
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/\n\n/g, '</p><p>')
+                    .replace(/\n/g, '<br>');
+            }
+        } catch (e) {
+            html = raw
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\n/g, '<br>');
+        }
+        if (typeof DOMPurify !== 'undefined') {
+            html = DOMPurify.sanitize(html);
+        }
+        const holder = document.createElement('div');
+        holder.innerHTML = html;
+        // 다크 테마용 인라인 스타일/클래스를 제거해 흰 배경 PDF에서도 읽기 쉽게 만든다.
+        holder.querySelectorAll('[style]').forEach((el) => el.removeAttribute('style'));
+        holder.querySelectorAll('[class]').forEach((el) => el.removeAttribute('class'));
+        return holder.innerHTML;
+    }
+
+    function downloadReportPdf() {
         if (!lastAnalysisData || !lastAnalysisData.interpretation) {
             alert('저장할 리포트가 없습니다.');
             return;
         }
         if (!reportUnlocked) {
-            alert('리포트 PDF 저장은 결제 완료 후 이용하실 수 있습니다.');
+            alert('PDF 저장은 결제 완료 후 이용하실 수 있습니다.');
             return;
         }
+        if (typeof html2pdf === 'undefined') {
+            alert('PDF 저장 도구를 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.');
+            return;
+        }
+
         const category = lastAnalysisData.category || currentCategory || 'saju';
         const title = CATEGORY_LABELS[category] || '사주 리포트';
         const userInfo = lastAnalysisData.user_info || {};
-        const contentEl = document.getElementById('ai-content');
-        const bodyHtml = contentEl ? contentEl.innerHTML : '';
-        const printWindow = window.open('', '_blank');
-        if (!printWindow) {
-            alert('팝업이 차단되어 PDF 저장 창을 열지 못했습니다. 브라우저의 팝업 차단을 해제해 주세요.');
-            return;
-        }
-        printWindow.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><title>${title} - ${userInfo.name || '선비'}</title>
+        const name = userInfo.name || '선비';
+        const today = new Date();
+        const dateLabel = today.toLocaleDateString('ko-KR');
+        const fileDate = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+        const bodyHtml = buildPdfBodyHtml(lastAnalysisData.interpretation);
+
+        const btn = document.getElementById('btn-save-pdf');
+        const btnText = btn ? btn.querySelector('span') : null;
+        const originalText = btnText ? btnText.textContent : '';
+        if (btn) btn.disabled = true;
+        if (btnText) btnText.textContent = 'PDF 만드는 중...';
+
+        // 생성 중에는 화면을 가리는 오버레이를 띄우고, 내보내기용 본문은 문서 흐름 안에 둔다.
+        // (absolute로 띄우면 html2pdf 컨테이너 높이가 0이 되어 빈 PDF가 만들어진다.)
+        const overlay = document.createElement('div');
+        overlay.id = 'pdf-export-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(10,8,4,0.94);color:#e8d9a8;font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;';
+        overlay.innerHTML = '<style>@keyframes pdfspin{to{transform:rotate(360deg)}}#pdf-export-overlay .pdf-spinner{width:34px;height:34px;border:3px solid rgba(232,217,168,0.25);border-top-color:#e8d9a8;border-radius:50%;animation:pdfspin .8s linear infinite}</style>'
+            + '<div class="pdf-spinner"></div>'
+            + '<div style="font-size:15px;letter-spacing:0.02em;">PDF 파일을 만드는 중입니다...</div>'
+            + '<div style="font-size:12px;color:#a99a76;">잠시만 기다려 주세요.</div>';
+        document.body.appendChild(overlay);
+
+        // html2canvas는 현재 스크롤 위치를 기준으로 잘라내므로, 생성 중에는 맨 위로 고정한다.
+        const prevScrollX = window.scrollX || 0;
+        const prevScrollY = window.scrollY || 0;
+        const prevScrollBehavior = document.documentElement.style.scrollBehavior;
+        document.documentElement.style.scrollBehavior = 'auto';
+        window.scrollTo(0, 0);
+
+        const root = document.createElement('div');
+        root.id = 'pdf-export-root';
+        // A4 안쪽 폭(190mm ≈ 718px)에 맞춰 html2pdf 컨테이너 안에서 잘리지 않게 한다.
+        root.style.cssText = 'position:relative;width:718px;max-width:100%;margin:0 auto;padding:44px 48px;box-sizing:border-box;background:#ffffff;color:#222222;font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;line-height:1.8;font-size:13px;';
+        root.innerHTML = `
             <style>
-                body { font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; color: #1a1a1a; line-height: 1.75; padding: 32px; max-width: 760px; margin: 0 auto; }
-                h1 { font-size: 22px; border-bottom: 2px solid #b8912f; padding-bottom: 10px; }
-                h2, h3 { color: #7a5a12; margin-top: 26px; }
-                .meta { font-size: 13px; color: #555; margin-bottom: 22px; }
-                p { margin: 8px 0; }
-                li { margin: 4px 0; }
-                .footer-note { margin-top: 36px; padding-top: 14px; border-top: 1px solid #ccc; font-size: 11px; color: #777; }
-            </style></head><body>
-            <h1>${title}</h1>
-            <div class="meta">성함: ${userInfo.name || '선비'} · 생년월일: ${userInfo.birth_date || '-'} · 열람일: ${new Date().toLocaleDateString('ko-KR')}</div>
-            ${bodyHtml}
-            <div class="footer-note">명리학연구소 · 결제일로부터 1년간 ‘내 리포트’에서 다시 열람하실 수 있습니다.<br>문의 ekdekekd@naver.com / 010-4620-9496</div>
-            </body></html>`);
-        printWindow.document.close();
-        printWindow.focus();
-        setTimeout(() => { printWindow.print(); }, 350);
+                #pdf-export-root .pdf-title { margin:0 0 8px; font-size:23px; font-weight:800; color:#3f2f0a; letter-spacing:-0.3px; }
+                #pdf-export-root .pdf-rule { height:3px; background:#b8912f; border-radius:2px; margin:0 0 12px; }
+                #pdf-export-root .pdf-meta { margin:0 0 24px; font-size:11.5px; color:#666666; }
+                #pdf-export-root .pdf-body h1 { font-size:19px; color:#3f2f0a; margin:20px 0 10px; }
+                #pdf-export-root .pdf-body h2 { font-size:16.5px; color:#5c4510; margin:22px 0 10px; padding-left:10px; border-left:4px solid #b8912f; page-break-after:avoid; }
+                #pdf-export-root .pdf-body h3 { font-size:14px; color:#6b5216; margin:16px 0 7px; page-break-after:avoid; }
+                #pdf-export-root .pdf-body h4 { font-size:13px; color:#6b5216; margin:14px 0 6px; page-break-after:avoid; }
+                #pdf-export-root .pdf-body p { margin:7px 0; font-size:12.5px; line-height:1.85; color:#222222; }
+                #pdf-export-root .pdf-body ul,
+                #pdf-export-root .pdf-body ol { margin:8px 0 8px 20px; padding:0; }
+                #pdf-export-root .pdf-body li { margin:4px 0; font-size:12.5px; line-height:1.8; color:#222222; }
+                #pdf-export-root .pdf-body strong { color:#7a5a12; font-weight:700; }
+                #pdf-export-root .pdf-body em { color:#444444; }
+                #pdf-export-root .pdf-body blockquote { margin:10px 0; padding:10px 14px; background:#faf7ef; border-left:3px solid #d8c89c; color:#444444; }
+                #pdf-export-root .pdf-body hr { border:none; border-top:1px solid #e2d9c6; margin:18px 0; }
+                #pdf-export-root .pdf-body table { width:100%; border-collapse:collapse; margin:10px 0; }
+                #pdf-export-root .pdf-body th,
+                #pdf-export-root .pdf-body td { border:1px solid #dddddd; padding:6px 8px; font-size:11.5px; text-align:left; }
+                #pdf-export-root .pdf-body th { background:#faf7ef; color:#5c4510; }
+                #pdf-export-root .pdf-footer { margin-top:30px; padding-top:12px; border-top:1px solid #d9d2c4; font-size:10.5px; line-height:1.7; color:#777777; }
+            </style>
+            <div class="pdf-title">${title}</div>
+            <div class="pdf-rule"></div>
+            <div class="pdf-meta">성함: ${name} · 생년월일: ${userInfo.birth_date || '-'} · 발급일: ${dateLabel}</div>
+            <div class="pdf-body">${bodyHtml}</div>
+            <div class="pdf-footer">명리학연구소 · 결제일로부터 1년간 ‘내 리포트’에서 다시 열람하실 수 있습니다.<br>문의 ekdekekd@naver.com / 010-4620-9496</div>
+        `;
+        document.body.appendChild(root);
+
+        // 내용이 길어 캔버스 한계를 넘지 않도록 배율을 자동 조정한다.
+        const contentHeight = Math.max(root.scrollHeight, 1);
+        const maxCanvasHeight = 30000;
+        let scale = 2;
+        if (contentHeight * scale > maxCanvasHeight) {
+            scale = Math.max(1, Math.floor((maxCanvasHeight / contentHeight) * 10) / 10);
+        }
+
+        const filename = `${title}_${name}_${fileDate}.pdf`;
+
+        const cleanup = () => {
+            root.remove();
+            overlay.remove();
+            document.documentElement.style.scrollBehavior = prevScrollBehavior;
+            window.scrollTo(prevScrollX, prevScrollY);
+            if (btn) btn.disabled = false;
+            if (btnText) btnText.textContent = originalText;
+        };
+
+        html2pdf().set({
+            margin: [10, 10, 12, 10],
+            filename: filename,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: {
+                scale: scale,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['css', 'legacy'] }
+        }).from(root).save().then(cleanup, (error) => {
+            console.error('[PDF] save failed', error);
+            alert('PDF 저장 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+            cleanup();
+        });
     }
 
     /**
