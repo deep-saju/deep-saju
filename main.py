@@ -31,9 +31,6 @@ from saju_counseling_engine import (
     build_today_gemini_prompt,
     build_personalized_today_report,
     extract_today_fortune_data,
-    SYSTEM_TOJEONG_PROMPT,
-    build_tojeong_gemini_prompt,
-    build_personalized_tojeong_report,
     SYSTEM_REUNION_PROMPT,
     build_reunion_gemini_prompt,
     build_personalized_reunion_report,
@@ -67,7 +64,6 @@ PAYMENT_PRODUCTS = {
     "saju": {"amount": 7900, "desc": "평생 심층 운명서 리포트"},
     "gunghap": {"amount": 4900, "desc": "두 사람의 백년해로 궁합 심층 비전"},
     "reunion": {"amount": 2900, "desc": "두 사람의 재회 가능성 심층 비전"},
-    "tojeong": {"amount": 7900, "desc": "올 한 해 토정비결 신수 심층 비결서"},
     "today": {"amount": 2200, "desc": "금일 하루 일진 및 승부 비책 리포트"},
 }
 
@@ -193,7 +189,7 @@ class UserInput(BaseModel):
     birth_time: str = Field(..., description="출생시간 (HH:MM)")
     birth_type: str = Field("양력", description="양력 또는 음력")
     is_leap_month: bool = Field(False, description="음력 윤달 여부")
-    category: Optional[str] = Field("saju", description="카테고리: saju, gunghap, today, tojeong")
+    category: Optional[str] = Field("saju", description="카테고리: saju, gunghap, today, reunion")
     partner: Optional[PartnerInput] = Field(None, description="궁합 감정 시 상대방 정보")
 
     @field_validator("gender")
@@ -263,6 +259,9 @@ SYSTEM_MASTER_PROMPT = """
    - 말투는 반드시 조선시대 왕실 점술가의 고풍스럽고 묵직한 어투(~하옵니다, ~하시옵소서, ~하오니, ~함을 경계하시옵소서 등)를 철저히 유지하라.
    - 단정적인 흉언("망합니다" 등)은 금하되, 점술가의 깊이 있는 혜안과 묵직한 조언으로 신뢰를 준다.
    - 고정된 템플릿이나 뻔한 문구를 절대 복사해 쓰지 말고, 제공된 일간, 결핍 오행, 신강/신약 데이터에 기반하여 100% 개인화된 풀이를 작성하라.
+8. [범위 엄수 - 타 상품과 중복 금지]
+   - 이 리포트는 '평생 사주' 전용이다. 오늘 하루의 길흉(일진 운세)이나 특정 상대와의 궁합·재회운은 다루지 말고, 타고난 본원과 평생의 흐름·대운에만 집중하라.
+   - '연애와 인간관계' 장은 나 홀로의 애정 성향과 배우자 복(관성·재성)에 한정하고, 특정 상대와의 궁합 점수나 재회 가능성은 절대 언급하지 말라.
 
 [마크다운 출력 포맷]
 ## 📜 선비님의 사주 총평 요약
@@ -479,7 +478,7 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
         saju_json_data["user_info"]["name"] = final_name
 
         category = (user_input.category or "saju").strip().lower()
-        if category not in ("saju", "gunghap", "today", "tojeong", "reunion"):
+        if category not in ("saju", "gunghap", "today", "reunion"):
             category = "saju"
 
         print(f"[CATEGORY ROUTE] User: '{final_name}', Category parsed: '{category}'")
@@ -564,21 +563,6 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
             current_sys_prompt = SYSTEM_TODAY_PROMPT
             fallback_fn = lambda: build_personalized_today_report(final_name, saju_json_data, today_info)
 
-        elif category == "tojeong":
-            print(f"[CATEGORY ROUTE] -> Selected TOJEONG prompt & system prompt")
-            now = datetime.now()
-            solar_now = Solar.fromYmdHms(now.year, 6, 1, 12, 0, 0)
-            bazi_year = solar_now.getLunar().getEightChar()
-            year_ganzhi = f"{bazi_year.getYearGan()}{bazi_year.getYearZhi()}"
-            year_info = {
-                "year": now.year,
-                "year_ganzhi": year_ganzhi
-            }
-
-            prompt = build_tojeong_gemini_prompt(final_name, saju_json_data, year_info)
-            current_sys_prompt = SYSTEM_TOJEONG_PROMPT
-            fallback_fn = lambda: build_personalized_tojeong_report(final_name, saju_json_data, year_info)
-
         else:
             print(f"[CATEGORY ROUTE] -> Selected SAJU prompt & system prompt")
             prompt = build_dynamic_gemini_prompt(final_name, saju_json_data)
@@ -597,7 +581,10 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
                         model_name=model_name, 
                         system_instruction=current_sys_prompt
                     )
-                    response = model.generate_content(prompt)
+                    response = model.generate_content(
+                        prompt,
+                        request_options={"timeout": 45}
+                    )
                     if response and response.text and len(response.text.strip()) > 50:
                         interpretation_text = response.text
                         print(f"[CATEGORY ROUTE] Gemini model '{model_name}' SUCCESS for category '{category}' (chars={len(interpretation_text)})")
@@ -778,14 +765,6 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
                     "year_ganzhi": f"{bazi_today.getYearGan()}{bazi_today.getYearZhi()}"
                 }
                 fallback_text = build_personalized_today_report(u_name, fallback_saju, t_info)
-            elif req_cat == "tojeong":
-                now = datetime.now()
-                bazi_y = Solar.fromYmdHms(now.year, 6, 1, 12, 0, 0).getLunar().getEightChar()
-                y_info = {
-                    "year": now.year,
-                    "year_ganzhi": f"{bazi_y.getYearGan()}{bazi_y.getYearZhi()}"
-                }
-                fallback_text = build_personalized_tojeong_report(u_name, fallback_saju, y_info)
             else:
                 fallback_text = generate_emergency_saju_report(u_name, fallback_saju)
 
@@ -856,7 +835,7 @@ async def get_saju_history(db: Session = Depends(get_db), _admin: None = Depends
 # 5-B. 토스페이(Toss Pay) 결제 연동 API
 # -------------------------------------------------------------
 class TossPaymentCreateInput(BaseModel):
-    category: str = Field("saju", description="리포트 카테고리 (saju, gunghap, reunion, tojeong, today)")
+    category: str = Field("saju", description="리포트 카테고리 (saju, gunghap, reunion, today)")
 
 
 class TossPaymentConfirmInput(BaseModel):
@@ -1249,7 +1228,6 @@ STATIC_ASSET_FILES = {
     "icon_saju_new.png",
     "icon_gunghap.png",
     "icon_today_new.png",
-    "icon_tojeong.png",
     "loading_brush_new.png",
     "emblem.png",
     "bg-image.png"
