@@ -2061,6 +2061,12 @@
             min-height: 18px;
         }
 
+        /* html2pdf가 만드는 미리보기 컨테이너를 항상 왼쪽 정렬해, 좁은 화면에서도 잘리지 않게 한다. */
+        .html2pdf__overlay .html2pdf__container {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+
         .result-deep-report.teaser-mode {
             max-height: 480px;
             overflow: hidden;
@@ -5967,7 +5973,7 @@
         const root = document.createElement('div');
         root.id = 'pdf-export-root';
         // A4 안쪽 폭(190mm ≈ 718px)에 맞춰 html2pdf 컨테이너 안에서 잘리지 않게 한다.
-        root.style.cssText = 'position:relative;width:718px;max-width:100%;margin:0 auto;padding:44px 48px;box-sizing:border-box;background:#ffffff;color:#222222;font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;line-height:1.8;font-size:13px;';
+        root.style.cssText = 'position:relative;width:718px;margin:0 auto;padding:44px 48px;box-sizing:border-box;background:#ffffff;color:#222222;font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;line-height:1.8;font-size:13px;';
         root.innerHTML = `
             <style>
                 #pdf-export-root .pdf-title { margin:0 0 8px; font-size:23px; font-weight:800; color:#3f2f0a; letter-spacing:-0.3px; }
@@ -6025,7 +6031,9 @@
             html2canvas: {
                 scale: scale,
                 useCORS: true,
-                backgroundColor: '#ffffff'
+                backgroundColor: '#ffffff',
+                // A4 내부 폭(718px)보다 넓게 잡아 모바일에서도 잘리지 않도록 한다.
+                windowWidth: 1200
             },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: ['css', 'legacy'] }
