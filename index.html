@@ -4020,6 +4020,58 @@
     let paymentInProgress = false;
     let reportUnlocked = false;
     let paymentToastTimer = null;
+    let analysisRunId = 0;
+
+    /* ============================================================
+       화면 전환 단일화
+       카테고리/입력폼/로딩/결과 화면이 동시에 노출되는 현상을 막기 위해
+       항상 하나의 화면만 표시한다.
+       ============================================================ */
+    const SCREEN_IDS = {
+        category: 'category-screen',
+        form: 'form-screen',
+        loading: 'loading-screen',
+        result: 'result-screen'
+    };
+    const IN_APP_HISTORY_STATE = { view: 'in-app' };
+
+    function showScreen(name) {
+        const targetId = SCREEN_IDS[name] || SCREEN_IDS.category;
+        Object.keys(SCREEN_IDS).forEach((key) => {
+            const el = document.getElementById(SCREEN_IDS[key]);
+            if (!el) return;
+            if (SCREEN_IDS[key] === targetId) {
+                el.style.display = (key === 'loading') ? 'flex' : 'block';
+                if (key === 'category' || key === 'form') {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }
+            } else {
+                el.style.display = 'none';
+            }
+        });
+        if (name !== 'result') {
+            const stickyBar = document.getElementById('sticky-paywall-bar');
+            if (stickyBar) stickyBar.classList.remove('visible');
+        }
+    }
+
+    // 앱 내부 화면 이동을 히스토리에 남겨, 뒤로가기 시 사이트를 벗어나지 않게 한다.
+    function pushInAppHistoryEntry() {
+        try {
+            if (!history.state || history.state.view !== 'in-app') {
+                history.pushState(IN_APP_HISTORY_STATE, '');
+            }
+        } catch (e) { /* noop */ }
+    }
+
+    function clearInAppHistoryEntry() {
+        try {
+            if (history.state && history.state.view === 'in-app') {
+                history.replaceState({ view: 'home' }, '');
+            }
+        } catch (e) { /* noop */ }
+    }
 
     /**
      * [UX 요구사항] 카테고리 클릭 시 화면 전환 (Fade-out -> Fade-in) 및 궁합 폼 동적 확장
@@ -4100,23 +4152,12 @@
             if (submitBtn) submitBtn.innerHTML = "<span>사주 단자 올리기 ➔</span>";
         }
 
-        // 카테고리 Fade-out 후 폼 Fade-in
-        catScreen.style.opacity = '0';
-        catScreen.style.transform = 'translateY(-10px)';
-        setTimeout(() => {
-            catScreen.style.display = 'none';
-            formScreen.style.display = 'block';
-            formScreen.style.opacity = '0';
-            formScreen.style.transform = 'translateY(12px)';
-            setTimeout(() => {
-                formScreen.style.opacity = '1';
-                formScreen.style.transform = 'translateY(0)';
-                const yearInput = document.getElementById('year');
-                if (yearInput) yearInput.focus();
-            }, 30);
-        }, 220);
-
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // 입력 폼으로 전환 (다른 화면은 모두 숨긴다)
+        showScreen('form');
+        pushInAppHistoryEntry();
+        const yearInput = document.getElementById('year');
+        if (yearInput) yearInput.focus();
+        window.scrollTo({ top: 0, behavior: 'auto' });
     }
 
     /**
@@ -4241,29 +4282,12 @@
     /**
      * [UX 요구사항] 뒤로 가기 버튼: 폼 -> 카테고리 복귀
      */
-    function goBackToCategories() {
-        const catScreen = document.getElementById('category-screen');
-        const formScreen = document.getElementById('form-screen');
-        const partnerSection = document.getElementById('partner-saju-section');
-        const user1Title = document.getElementById('user1-section-title');
-
-        formScreen.style.opacity = '0';
-        formScreen.style.transform = 'translateY(10px)';
-        setTimeout(() => {
-            formScreen.style.display = 'none';
-            if (partnerSection) partnerSection.style.display = 'none';
-            if (user1Title) user1Title.style.display = 'none';
-
-            catScreen.style.display = 'block';
-            catScreen.style.opacity = '0';
-            catScreen.style.transform = 'translateY(-10px)';
-            setTimeout(() => {
-                catScreen.style.opacity = '1';
-                catScreen.style.transform = 'translateY(0)';
-            }, 30);
-        }, 220);
-
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    function goBackToCategories(fromHistory) {
+        // 폼/결과 화면에서 홈으로 돌아올 때 결과 화면까지 반드시 정리한다.
+        resetForm();
+        showScreen('category');
+        if (!fromHistory) clearInAppHistoryEntry();
+        window.scrollTo({ top: 0, behavior: 'auto' });
     }
 
     function parseMarkdownToHtml(rawMarkdown) {
@@ -5409,12 +5433,7 @@
 
         // 결제 전에 보던 리포트 화면을 그대로 복원한다.
         renderStructuredSajuResult(pending.data);
-        const catScreen = document.getElementById('category-screen');
-        const formScreen = document.getElementById('form-screen');
-        const resultScreen = document.getElementById('result-screen');
-        if (catScreen) catScreen.style.display = 'none';
-        if (formScreen) formScreen.style.display = 'none';
-        if (resultScreen) resultScreen.style.display = 'block';
+        showScreen('result');
         window.scrollTo({ top: 0, behavior: 'auto' });
 
         if (tossState === 'cancel' || returnStatus === 'PAY_CANCEL') {
@@ -5569,8 +5588,9 @@
         }
 
         // 로딩 화면 전환 (붓글씨 애니메이션 가동)
-        formScreen.style.display = 'none';
-        loadingScreen.style.display = 'flex';
+        const runId = ++analysisRunId;
+        showScreen('loading');
+        pushInAppHistoryEntry();
         pBar.style.transition = 'width 4.6s cubic-bezier(0.1, 0.7, 0.1, 1)';
         pBar.style.width = '0%';
         setTimeout(() => { pBar.style.width = '92%'; }, 80);
@@ -5718,6 +5738,7 @@
             setTimeout(() => {
                 clearInterval(logTimer);
                 clearInterval(titleTimer);
+                if (runId !== analysisRunId) return;
 
                 if (data.status === "success" && data.interpretation) {
                     lastResultText = data.interpretation;
@@ -5726,14 +5747,14 @@
                     pBar.style.width = '100%';
 
                     setTimeout(() => {
-                        loadingScreen.style.display = 'none';
+                        if (runId !== analysisRunId) return;
                         renderStructuredSajuResult(data);
-                        resultScreen.style.display = 'block';
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        showScreen('result');
+                        pushInAppHistoryEntry();
+                        window.scrollTo({ top: 0, behavior: 'auto' });
                     }, 400);
                 } else {
-                    loadingScreen.style.display = 'none';
-                    formScreen.style.display = 'block';
+                    showScreen('form');
                     alert("분석 중 오류가 발생했습니다: " + (data.detail || "사주 분석 데이터를 받아오지 못했습니다."));
                 }
             }, remainingDelay);
@@ -5751,30 +5772,26 @@
             setTimeout(() => {
                 clearInterval(logTimer);
                 clearInterval(titleTimer);
-                loadingScreen.style.display = 'none';
-                formScreen.style.display = 'block';
+                if (runId !== analysisRunId) return;
+                showScreen('form');
                 alert("분석 중 오류가 발생했습니다: " + errorMessage);
             }, remainingDelay);
         }
     }
 
     function resetForm() {
-        document.getElementById('result-screen').style.display = 'none';
-        document.getElementById('form-screen').style.display = 'none';
-        
-        // 홈 카테고리 화면으로 원복
-        const catScreen = document.getElementById('category-screen');
-        if (catScreen) {
-            catScreen.style.display = 'block';
-            catScreen.style.opacity = '1';
-            catScreen.style.transform = 'translateY(0)';
-        }
+        // 진행 중인 분석이 뒤늦게 결과 화면을 다시 띄우지 못하도록 무효화한다.
+        analysisRunId += 1;
+
+        // 홈 카테고리 화면으로 원복 (다른 화면은 모두 숨긴다)
+        showScreen('category');
         
         const stickyBar = document.getElementById('sticky-paywall-bar');
         if (stickyBar) stickyBar.classList.remove('visible');
 
         // 새 리포트를 시작하므로 이전 결제/복원 상태를 정리한다.
         lastAnalysisData = null;
+        lastResultText = '';
         paymentInProgress = false;
         reportUnlocked = false;
         const unlockBtnAfterReset = document.getElementById('btn-unlock-inline');
@@ -5922,9 +5939,30 @@
     window.addEventListener('pageshow', (event) => {
         if (!event.persisted) return;
         paymentInProgress = false;
-        const resultScreen = document.getElementById('result-screen');
-        if (!reportUnlocked && resultScreen && resultScreen.style.display === 'block') {
-            setPaymentButtonsBusy(false, currentCategory);
+
+        // bfcache 복원 시 이전 화면 상태가 겹쳐 보이지 않도록 하나만 남긴다.
+        const isVisible = (id) => {
+            const el = document.getElementById(id);
+            return !!el && getComputedStyle(el).display !== 'none';
+        };
+        if (isVisible('result-screen')) {
+            showScreen('result');
+            if (!reportUnlocked) setPaymentButtonsBusy(false, currentCategory);
+        } else if (isVisible('form-screen')) {
+            showScreen('form');
+        } else {
+            showScreen('category');
+        }
+    });
+
+    // 브라우저/모바일 뒤로가기: 결과·입력·로딩 화면에서 홈으로 복귀한다.
+    window.addEventListener('popstate', () => {
+        const isVisible = (id) => {
+            const el = document.getElementById(id);
+            return !!el && getComputedStyle(el).display !== 'none';
+        };
+        if (isVisible('result-screen') || isVisible('form-screen') || isVisible('loading-screen')) {
+            goBackToCategories(true);
         }
     });
 
