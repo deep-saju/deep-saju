@@ -1471,6 +1471,7 @@ def admin_overview(db: Session = Depends(get_db), _admin: None = Depends(require
         )
         reports = db.query(SajuHistory).order_by(SajuHistory.id.desc()).limit(30).all()
         purchases = db.query(PurchasedReport).order_by(PurchasedReport.id.desc()).limit(50).all()
+        purchase_total = db.query(PurchasedReport).count()
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"DB 조회 실패: {exc}")
 
@@ -1507,6 +1508,7 @@ def admin_overview(db: Session = Depends(get_db), _admin: None = Depends(require
             "todayCount": len(today_paid),
             "totalRevenue": total_revenue,
             "totalCount": len(paid_orders),
+            "purchaseTotal": purchase_total,
             "byCategory": by_category,
             "last7Days": list(daily.values()),
         },

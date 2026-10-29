@@ -614,7 +614,7 @@
         document.getElementById('today-count').textContent = '오늘 ' + won(stats.todayCount) + '건';
         document.getElementById('total-revenue').innerHTML = won(stats.totalRevenue) + '<small>원</small>';
         document.getElementById('total-count').textContent = '누적 ' + won(stats.totalCount) + '건';
-        document.getElementById('purchase-count').innerHTML = won((payload.purchases || []).length) + '<small>건</small>';
+        document.getElementById('purchase-count').innerHTML = won(stats.purchaseTotal != null ? stats.purchaseTotal : (payload.purchases || []).length) + '<small>건</small>';
 
         var week = stats.last7Days || [];
         var weekRevenue = week.reduce(function (sum, d) { return sum + Number(d.revenue || 0); }, 0);
