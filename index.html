@@ -16,6 +16,8 @@
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 <!-- html2pdf.js (PDF 파일 즉시 저장) -->
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+<!-- 토스페이먼츠 결제창 SDK v2 (클라이언트 키는 서버 설정에서 내려받아 사용) -->
+<script src="https://js.tosspayments.com/v2/standard"></script>
 
     <style>
         /* ==========================================================================
@@ -1723,6 +1725,43 @@
         .paywall-benefit-note strong {
             color: var(--text-gold);
             font-weight: 700;
+        }
+
+        /* 토스페이먼츠 결제수단 위젯 (밝은 배경 카드 위에 렌더링) */
+        .toss-widget-block {
+            display: none;
+            max-width: 520px;
+            margin: 18px auto 14px auto;
+            padding: 16px 16px 10px 16px;
+            background: #FFFFFF;
+            border-radius: 14px;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+            text-align: left;
+            color: #191F28;
+        }
+
+        .toss-widget-block.active {
+            display: block;
+        }
+
+        .toss-widget-title {
+            margin: 0 0 10px 0;
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #333D4B;
+            text-align: center;
+        }
+
+        .toss-widget-block #toss-payment-methods,
+        .toss-widget-block #toss-agreement {
+            width: 100%;
+        }
+
+        .toss-widget-loading {
+            padding: 18px 0;
+            font-size: 12.5px;
+            color: #8B95A1;
+            text-align: center;
         }
 
         /* 결제 전 서비스 제공 방식·기간·환불 안내 (전자상거래 고지) */
@@ -4061,6 +4100,13 @@
                         <span class="paywall-benefit">💳 카드 · 토스머니 · 계좌</span>
                     </div>
 
+                    <div class="toss-widget-block" id="toss-widget-block">
+                        <p class="toss-widget-title">💳 결제수단을 선택해 주세요</p>
+                        <div class="toss-widget-loading" id="toss-widget-loading">결제수단을 불러오는 중입니다...</div>
+                        <div id="toss-payment-methods"></div>
+                        <div id="toss-agreement"></div>
+                    </div>
+
                     <button type="button" class="btn-unlock-inline" id="btn-unlock-inline" onclick="handlePaywallClick()">
                         <span id="btn-unlock-inline-text">심층 운명서 열기 (7,900원) 🔒</span>
                     </button>
@@ -4496,6 +4542,14 @@
     let analysisRunId = 0;
     let lastOrderNo = '';
 
+    // 토스페이먼츠 결제창 상태 (주문서형 위젯)
+    const TOSS_CUSTOMER_KEY = 'saju_toss_customer_key_v1';
+    let tossConfig = null;
+    let tossWidgets = null;
+    let tossWidgetAmount = 0;
+    let tossWidgetCategory = '';
+    let tossWidgetReady = false;
+
     /* ============================================================
        화면 전환 단일화
        카테고리/입력폼/로딩/결과 화면이 동시에 노출되는 현상을 막기 위해
@@ -4527,6 +4581,9 @@
         if (name !== 'result') {
             const stickyBar = document.getElementById('sticky-paywall-bar');
             if (stickyBar) stickyBar.classList.remove('visible');
+        } else {
+            // 결과 화면이 실제로 그려진 뒤 결제수단 위젯을 준비한다. (숨김 상태에서는 렌더링 불가)
+            setTimeout(() => prepareTossWidget(currentCategory), 0);
         }
     }
 
@@ -5110,6 +5167,9 @@
         if (stickyBar) {
             stickyBar.classList.add('visible');
         }
+
+        // 결제수단 위젯을 미리 렌더링해 두어 결제 버튼 클릭 시 바로 결제창이 뜨도록 한다.
+        prepareTossWidget(cat);
     }
 
     function getDayMasterLabel(dm) {
@@ -5420,9 +5480,8 @@
         let md = rawMarkdown.trim();
         if (activeCat === 'saju') {
             md = md
-                .replace(/## 📜[\s\S]*?(?=(?:## 🔮|### 💡|### 👤|$))/i, '')
-                .replace(/## 🔮[\s\S]*?(?=(?:### 💡|### 👤|### 💰|$))/i, '')
-                .replace(/### 💡[\s\S]*?(?=(?:### 👤|### 💰|### 💼|$))/i, '');
+                .replace(/## 📜[\s\S]*?(?=(?:## 🔮|### 💡|### 🔎|### 👤|$))/i, '')
+                .replace(/## 🔮[\s\S]*?(?=(?:### 💡|### 🔎|### 👤|### 💰|$))/i, '');
         }
 
         const rawSections = md.split(/(?=###\s+)/).filter(s => s.trim().length > 0 && s.trim().startsWith('###'));
@@ -5698,11 +5757,116 @@
         }
     }
 
-    async function confirmTossPayment(orderNo, paymentToken) {
+    /* ============================================================
+       토스페이먼츠 결제창 v2 (주문서형)
+       - 클라이언트 키는 /api/payments/toss/config 에서만 받아온다.
+       - 금액은 서버가 결정하고, 결제 승인도 서버에서만 이루어진다.
+       ============================================================ */
+    function getTossCustomerKey() {
+        try {
+            let key = localStorage.getItem(TOSS_CUSTOMER_KEY);
+            if (!key || key.length < 22) {
+                const random = (window.crypto && typeof window.crypto.randomUUID === 'function')
+                    ? window.crypto.randomUUID().replace(/-/g, '')
+                    : (Math.random().toString(36).slice(2) + Date.now().toString(36));
+                key = 'saju_ck_' + random;
+                localStorage.setItem(TOSS_CUSTOMER_KEY, key);
+            }
+            return key;
+        } catch (e) {
+            return 'ANONYMOUS';
+        }
+    }
+
+    async function loadTossConfig() {
+        if (tossConfig) return tossConfig;
+        const response = await fetch('/api/payments/toss/config', { cache: 'no-store' });
+        let payload = {};
+        try { payload = await response.json(); } catch (e) { payload = {}; }
+        if (!response.ok || !payload.clientKey) {
+            throw new Error(payload.detail || '결제 설정을 불러오지 못했습니다.');
+        }
+        tossConfig = payload;
+        return payload;
+    }
+
+    // 위젯 렌더링은 한 번에 하나만 실행되도록 순서를 보장한다.
+    let tossWidgetQueue = Promise.resolve();
+
+    function ensureTossWidget(category, amount) {
+        const run = () => renderTossWidget(category, amount);
+        tossWidgetQueue = tossWidgetQueue.then(run, run);
+        return tossWidgetQueue;
+    }
+
+    async function renderTossWidget(category, amount) {
+        const config = await loadTossConfig();
+        if (typeof TossPayments !== 'function') {
+            throw new Error('결제 모듈을 불러오지 못했습니다. 페이지를 새로고침해 주세요.');
+        }
+        const block = document.getElementById('toss-widget-block');
+        const methodsEl = document.getElementById('toss-payment-methods');
+        const agreementEl = document.getElementById('toss-agreement');
+        if (!block || !methodsEl || !agreementEl) {
+            throw new Error('결제 화면을 찾지 못했습니다. 페이지를 새로고침해 주세요.');
+        }
+
+        // 위젯은 보이는 상태에서만 정상 렌더링되므로 먼저 노출한다.
+        block.classList.add('active');
+
+        // 상위 화면(결과 화면)이 숨겨져 있으면 위젯이 정상 렌더링되지 않으므로 되돌린다.
+        if (!block.offsetParent) {
+            block.classList.remove('active');
+            return;
+        }
+
+        const needRender = !tossWidgetReady
+            || tossWidgetAmount !== amount
+            || tossWidgetCategory !== category
+            || methodsEl.dataset.rendered !== '1';
+
+        if (needRender) {
+            tossWidgets = TossPayments(config.clientKey).widgets({ customerKey: getTossCustomerKey() });
+            methodsEl.dataset.rendered = '';
+            methodsEl.innerHTML = '';
+            agreementEl.innerHTML = '';
+            const loadingEl = document.getElementById('toss-widget-loading');
+            if (loadingEl) loadingEl.style.display = '';
+            await tossWidgets.setAmount({ currency: config.currency || 'KRW', value: amount });
+            await tossWidgets.renderPaymentMethods({ selector: '#toss-payment-methods', variantKey: 'DEFAULT' });
+            await tossWidgets.renderAgreement({ selector: '#toss-agreement', variantKey: 'AGREEMENT' });
+            if (loadingEl) loadingEl.style.display = 'none';
+            methodsEl.dataset.rendered = '1';
+            tossWidgetReady = true;
+            tossWidgetAmount = amount;
+            tossWidgetCategory = category;
+        } else {
+            await tossWidgets.setAmount({ currency: config.currency || 'KRW', value: amount });
+        }
+    }
+
+    async function prepareTossWidget(category) {
+        if (reportUnlocked || !category) return;
+        try {
+            const config = await loadTossConfig();
+            const product = (config.products || {})[category];
+            if (!product) return;
+            await ensureTossWidget(category, Number(product.amount));
+        } catch (error) {
+            console.warn('[TOSS] 결제수단 위젯을 준비하지 못했습니다.', error);
+        }
+    }
+
+    async function confirmTossPayment(paymentKey, orderNo, amount, paymentToken) {
         const response = await fetch('/api/payments/toss/confirm', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ orderNo, paymentToken })
+            body: JSON.stringify({
+                paymentKey: paymentKey || '',
+                orderId: orderNo,
+                amount: Number(amount) || 0,
+                paymentToken: paymentToken || ''
+            })
         });
         let payload = {};
         try {
@@ -6189,6 +6353,9 @@
             inlineText.textContent = '✓ 전편 열람 중';
         }
 
+        const tossBlock = document.getElementById('toss-widget-block');
+        if (tossBlock) tossBlock.classList.remove('active');
+
         if (stickyBar) {
             const stickyBtn = stickyBar.querySelector('.sticky-cta-btn');
             if (stickyBtn) {
@@ -6234,7 +6401,7 @@
                 && pending.data && pending.data.category === category
                 && pending.data.interpretation === lastAnalysisData.interpretation) {
                 try {
-                    const existing = await confirmTossPayment(pending.orderNo, pending.paymentToken);
+                    const existing = await confirmTossPayment('', pending.orderNo, 0, pending.paymentToken);
                     if (existing && existing.paid && existing.category === category) {
                         sessionStorage.removeItem(PAYMENT_PENDING_KEY);
                         lastOrderNo = pending.orderNo || '';
@@ -6248,7 +6415,8 @@
                 }
             }
 
-            const response = await fetch('/api/payments/toss/create', {
+            // 1) 서버가 금액을 결정하고 주문번호를 발급한다.
+            const response = await fetch('/api/payments/toss/order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ category })
@@ -6261,13 +6429,13 @@
                 payload = {};
             }
 
-            if (!response.ok || !payload.checkoutPage) {
-                throw new Error(payload.detail || `결제 생성 실패 (HTTP ${response.status})`);
+            if (!response.ok || !payload.orderId) {
+                throw new Error(payload.detail || `주문 생성 실패 (HTTP ${response.status})`);
             }
 
-            // 결제창으로 이동하면 페이지가 새로 로드되므로, 복귀 후 복원할 데이터를 저장한다.
+            // 2) 결제창(오버레이)이 뜨는 동안에도 복원할 수 있도록 결제 정보를 저장한다.
             sessionStorage.setItem(PAYMENT_PENDING_KEY, JSON.stringify({
-                orderNo: payload.orderNo,
+                orderNo: payload.orderId,
                 paymentToken: payload.paymentToken,
                 category,
                 amount: payload.amount,
@@ -6275,24 +6443,52 @@
                 createdAt: Date.now()
             }));
 
-            window.location.href = payload.checkoutPage;
+            // 3) 토스페이먼츠 결제수단 위젯을 준비하고 결제창을 연다.
+            await ensureTossWidget(category, Number(payload.amount));
+            if (!tossWidgets) {
+                throw new Error('결제 모듈이 준비되지 않았습니다. 페이지를 새로고침해 주세요.');
+            }
+
+            const baseUrl = window.location.origin + window.location.pathname;
+            const paymentRequest = {
+                orderId: payload.orderId,
+                orderName: payload.orderName || '심층 사주 리포트',
+                successUrl: payload.successUrl || (baseUrl + '?toss=success'),
+                failUrl: payload.failUrl || (baseUrl + '?toss=fail')
+            };
+            const customerName = lastAnalysisData.user_info && lastAnalysisData.user_info.name;
+            if (customerName) paymentRequest.customerName = customerName;
+
+            await tossWidgets.requestPayment(paymentRequest);
+
+            // 결제창이 닫히고 돌아온 경우(사용자가 중간에 닫음)에는 잠금을 유지한다.
+            paymentInProgress = false;
+            setPaymentButtonsBusy(false, category);
         } catch (error) {
             paymentInProgress = false;
             setPaymentButtonsBusy(false, category);
-            alert("결제를 시작하지 못했습니다.\n" + error.message);
+            const code = (error && error.code) || '';
+            if (code === 'USER_CANCEL' || code === 'PAY_PROCESS_CANCELED') {
+                showPaymentToast('결제가 취소되었습니다. 리포트는 잠금 상태로 유지됩니다.', 'info', 5000);
+            } else {
+                alert("결제를 시작하지 못했습니다.\n" + (error && error.message ? error.message : error));
+            }
         }
     }
 
     /**
-     * 토스페이 결제창에서 돌아온 뒤 결과를 복원하고, 서버 검증이 통과한 경우에만 잠금을 해제한다.
+     * 토스페이먼츠 결제창에서 돌아온 뒤 결과를 복원하고, 서버 검증이 통과한 경우에만 잠금을 해제한다.
      */
     async function handlePaymentReturn() {
         const params = new URLSearchParams(window.location.search);
         const tossState = params.get('toss');
         if (!tossState) return;
 
-        const orderNo = params.get('orderNo') || '';
-        const returnStatus = params.get('status') || '';
+        const orderNo = params.get('orderId') || params.get('orderNo') || '';
+        const paymentKey = params.get('paymentKey') || '';
+        const paidAmount = Number(params.get('amount') || 0) || 0;
+        const failCode = params.get('code') || '';
+        const failMessage = params.get('message') || '';
 
         // 주소창에서 결제 파라미터를 제거해 새로고침 시 중복 확인을 방지한다.
         try {
@@ -6323,26 +6519,33 @@
         showScreen('result');
         window.scrollTo({ top: 0, behavior: 'auto' });
 
-        if (tossState === 'cancel' || returnStatus === 'PAY_CANCEL') {
+        if (tossState === 'fail' || tossState === 'cancel') {
             sessionStorage.removeItem(PAYMENT_PENDING_KEY);
-            showPaymentToast('결제가 취소되었습니다. 리포트는 잠금 상태로 유지됩니다.', 'info', 5000);
+            const rawReason = failMessage || (failCode ? `결제가 완료되지 않았습니다. (${failCode})` : '결제가 취소되었습니다.');
+            const reason = /[.!?]$/.test(rawReason.trim()) ? rawReason.trim() : rawReason.trim() + '.';
+            showPaymentToast(reason + ' 리포트는 잠금 상태로 유지됩니다.', 'info', 7000);
             return;
         }
 
-        if (!orderNo || !pending.orderNo || orderNo !== pending.orderNo) {
+        if (orderNo && pending.orderNo && orderNo !== pending.orderNo) {
             showPaymentToast('주문번호가 일치하지 않아 결제 확인을 진행하지 못했습니다.', 'error', 6000);
             return;
         }
 
         showPaymentToast('결제 승인을 확인하는 중입니다...', 'info', 0);
         try {
-            const result = await confirmTossPayment(orderNo, pending.paymentToken);
+            const result = await confirmTossPayment(
+                paymentKey,
+                pending.orderNo,
+                paidAmount || pending.amount || 0,
+                pending.paymentToken
+            );
             if (result && result.paid && result.category === category) {
                 sessionStorage.removeItem(PAYMENT_PENDING_KEY);
-                lastOrderNo = orderNo;
+                lastOrderNo = pending.orderNo || orderNo;
                 unlockReportContent();
                 await claimPurchasedReport(pending);
-                showPaymentToast('결제가 완료되었습니다. 심층 리포트가 열렸습니다. (주문번호 ' + orderNo + ')', 'success', 7000);
+                showPaymentToast('결제가 완료되었습니다. 심층 리포트가 열렸습니다. (주문번호 ' + lastOrderNo + ')', 'success', 7000);
             } else if (result && result.paid) {
                 showPaymentToast('결제 카테고리가 현재 리포트와 일치하지 않습니다. 고객센터에 문의해 주세요.', 'error', 7000);
             } else {
@@ -6684,6 +6887,10 @@
         lastOrderNo = '';
         paymentInProgress = false;
         reportUnlocked = false;
+        tossWidgetReady = false;
+        tossWidgets = null;
+        tossWidgetAmount = 0;
+        tossWidgetCategory = '';
         const unlockBtnAfterReset = document.getElementById('btn-unlock-inline');
         if (unlockBtnAfterReset) {
             unlockBtnAfterReset.disabled = false;
@@ -6797,6 +7004,13 @@
                     <span class="paywall-benefit">⚡ 결제 즉시 전편 열람</span>
                     <span class="paywall-benefit">🔒 결제 완료 후 잠금 해제</span>
                     <span class="paywall-benefit">💳 카드 · 토스머니 · 계좌</span>
+                </div>
+
+                <div class="toss-widget-block" id="toss-widget-block">
+                    <p class="toss-widget-title">💳 결제수단을 선택해 주세요</p>
+                    <div class="toss-widget-loading" id="toss-widget-loading">결제수단을 불러오는 중입니다...</div>
+                    <div id="toss-payment-methods"></div>
+                    <div id="toss-agreement"></div>
                 </div>
 
                 <button type="button" class="btn-unlock-inline" id="btn-unlock-inline" onclick="handlePaywallClick()">

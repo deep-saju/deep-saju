@@ -16,7 +16,7 @@ import httpx
 import google.generativeai as genai
 from lunar_python import Solar, Lunar  # 만세력 라이브러리
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from dotenv import load_dotenv
@@ -53,10 +53,12 @@ PORTONE_API_KEY = os.getenv("PORTONE_API_KEY", "")
 PORTONE_API_SECRET = os.getenv("PORTONE_API_SECRET", "")
 PORTONE_STORE_ID = os.getenv("PORTONE_STORE_ID", "")
 
-# 토스페이(Toss Pay) 결제 연동 환경변수
-# ⚠️ API Key는 서버에서만 사용합니다. 프론트엔드/깃에 절대 노출하지 마세요.
-TOSS_PAY_API_KEY = os.getenv("TOSS_PAY_API_KEY", "").strip()
-TOSS_PAY_API_BASE = "https://pay.toss.im/api/v2"
+# 토스페이먼츠(Toss Payments) v2 결제 연동 환경변수
+# ⚠️ 시크릿 키는 서버에서만 사용합니다. 프론트엔드/깃에 절대 노출하지 마세요.
+# 클라이언트 키(test_gck_/live_gck_ 또는 test_ck_/live_ck_)는 브라우저에서 SDK 초기화에만 사용합니다.
+TOSS_CLIENT_KEY = os.getenv("TOSS_CLIENT_KEY", "").strip()
+TOSS_SECRET_KEY = os.getenv("TOSS_SECRET_KEY", "").strip()
+TOSS_API_BASE = (os.getenv("TOSS_API_BASE", "") or "https://api.tosspayments.com").strip().rstrip("/")
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "").strip().rstrip("/")
 
 # 서버가 신뢰하는 카테고리별 결제 금액 (클라이언트 금액은 절대 신뢰하지 않음)
@@ -127,6 +129,7 @@ class PaymentOrder(Base):
     category = Column(String(20), nullable=False)
     amount = Column(Integer, nullable=False)
     pay_token = Column(String(50), nullable=True)
+    payment_key = Column(String(200), nullable=True)
     pay_method = Column(String(20), nullable=True)
     # CREATED: 결제 생성됨, PAID: 결제 완료, FAILED: 생성 실패, CANCELLED: 취소
     status = Column(String(20), nullable=False, default="CREATED")
@@ -153,6 +156,23 @@ try:
     Base.metadata.create_all(bind=engine)
 except Exception as db_init_err:
     print(f"[WARNING] Database initialization skipped or failed: {db_init_err}")
+
+
+def _ensure_payment_order_columns() -> None:
+    """기존 테이블에 payment_key 컬럼이 없으면 추가한다. (토스페이먼츠 paymentKey 보관용)"""
+    try:
+        with engine.begin() as conn:
+            if DB_DRIVER == "postgres":
+                conn.execute(text("ALTER TABLE payment_orders ADD COLUMN IF NOT EXISTS payment_key VARCHAR(200)"))
+            else:
+                rows = conn.execute(text("PRAGMA table_info(payment_orders)")).fetchall()
+                if "payment_key" not in [row[1] for row in rows]:
+                    conn.execute(text("ALTER TABLE payment_orders ADD COLUMN payment_key VARCHAR(200)"))
+    except Exception as exc:  # noqa: BLE001
+        print(f"[WARNING] payment_key column migration skipped: {exc}")
+
+
+_ensure_payment_order_columns()
 
 ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "").strip()
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "").strip()
@@ -351,16 +371,19 @@ SYSTEM_MASTER_PROMPT = """
 2. 입체적 분석: 일간(나) 하나만 보지 말고, 반드시 '일간 + 월지 + 가장 강한 십신과 오행'을 결합하여 분석해라.
 3. 구체적인 예시 제공: 현대적인 직업군과 구체적인 재테크 방식을 3가지 이상 콕 집어 제안해라.
 4. 개운법(솔루션) 필수 포함: 각 섹션의 끝에는 결핍된 기운을 보완하고 운을 틔울 수 있는 구체적인 행동 지침(💡)을 추가해라.
-5. 분량 강제: 각 섹션은 최소 3~4개의 상세한 문단으로 구성하며, 소제목과 글머리 기호(-)를 적절히 섞어 가독성을 높여라.
+5. 분량 강제: 각 섹션은 최소 4개의 상세한 문단으로 구성하며, 소제목과 글머리 기호(-)를 적절히 섞어 가독성을 높여라. 전체 분량은 공백 포함 7,000자 이상이 되도록 충분히 깊게 서술하라.
 6. [핵심 CRO] 소름 돋는 맛보기 훅(Hook) 섹션 필수 생성:
-   - 사주 요약표 바로 다음이자 본격적인 풀이 시작 전, 반드시 '### 💡 혹시 이런 경험 있지 않으신가요?'라는 제목의 맛보기 섹션을 강제로 생성해라.
-   - 사용자의 사주 특징(일간, 오행의 편중/결핍, 십신 구조 등)을 바탕으로, 뼈를 때리거나 깊이 공감할 수 있는 구체적인 질문 4가지를 반드시 불릿 포인트(-)로 출력해라.
-7. [절대 원칙] 호칭 및 말투:
+   - 사주 요약표 바로 다음이자 본격적인 풀이 시작 전, 반드시 '### 💡 혹시 이런 적 없으셨나요?'라는 제목의 맛보기 섹션을 강제로 생성해라.
+   - 사용자의 사주 특징(일간, 오행의 편중/결핍, 십신 구조 등)을 바탕으로, 뼈를 때리거나 깊이 공감할 수 있는 구체적인 질문 5가지를 반드시 불릿 포인트(-)로 출력해라.
+   - 질문은 "혹시 ~한 적 없으셨나요?", "~할 때마다 유독 ~했던 적 있지 않으세요?"처럼 읽는 순간 고개를 끄덕이게 만드는 생활 밀착형 문장으로 써라.
+7. [궁금증 유발] 훅 바로 다음에 '### 🔎 선비님이 끝까지 확인해야 할 3가지' 섹션을 만들고, 뒤에 나올 장들이 답하게 될 질문 3가지를 던져라. 예: "선비님의 재물이 유독 새는 진짜 이유는 무엇인가?", "선비님이 40대에 반드시 피해야 할 결정은 무엇인가?", "선비님이 아직 발견하지 못한 숨은 재능은 무엇인가?" — 질문만 던지고 답은 해당 장에서 풀어라.
+8. [절대 원칙] 호칭 및 말투:
    - '내담자'나 평범한 호칭은 절대 금지하고, 반드시 '선비님' 또는 이름을 붙인 '선비님'으로 칭하라.
    - 말투는 반드시 조선시대 왕실 점술가의 고풍스럽고 묵직한 어투(~하옵니다, ~하시옵소서, ~하오니, ~함을 경계하시옵소서 등)를 철저히 유지하라.
    - 단정적인 흉언("망합니다" 등)은 금하되, 점술가의 깊이 있는 혜안과 묵직한 조언으로 신뢰를 준다.
    - 고정된 템플릿이나 뻔한 문구를 절대 복사해 쓰지 말고, 제공된 일간, 결핍 오행, 신강/신약 데이터에 기반하여 100% 개인화된 풀이를 작성하라.
-8. [범위 엄수 - 타 상품과 중복 금지]
+9. [공감대 극대화] 각 장의 첫 문단은 가능하면 "이런 적 없으셨나요?"라는 공감형 문장으로 시작하거나, 선비님의 실제 생활 장면(돈을 쓸 때, 사람을 만날 때, 밤에 혼자 있을 때)을 구체적으로 그려라. 추상적인 미사여구보다 '내 이야기 같다'는 느낌을 주는 장면 묘사를 우선하라.
+10. [범위 엄수 - 타 상품과 중복 금지]
    - 이 리포트는 '평생 사주' 전용이다. 오늘 하루의 길흉(일진 운세)이나 특정 상대와의 궁합·재회운은 다루지 말고, 타고난 본원과 평생의 흐름·대운에만 집중하라.
    - '연애와 인간관계' 장은 나 홀로의 애정 성향과 배우자 복(관성·재성)에 한정하고, 특정 상대와의 궁합 점수나 재회 가능성은 절대 언급하지 말라.
 
@@ -371,11 +394,17 @@ SYSTEM_MASTER_PROMPT = """
 ## 🔮 선비님의 사주팔자 요약
 (사주 원국, 나를 상징하는 기운, 오행의 분포 요약)
 
-### 💡 혹시 이런 경험 있지 않으신가요?
+### 💡 혹시 이런 적 없으셨나요?
 - [사용자의 사주 특징 기반 뼈를 때리거나 깊이 공감할 수 있는 구체적인 질문 1]
 - [사용자의 사주 특징 기반 뼈를 때리거나 깊이 공감할 수 있는 구체적인 질문 2]
 - [사용자의 사주 특징 기반 뼈를 때리거나 깊이 공감할 수 있는 구체적인 질문 3]
 - [사용자의 사주 특징 기반 뼈를 때리거나 깊이 공감할 수 있는 구체적인 질문 4]
+- [사용자의 사주 특징 기반 뼈를 때리거나 깊이 공감할 수 있는 구체적인 질문 5]
+
+### 🔎 선비님이 끝까지 확인해야 할 3가지
+- [뒤 장에서 답을 줄 궁금증 유발 질문 1]
+- [뒤 장에서 답을 줄 궁금증 유발 질문 2]
+- [뒤 장에서 답을 줄 궁금증 유발 질문 3]
 
 ### 👤 선비님의 본연의 성향과 잠재력 (일간 + 월지 중심)
 (상세 분석 및 💡 마음 개운법)
@@ -389,8 +418,17 @@ SYSTEM_MASTER_PROMPT = """
 ### ❤️ 선비님의 연애와 인간관계
 (상세 분석 및 💡 관계 개운법)
 
+### 🩺 선비님의 건강과 체질 — 몸이 보내는 신호
+(오행의 편중으로 반복되는 컨디션 저하, 취약 장기, 생활 습관 처방)
+
 ### 🛤️ 선비님의 현재 대운 흐름 (대운 분석)
 (상세 분석 및 💡 대운 승부수)
+
+### ⏳ 선비님의 인생 전환점 — 언제, 무엇이 바뀌는가
+(20대·30대·40대·50대 이후의 결정적 변화와 그때 해야 할 선택)
+
+### 🎁 선비님이 아직 모르는 숨은 재능과 적성
+(타고난 재능, 의외의 적성, 늦게 피는 재능, 그 재능을 돈으로 바꾸는 법)
 
 ### 🌟 선비님을 위한 종합 카운슬링
 (선비님을 위한 고풍스러운 조언과 마무리 축원)
@@ -406,7 +444,13 @@ def calculate_saju_engine(user_input: UserInput) -> dict:
         try:
             lunar = Lunar.fromYmdHms(y, lunar_month, d, hh, mm, 0)
         except Exception:
-            lunar = Lunar.fromYmdHms(y, m, d, hh, mm, 0)
+            try:
+                lunar = Lunar.fromYmdHms(y, m, d, hh, mm, 0)
+            except Exception as exc:
+                raise ValueError(
+                    f"{y}년 음력 {m}월 {d}일은 존재하지 않는 날짜입니다. "
+                    "음력 생일을 다시 확인하시거나 양력으로 입력해 주세요."
+                ) from exc
     else:
         solar = Solar.fromYmdHms(y, m, d, hh, mm, 0)
         lunar = solar.getLunar()
@@ -805,6 +849,12 @@ def analyze_saju(user_input: UserInput, db: Session = Depends(get_db)):
             "today_data": today_fortune_data,
             "history_id": history_id
         }
+    except HTTPException:
+        db.rollback()
+        raise
+    except ValueError as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         db.rollback()
         # 치명적 서버 오류 시에도 가능한 안전 폴백 제공
@@ -933,21 +983,30 @@ async def get_saju_history(db: Session = Depends(get_db), _admin: None = Depends
         raise HTTPException(status_code=500, detail=str(e))
 
 # -------------------------------------------------------------
-# 5-B. 토스페이(Toss Pay) 결제 연동 API
+# 5-B. 토스페이먼츠(Toss Payments) v2 결제 연동 API
 # -------------------------------------------------------------
-class TossPaymentCreateInput(BaseModel):
+class TossPaymentOrderInput(BaseModel):
     category: str = Field("saju", description="리포트 카테고리 (saju, gunghap, reunion, today)")
 
 
 class TossPaymentConfirmInput(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    order_no: str = Field(..., alias="orderNo", description="결제 생성 시 발급된 주문번호")
+    order_no: str = Field(..., alias="orderId", description="서버가 발급한 주문번호")
+    payment_key: str = Field("", alias="paymentKey", description="토스페이먼츠 결제 키")
+    amount: int = Field(0, alias="amount", description="결제창에서 인증된 금액 (서버 금액과 대조)")
     payment_token: str = Field("", alias="paymentToken", description="서버가 서명한 결제 검증 토큰")
 
 
+class TossPaymentCancelInput(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    order_no: str = Field(..., alias="orderNo")
+    cancel_reason: str = Field("고객 요청", alias="cancelReason", max_length=200)
+
+
 def _public_base_url(request: Request) -> str:
-    """토스페이가 콜백/복귀에 사용할 공개 URL을 결정합니다."""
+    """토스페이먼츠가 결제 성공/실패 후 복귀할 공개 URL을 결정합니다."""
     if PUBLIC_BASE_URL:
         return PUBLIC_BASE_URL
     forwarded_proto = (request.headers.get("x-forwarded-proto") or "").split(",")[0].strip()
@@ -957,36 +1016,8 @@ def _public_base_url(request: Request) -> str:
     return f"{proto}://{host}".rstrip("/")
 
 
-def _is_local_or_private_url(url: str) -> bool:
-    """localhost/사설 IP 여부를 판별합니다. 토스페이 콜백은 외부 공개 URL만 허용합니다."""
-    host = (urlparse(url).hostname or "").strip().lower()
-    if host in ("localhost", "127.0.0.1", "::1", "0.0.0.0"):
-        return True
-    if host.endswith(".local"):
-        return True
-    if host.startswith("192.168.") or host.startswith("10."):
-        return True
-    if host.startswith("172."):
-        try:
-            second = int(host.split(".")[1])
-            if 16 <= second <= 31:
-                return True
-        except (IndexError, ValueError):
-            pass
-    return False
-
-
-def _toss_result_callback_url(base_url: str) -> str:
-    """로컬 개발에서는 토스가 사설 URL을 거부하므로 데모 콜백으로 대체합니다.
-    (로컬에서도 복귀 후 /confirm 상태 조회로 결제를 검증하므로 잠금 해제는 정상 동작)
-    """
-    if _is_local_or_private_url(base_url):
-        return "https://pay.toss.im/payfront/demo/callback"
-    return f"{base_url}/api/payments/toss/callback"
-
-
 def _payment_token_secret() -> str:
-    return os.getenv("PAYMENT_TOKEN_SECRET", "").strip() or TOSS_PAY_API_KEY
+    return os.getenv("PAYMENT_TOKEN_SECRET", "").strip() or TOSS_SECRET_KEY
 
 
 def _b64url_encode(raw: bytes) -> str:
@@ -1042,42 +1073,47 @@ def _verify_payment_token(token: str) -> Optional[dict]:
     return payload
 
 
-def _toss_api_request(path: str, payload: dict) -> dict:
-    if not TOSS_PAY_API_KEY:
-        raise HTTPException(status_code=500, detail="토스페이 API Key가 서버에 설정되지 않았습니다.")
+def _toss_auth_headers() -> dict:
+    """시크릿 키 뒤에 콜론을 붙여 base64로 인코딩한 Basic 인증 헤더를 만듭니다."""
+    if not TOSS_SECRET_KEY:
+        raise HTTPException(status_code=500, detail="결제 설정이 완료되지 않았습니다. 관리자에게 문의해 주세요.")
+    token = base64.b64encode(f"{TOSS_SECRET_KEY}:".encode("utf-8")).decode("ascii")
+    return {
+        "Authorization": f"Basic {token}",
+        "Content-Type": "application/json",
+    }
+
+
+def _toss_request(
+    method: str,
+    path: str,
+    payload: Optional[dict] = None,
+    idempotency_key: Optional[str] = None,
+) -> tuple:
+    """토스페이먼츠 API를 호출하고 (HTTP 상태코드, 응답 dict)를 돌려줍니다."""
+    headers = _toss_auth_headers()
+    if idempotency_key:
+        headers["Idempotency-Key"] = idempotency_key[:300]
+    url = f"{TOSS_API_BASE}{path}"
     try:
-        with httpx.Client(timeout=15.0) as client:
-            response = client.post(f"{TOSS_PAY_API_BASE}{path}", json=payload)
+        with httpx.Client(timeout=20.0) as client:
+            if (method or "GET").upper() == "GET":
+                response = client.get(url, headers=headers)
+            else:
+                response = client.post(url, headers=headers, json=payload or {})
     except httpx.HTTPError as exc:
-        print(f"[TOSS PAY] HTTP error on {path}: {exc}")
-        raise HTTPException(status_code=502, detail="토스페이 서버와 통신하지 못했습니다. 잠시 후 다시 시도해 주세요.")
+        print(f"[TOSS PAYMENTS] HTTP error on {path}: {exc}")
+        raise HTTPException(status_code=502, detail="결제 서버와 통신하지 못했습니다. 잠시 후 다시 시도해 주세요.")
 
     try:
         data = response.json()
     except ValueError:
-        raise HTTPException(
-            status_code=502,
-            detail=f"토스페이 응답을 해석하지 못했습니다. (HTTP {response.status_code})",
-        )
+        data = {}
     if not isinstance(data, dict):
-        raise HTTPException(status_code=502, detail="토스페이 응답 형식이 올바르지 않습니다.")
-    return data
-
-
-def _toss_status(pay_token: Optional[str] = None, order_no: Optional[str] = None) -> dict:
-    payload = {"apiKey": TOSS_PAY_API_KEY}
-    if pay_token:
-        payload["payToken"] = pay_token
-    elif order_no:
-        payload["orderNo"] = order_no
-    else:
-        raise HTTPException(status_code=400, detail="결제 상태 조회에 필요한 주문 정보가 없습니다.")
-
-    data = _toss_api_request("/status", payload)
-    if data.get("code") != 0:
-        message = data.get("msg") or data.get("errorCode") or "결제 상태를 확인하지 못했습니다."
-        raise HTTPException(status_code=502, detail=f"토스페이 상태 조회 실패: {message}")
-    return data
+        data = {}
+    if response.status_code >= 500:
+        print(f"[TOSS PAYMENTS] server error {response.status_code} on {path}: {data}")
+    return response.status_code, data
 
 
 def _safe_commit(db: Session, context: str) -> bool:
@@ -1087,28 +1123,72 @@ def _safe_commit(db: Session, context: str) -> bool:
         return True
     except Exception as exc:
         db.rollback()
-        print(f"[TOSS PAY] DB commit skipped ({context}): {exc}")
+        print(f"[TOSS PAYMENTS] DB commit skipped ({context}): {exc}")
         return False
 
 
-def _mark_order_paid(db: Session, order: PaymentOrder, toss_data: dict) -> None:
+def _mark_order_paid(db: Session, order: PaymentOrder, payment: dict) -> None:
     order.status = "PAID"
     order.paid_at = datetime.now()
-    if toss_data.get("payToken"):
-        order.pay_token = str(toss_data.get("payToken"))[:50]
-    if toss_data.get("payMethod"):
-        order.pay_method = str(toss_data.get("payMethod"))[:20]
+    payment_key = str(payment.get("paymentKey") or "")[:200]
+    if payment_key:
+        order.payment_key = payment_key
+        # 기존 스키마(pay_token)를 쓰는 관리자 화면/호환 코드를 위해 함께 남긴다.
+        order.pay_token = payment_key[:50]
+    method = str(payment.get("method") or "")[:20]
+    if method:
+        order.pay_method = method
     _safe_commit(db, "mark paid")
 
 
-@app.post("/api/payments/toss/create")
-def create_toss_payment(
-    payload: TossPaymentCreateInput,
+def _payment_amount(payment: dict) -> int:
+    try:
+        return int(payment.get("totalAmount") or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _find_order(db: Session, order_no: str) -> Optional[PaymentOrder]:
+    if not order_no:
+        return None
+    return db.query(PaymentOrder).filter(PaymentOrder.order_no == order_no).first()
+
+
+def _paid_response(order: PaymentOrder, already: bool = False) -> dict:
+    return {
+        "status": "success",
+        "paid": True,
+        "orderNo": order.order_no,
+        "category": order.category,
+        "amount": order.amount,
+        "payMethod": order.pay_method,
+        "alreadyPaid": already,
+    }
+
+
+@app.get("/api/payments/toss/config")
+def toss_payment_config():
+    """프론트엔드가 결제창 SDK를 초기화할 때 쓰는 공개 설정. 시크릿 키는 절대 포함하지 않습니다."""
+    return {
+        "status": "success",
+        "clientKey": TOSS_CLIENT_KEY,
+        "currency": "KRW",
+        "enabled": bool(TOSS_CLIENT_KEY and TOSS_SECRET_KEY),
+        "products": {
+            key: {"amount": int(value["amount"]), "orderName": value["desc"]}
+            for key, value in PAYMENT_PRODUCTS.items()
+        },
+    }
+
+
+@app.post("/api/payments/toss/order")
+def create_toss_order(
+    payload: TossPaymentOrderInput,
     request: Request,
     db: Session = Depends(get_db),
 ):
-    """서버가 가격을 결정하고 토스페이 결제를 생성합니다. API Key는 응답에 포함하지 않습니다."""
-    if not TOSS_PAY_API_KEY:
+    """서버가 가격을 결정하고 주문번호를 발급합니다. 결제창은 프론트에서 토스 SDK로 띄웁니다."""
+    if not TOSS_CLIENT_KEY or not TOSS_SECRET_KEY:
         raise HTTPException(status_code=500, detail="결제 설정이 완료되지 않았습니다. 관리자에게 문의해 주세요.")
 
     category = (payload.category or "saju").strip().lower()
@@ -1118,7 +1198,6 @@ def create_toss_payment(
 
     amount = int(product["amount"])
     order_no = f"SAJU-{datetime.now().strftime('%Y%m%d%H%M%S')}-{secrets.token_hex(4)}"
-    base_url = _public_base_url(request)
 
     order = PaymentOrder(
         order_no=order_no,
@@ -1128,52 +1207,31 @@ def create_toss_payment(
         created_at=datetime.now(),
     )
     db.add(order)
-    _safe_commit(db, "create order")
+    if not _safe_commit(db, "create order"):
+        raise HTTPException(status_code=500, detail="주문을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.")
 
-    toss_payload = {
-        "apiKey": TOSS_PAY_API_KEY,
-        "orderNo": order_no,
-        "productDesc": product["desc"],
-        "retUrl": f"{base_url}/?toss=return&orderNo={order_no}",
-        "retCancelUrl": f"{base_url}/?toss=cancel&orderNo={order_no}",
-        "amount": amount,
-        "amountTaxFree": 0,
-        "autoExecute": True,
-        "resultCallback": _toss_result_callback_url(base_url),
-        "callbackVersion": "V2",
-    }
-
-    try:
-        toss_data = _toss_api_request("/payments", toss_payload)
-    except HTTPException:
-        order.status = "FAILED"
-        _safe_commit(db, "mark create failed")
-        raise
-
-    if toss_data.get("code") != 0 or not toss_data.get("checkoutPage"):
-        order.status = "FAILED"
-        _safe_commit(db, "mark create failed")
-        message = toss_data.get("msg") or toss_data.get("errorCode") or "결제 생성에 실패했습니다."
-        print(f"[TOSS PAY] create failed: {toss_data}")
-        raise HTTPException(status_code=502, detail=f"토스페이 결제 생성 실패: {message}")
-
-    order.pay_token = str(toss_data.get("payToken") or "")[:50] or None
-    _safe_commit(db, "save pay token")
-
+    base_url = _public_base_url(request)
     return {
         "status": "success",
+        "orderId": order_no,
         "orderNo": order_no,
         "category": category,
         "amount": amount,
-        "checkoutPage": toss_data.get("checkoutPage"),
+        "orderName": product["desc"],
         "paymentToken": _create_payment_token(order_no, category, amount),
+        "successUrl": f"{base_url}/?toss=success",
+        "failUrl": f"{base_url}/?toss=fail",
     }
 
 
 @app.post("/api/payments/toss/confirm")
 def confirm_toss_payment(payload: TossPaymentConfirmInput, db: Session = Depends(get_db)):
-    """복귀한 구매자의 결제를 토스 상태 조회로 검증한 뒤 완료 처리합니다. (멱등)"""
+    """결제 인증 결과를 서버에서 검증한 뒤 승인합니다. (멱등)"""
     order_no = (payload.order_no or "").strip()
+    payment_key = (payload.payment_key or "").strip()
+    if not order_no:
+        raise HTTPException(status_code=400, detail="주문번호가 없습니다.")
+
     token_payload = _verify_payment_token(payload.payment_token)
     if not token_payload or token_payload.get("o") != order_no:
         raise HTTPException(status_code=400, detail="결제 검증 정보가 유효하지 않습니다.")
@@ -1182,51 +1240,19 @@ def confirm_toss_payment(payload: TossPaymentConfirmInput, db: Session = Depends
     product = PAYMENT_PRODUCTS.get(category)
     try:
         token_amount = int(token_payload.get("a") or 0)
-    except Exception:
+    except (TypeError, ValueError):
         token_amount = 0
     if not product or int(product["amount"]) != token_amount:
         raise HTTPException(status_code=400, detail="결제 금액 정보가 유효하지 않습니다.")
 
-    order = db.query(PaymentOrder).filter(PaymentOrder.order_no == order_no).first()
-    if order and order.category != category:
-        raise HTTPException(status_code=400, detail="주문 카테고리가 일치하지 않습니다.")
-    if order and int(order.amount) != token_amount:
-        raise HTTPException(status_code=400, detail="주문 금액이 일치하지 않습니다.")
-
-    if order and order.status == "PAID":
-        return {
-            "status": "success",
-            "paid": True,
-            "orderNo": order_no,
-            "category": order.category,
-            "amount": order.amount,
-            "alreadyPaid": True,
-        }
-
-    toss_data = _toss_status(pay_token=(order.pay_token if order else None), order_no=order_no)
-    pay_status = toss_data.get("payStatus")
-    if pay_status != "PAY_COMPLETE":
-        return {
-            "status": "pending",
-            "paid": False,
-            "orderNo": order_no,
-            "category": category,
-            "amount": token_amount,
-            "payStatus": pay_status,
-        }
-
-    if str(toss_data.get("orderNo") or "") != order_no:
-        raise HTTPException(status_code=400, detail="토스페이 주문번호가 일치하지 않습니다.")
-    try:
-        paid_total = int(toss_data.get("amount") or 0)
-    except Exception:
-        paid_total = 0
-    if paid_total != token_amount:
-        print(f"[TOSS PAY] amount mismatch: order={order_no} expected={token_amount} paid={paid_total}")
-        raise HTTPException(status_code=400, detail="결제 금액이 주문 금액과 일치하지 않습니다.")
-
-    if not order:
-        # 서버리스 환경에서 DB가 초기화된 경우에도 검증된 결제는 기록을 복구합니다.
+    order = _find_order(db, order_no)
+    if order:
+        if order.category != category:
+            raise HTTPException(status_code=400, detail="주문 카테고리가 일치하지 않습니다.")
+        if int(order.amount) != token_amount:
+            raise HTTPException(status_code=400, detail="주문 금액이 일치하지 않습니다.")
+    else:
+        # 서버리스 DB 초기화 등으로 주문 기록이 사라졌어도, 서명이 검증된 주문은 복구한다.
         order = PaymentOrder(
             order_no=order_no,
             category=category,
@@ -1237,21 +1263,71 @@ def confirm_toss_payment(payload: TossPaymentConfirmInput, db: Session = Depends
         db.add(order)
         _safe_commit(db, "restore order")
 
-    _mark_order_paid(db, order, toss_data)
+    if order.status == "PAID":
+        return _paid_response(order, already=True)
 
-    return {
-        "status": "success",
-        "paid": True,
-        "orderNo": order_no,
-        "category": order.category,
-        "amount": order.amount,
-        "payMethod": order.pay_method,
-    }
+    # 결제창에서 인증된 금액이 서버가 아는 금액과 다르면 승인 요청 자체를 보내지 않는다.
+    if payload.amount and int(payload.amount) != token_amount:
+        print(f"[TOSS PAYMENTS] tampered amount: order={order_no} client={payload.amount} expected={token_amount}")
+        raise HTTPException(status_code=400, detail="결제 금액이 주문 금액과 일치하지 않습니다.")
+
+    if not payment_key:
+        # 결제는 끝났지만 승인 응답을 받지 못한 경우: 주문번호로 조회해 복구한다.
+        status_code, payment = _toss_request("GET", f"/v1/payments/orders/{order_no}")
+        if status_code == 200 and payment.get("status") == "DONE":
+            if _payment_amount(payment) != token_amount:
+                raise HTTPException(status_code=400, detail="결제 금액이 주문 금액과 일치하지 않습니다.")
+            _mark_order_paid(db, order, payment)
+            return _paid_response(order)
+        return {
+            "status": "pending",
+            "paid": False,
+            "orderNo": order_no,
+            "category": category,
+            "amount": token_amount,
+        }
+
+    status_code, payment = _toss_request(
+        "POST",
+        "/v1/payments/confirm",
+        {"paymentKey": payment_key, "orderId": order_no, "amount": token_amount},
+        idempotency_key=f"{order_no}-confirm",
+    )
+
+    if status_code != 200:
+        # 승인 요청이 실패해도 실제로는 승인된 경우가 있으므로 조회로 한 번 더 확인한다.
+        query_status, queried = _toss_request("GET", f"/v1/payments/{payment_key}")
+        if query_status == 200 and queried.get("status") == "DONE" and _payment_amount(queried) == token_amount:
+            _mark_order_paid(db, order, queried)
+            return _paid_response(order)
+        message = payment.get("message") or "결제 승인에 실패했습니다."
+        code = payment.get("code") or ""
+        print(f"[TOSS PAYMENTS] confirm failed order={order_no} code={code} message={message}")
+        raise HTTPException(status_code=400, detail=f"{message}" + (f" ({code})" if code else ""))
+
+    if payment.get("status") != "DONE":
+        return {
+            "status": "pending",
+            "paid": False,
+            "orderNo": order_no,
+            "category": category,
+            "amount": token_amount,
+            "payStatus": payment.get("status"),
+        }
+
+    if str(payment.get("orderId") or "") != order_no:
+        raise HTTPException(status_code=400, detail="결제 주문번호가 일치하지 않습니다.")
+    if _payment_amount(payment) != token_amount:
+        print(f"[TOSS PAYMENTS] amount mismatch: order={order_no} expected={token_amount} paid={_payment_amount(payment)}")
+        raise HTTPException(status_code=400, detail="결제 금액이 주문 금액과 일치하지 않습니다.")
+
+    _mark_order_paid(db, order, payment)
+    return _paid_response(order)
 
 
 @app.post("/api/payments/toss/callback")
-async def toss_payment_callback(request: Request, db: Session = Depends(get_db)):
-    """토스페이 서버가 보내는 결제 완료 콜백. 상태 조회로 재검증한 뒤 완료 처리합니다."""
+async def toss_payment_webhook(request: Request, db: Session = Depends(get_db)):
+    """토스페이먼츠 웹훅. 전달받은 값을 그대로 믿지 않고 결제 조회 API로 재검증합니다."""
     try:
         body = await request.json()
     except Exception:
@@ -1259,44 +1335,68 @@ async def toss_payment_callback(request: Request, db: Session = Depends(get_db))
     if not isinstance(body, dict):
         body = {}
 
-    order_no = str(body.get("orderNo") or "").strip()
-    if not order_no:
-        return {"code": 0, "status": "ignored"}
+    data = body.get("data") if isinstance(body.get("data"), dict) else body
+    payment_key = str(data.get("paymentKey") or "").strip()
+    order_no = str(data.get("orderId") or "").strip()
+    if not payment_key or not order_no:
+        return {"status": "ignored"}
 
-    order = db.query(PaymentOrder).filter(PaymentOrder.order_no == order_no).first()
+    order = _find_order(db, order_no)
     if not order:
-        print(f"[TOSS PAY] callback for unknown order: {order_no}")
-        return {"code": 0, "status": "ignored"}
-
+        print(f"[TOSS PAYMENTS] webhook for unknown order: {order_no}")
+        return {"status": "ignored"}
     if order.status == "PAID":
-        return {"code": 0, "status": "already_paid"}
+        return {"status": "already_paid"}
 
-    if body.get("status") != "PAY_COMPLETE":
-        return {"code": 0, "status": "ignored"}
+    status_code, payment = _toss_request("GET", f"/v1/payments/{payment_key}")
+    if status_code != 200:
+        return {"status": "verify_failed"}
 
-    try:
-        toss_data = _toss_status(
-            pay_token=str(body.get("payToken") or order.pay_token or "") or None,
-            order_no=order_no,
-        )
-    except HTTPException as exc:
-        print(f"[TOSS PAY] callback verify failed: {exc.detail}")
-        return {"code": 0, "status": "verify_failed"}
+    payment_status = str(payment.get("status") or "")
+    if payment_status in ("CANCELED", "PARTIAL_CANCELED"):
+        order.status = "CANCELLED"
+        _safe_commit(db, "webhook cancel")
+        return {"status": "cancelled"}
 
-    if toss_data.get("payStatus") != "PAY_COMPLETE":
-        return {"code": 0, "status": "not_complete"}
-    if str(toss_data.get("orderNo") or "") != order_no:
-        return {"code": 0, "status": "order_mismatch"}
-    try:
-        paid_total = int(toss_data.get("amount") or 0)
-    except Exception:
-        paid_total = 0
-    if paid_total != int(order.amount):
-        print(f"[TOSS PAY] callback amount mismatch: order={order_no} expected={order.amount} paid={paid_total}")
-        return {"code": 0, "status": "amount_mismatch"}
+    if payment_status != "DONE":
+        return {"status": "not_done"}
+    if str(payment.get("orderId") or "") != order_no:
+        return {"status": "order_mismatch"}
+    if _payment_amount(payment) != int(order.amount):
+        print(f"[TOSS PAYMENTS] webhook amount mismatch: order={order_no}")
+        return {"status": "amount_mismatch"}
 
-    _mark_order_paid(db, order, toss_data)
-    return {"code": 0, "status": "success"}
+    _mark_order_paid(db, order, payment)
+    return {"status": "success"}
+
+
+@app.post("/api/payments/toss/cancel")
+def cancel_toss_payment(
+    payload: TossPaymentCancelInput,
+    db: Session = Depends(get_db),
+    _admin: None = Depends(require_admin),
+):
+    """관리자 전용 결제 취소(전액 환불)."""
+    order = _find_order(db, (payload.order_no or "").strip())
+    if not order:
+        raise HTTPException(status_code=404, detail="주문을 찾을 수 없습니다.")
+    if order.status != "PAID" or not order.payment_key:
+        raise HTTPException(status_code=400, detail="취소할 수 있는 결제가 아닙니다.")
+
+    status_code, payment = _toss_request(
+        "POST",
+        f"/v1/payments/{order.payment_key}/cancel",
+        {"cancelReason": payload.cancel_reason or "고객 요청"},
+        idempotency_key=f"{order.order_no}-cancel",
+    )
+    if status_code != 200:
+        message = payment.get("message") or "결제 취소에 실패했습니다."
+        raise HTTPException(status_code=400, detail=message)
+
+    order.status = "CANCELLED"
+    _safe_commit(db, "mark cancelled")
+    return {"status": "success", "orderNo": order.order_no, "canceled": True}
+
 
 # -------------------------------------------------------------
 # 5-C. 구매 리포트 보관함 (결제 후 7일 재열람) API
