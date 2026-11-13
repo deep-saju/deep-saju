@@ -62,3 +62,6 @@ latest_*.txt
 test_*.txt
 *.bak
 *.exe
+
+.vercel
+.env*

@@ -1,0 +1,16 @@
+.git
+.vercel
+__pycache__
+*.pyc
+*.pyo
+*.exe
+*.msi
+*.zip
+*.db
+*.sqlite3
+*.db-journal
+latest_*.txt
+test_*.txt
+*.bak
+.env
+.env.*

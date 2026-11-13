@@ -1,4 +1,5 @@
 {
+  "regions": ["icn1"],
   "rewrites": [
     {
       "source": "/api/(.*)",
